@@ -1,0 +1,114 @@
+"""data/binance_ws.py — WebSocket aggTrade Binance avec failover et delta volume."""
+from __future__ import annotations
+import asyncio
+import json
+from collections import deque
+from datetime import datetime, timezone
+from typing import Dict, Optional
+import aiohttp
+from utils.config import (
+    SYMBOLS, WS_BASES, DELTA_VOL_ENABLED,
+    DELTA_VOL_WINDOW, DELTA_VOL_SIGNAL_PCT, DELTA_VOL_USE_NOTIONAL,
+)
+from utils.logger import get_logger
+
+logger = get_logger(__name__)
+
+candle_store: Dict[str, "pd.DataFrame"] = {}
+raw_1s: Dict[str, deque] = {s: deque(maxlen=1800) for s in SYMBOLS}
+
+delta_vol: Dict[str, dict] = {
+    s: {
+        "buy_vol": 0.0, "sell_vol": 0.0, "delta": 0.0,
+        "delta_pct": 0.0, "bullish": False, "bearish": False,
+        "trades": deque(maxlen=DELTA_VOL_WINDOW), "ts": 0.0,
+    }
+    for s in SYMBOLS
+}
+
+_BINANCE_SYM = {s: s.replace("/", "").lower() for s in SYMBOLS}
+
+
+def _update_delta_vol(sym: str, price: float, qty: float, is_buyer_maker: bool) -> None:
+    """Met à jour le delta volume.
+
+    Pondération par notionnel (price × qty) quand DELTA_VOL_USE_NOTIONAL=1 :
+    évite que le nombre de petites transactions domine face à une grosse transaction.
+    """
+    if not DELTA_VOL_ENABLED:
+        return
+    state    = delta_vol[sym]
+    now      = datetime.now(timezone.utc).timestamp()
+    notional = price * qty if DELTA_VOL_USE_NOTIONAL else qty
+    trade    = {"ts": now, "qty": qty, "notional": notional, "side": "sell" if is_buyer_maker else "buy"}
+    state["trades"].append(trade)
+
+    vol_key  = "notional" if DELTA_VOL_USE_NOTIONAL else "qty"
+    buy_vol  = sum(t[vol_key] for t in state["trades"] if t["side"] == "buy")
+    sell_vol = sum(t[vol_key] for t in state["trades"] if t["side"] == "sell")
+    total    = buy_vol + sell_vol or 1e-9
+
+    state["buy_vol"]   = buy_vol
+    state["sell_vol"]  = sell_vol
+    state["delta"]     = buy_vol - sell_vol
+    state["delta_pct"] = round((buy_vol - sell_vol) / total, 4)
+    state["bullish"]   = (buy_vol / total) >= DELTA_VOL_SIGNAL_PCT
+    state["bearish"]   = (sell_vol / total) >= DELTA_VOL_SIGNAL_PCT
+    state["ts"]        = now
+
+
+def _resample_1s_to_30s(sym: str) -> None:
+    import pandas as pd
+    buf = list(raw_1s[sym])
+    if len(buf) < 2:
+        return
+    try:
+        df_raw = pd.DataFrame(buf)
+        df_raw["ts"] = pd.to_datetime(df_raw["ts"], unit="s", utc=True)
+        df_raw = df_raw.set_index("ts").sort_index()
+        df30 = df_raw["price"].resample("30s").ohlc()
+        df30["v"] = df_raw["qty"].resample("30s").sum()
+        df30 = df30.dropna(subset=["open"])
+        df30.columns = ["open", "high", "low", "close", "v"]
+        candle_store[sym] = df30.tail(500)
+    except Exception as e:
+        logger.warning("[WS] resample %s: %s", sym, e)
+
+
+async def _handle_agg_trade(sym: str, msg: dict) -> None:
+    try:
+        price = float(msg["p"])
+        qty   = float(msg["q"])
+        ts    = float(msg["T"]) / 1000.0
+        is_buyer_maker = bool(msg["m"])
+
+        raw_1s[sym].append({"ts": ts, "price": price, "qty": qty})
+        _update_delta_vol(sym, price, qty, is_buyer_maker)
+        _resample_1s_to_30s(sym)
+    except Exception as e:
+        logger.debug("[WS] handle_agg_trade %s: %s", sym, e)
+
+
+async def ws_binance(sym: str) -> None:
+    stream = f"{_BINANCE_SYM[sym]}@aggTrade"
+    ws_idx = 0
+
+    while True:
+        base = WS_BASES[ws_idx % len(WS_BASES)]
+        url  = f"{base}/ws/{stream}"
+        try:
+            connector = aiohttp.TCPConnector(limit=10)
+            async with aiohttp.ClientSession(connector=connector) as session:
+                async with session.ws_connect(url, heartbeat=20, timeout=aiohttp.ClientWSTimeout(ws_receive=60)) as ws:
+                    logger.info("[WS] Connecté %s @ %s", sym, base)
+                    async for msg in ws:
+                        if msg.type == aiohttp.WSMsgType.TEXT:
+                            data = json.loads(msg.data)
+                            await _handle_agg_trade(sym, data)
+                        elif msg.type in (aiohttp.WSMsgType.ERROR, aiohttp.WSMsgType.CLOSED):
+                            logger.warning("[WS] %s déconnecté", sym)
+                            break
+        except Exception as e:
+            logger.warning("[WS] %s erreur (%s): %s — retry dans 3s", sym, base, e)
+            ws_idx += 1
+            await asyncio.sleep(3)

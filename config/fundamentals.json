@@ -1,0 +1,17 @@
+{
+  "_comment": "Configuration du module Fundamentals — ne pas modifier manuellement, utiliser l'API /fundamentals/",
+  "refresh_sec": 900,
+  "risk_block_threshold": 70.0,
+  "risk_reduce_threshold": 30.0,
+  "rollback_delta": 0.3,
+  "ema_alpha": 0.3,
+  "sources": {
+    "newsapi": true,
+    "gdelt": true,
+    "rss_reuters": true,
+    "rss_bbc": true,
+    "rss_coindesk": true,
+    "rss_cointelegraph": true
+  },
+  "notes": "NEWSAPI_KEY dans .env pour activer NewsAPI. GDELT est gratuit et sans clé."
+}

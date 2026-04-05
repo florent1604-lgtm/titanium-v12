@@ -1,0 +1,35 @@
+# ── Secrets — NE JAMAIS COMMITTER ────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.key
+secrets.json
+
+# ── Données runtime (générées automatiquement) ────────────────────────────────
+signal_history.json
+scoring_weights.json
+data/risk_history.json
+titanium_v12.log
+*.log
+
+# ── Cache Python ──────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+.mypy_cache/
+.ruff_cache/
+
+# ── Outils IDE / OS ───────────────────────────────────────────────────────────
+.vscode/
+.idea/
+.windsurf/
+.codeium/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ── Claude Code (sessions, cache) ─────────────────────────────────────────────
+.claude/
+
+# ── GitNexus index ────────────────────────────────────────────────────────────
+.gitnexus/
