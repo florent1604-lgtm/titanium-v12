@@ -262,6 +262,31 @@ GDELT_ENABLED               = _bool("GDELT_ENABLED", "1")
 FUNDAMENTALS_HISTORY_FILE   = Path(_str("FUNDAMENTALS_HISTORY_FILE", "data/risk_history.json"))
 FUNDAMENTALS_CONFIG_FILE    = Path(_str("FUNDAMENTALS_CONFIG_FILE", "config/fundamentals.json"))
 
+# ── Trading Mode ─────────────────────────────────────────────────────────────
+# "paper" = simulation réaliste (défaut)
+# "live"  = exécution Binance réelle (non implémenté)
+# "disabled" = signaux seulement, aucune position
+TRADING_MODE = _str("TRADING_MODE", "paper")
+
+# ── Paper Trading ─────────────────────────────────────────────────────────────
+PAPER_INITIAL_CAPITAL  = _float("PAPER_INITIAL_CAPITAL", 1000.0)    # USDT de départ
+PAPER_RISK_PCT         = _float("PAPER_RISK_PCT", 0.02)             # 2% du capital risqué/trade
+PAPER_SLIPPAGE_BPS     = _float("PAPER_SLIPPAGE_BPS", 5.0)          # 0.05% de slippage
+PAPER_SPREAD_BPS       = _float("PAPER_SPREAD_BPS", 2.0)            # 0.02% de spread (demi)
+PAPER_FEE_BPS          = _float("PAPER_FEE_BPS", 4.0)               # 0.04% frais taker
+PAPER_FUNDING_RATE_8H  = _float("PAPER_FUNDING_RATE_8H", 0.01)      # 0.01% funding/8h (longs paient)
+PAPER_MAX_POSITIONS    = _int("PAPER_MAX_POSITIONS", 3)              # positions simultanées max
+PAPER_MAX_EXPOSURE_PCT = _float("PAPER_MAX_EXPOSURE_PCT", 0.60)      # % capital max exposé
+PAPER_TRAILING_STOP    = _bool("PAPER_TRAILING_STOP", "0")           # trailing stop activé
+PAPER_TRAILING_PCT     = _float("PAPER_TRAILING_PCT", 0.8)           # multiple ATR pour trailing
+PAPER_JOURNAL_FILE     = Path(_str("PAPER_JOURNAL_FILE", "data/paper_journal.json"))
+PAPER_JOURNAL_CSV      = Path(_str("PAPER_JOURNAL_CSV", "data/paper_journal.csv"))
+PAPER_STATE_FILE       = Path(_str("PAPER_STATE_FILE", "data/paper_state.json"))
+
+# ── Webhook TradingView ────────────────────────────────────────────────────────
+WEBHOOK_SECRET  = _str("WEBHOOK_SECRET", "")    # secret partagé (laisser vide = désactivé)
+WEBHOOK_ENABLED = _bool("WEBHOOK_ENABLED", "1")
+
 # ── Serveur ─────────────────────────────────────────────────────────────────
 UVICORN_HOST      = _str("UVICORN_HOST", "0.0.0.0")
 UVICORN_PORT      = _int("UVICORN_PORT", 8080)

@@ -19,6 +19,12 @@
   - Signal cancellation above risk threshold (default: 70)
   - Proportional score reduction in mid-risk zone (30–70)
   - Auto-rollback with `ALERT_FUNDAMENTALS.md` notification
+- **Paper Trading Engine** — full realistic simulation (slippage, spread, fees, funding)
+  - Risk-based position sizing (% capital / SL distance)
+  - Partial exits: TP1 (33%) → SL at breakeven, TP2 (33%), TP3 (34%)
+  - Equity curve, max drawdown, Sharpe, winrate, expectancy — live
+  - Persistent journal (JSON + CSV)
+- **TradingView Webhook** — receive external alerts via `POST /webhook/tradingview`
 - **AI Vision** — local Ollama (LLaVA / Qwen2.5-VL) chart analysis
 - **Real-time WebSocket** — per-symbol signal streaming
 - **Telegram alerts** — configurable score threshold
@@ -144,6 +150,90 @@ risk_score ∈ [70, 100] → signal cancelled
 - **RSS** — Reuters, BBC, CoinDesk, CoinTelegraph
 
 **Auto-rollback:** if the module reduces signals by >30% consistently, it auto-disables and writes `ALERT_FUNDAMENTALS.md`.
+
+## Paper Trading Mode
+
+Paper Trading is enabled by default (`TRADING_MODE=paper` in `.env`). No API key required.
+
+### How it works
+
+Every signal emitted by the SMC engine (score ≥ threshold, cooling passed, Fundamentals OK) is automatically sent to the `PaperExecutor`, which:
+
+1. **Validates** the signal (price > 0, SL valid, no existing position on symbol)
+2. **Sizes the position** → `risk_usdt = equity × PAPER_RISK_PCT` / `sl_distance_pct`
+3. **Applies slippage + spread** to the entry price
+4. **Deducts entry fees** (taker rate)
+5. **Monitors** the position on every 5s scan tick:
+   - SL hit → full close
+   - TP1 hit → close 33%, move SL to breakeven
+   - TP2 hit → close another 33%
+   - TP3 hit → close remaining 34%
+   - Funding charged every 8h (long positions pay)
+6. **Journals** every closed trade to `data/paper_journal.json` and `data/paper_journal.csv`
+
+### Paper Trading API
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /paper/state` | Full account state (equity, positions, stats) |
+| `GET /paper/positions` | Open positions with live unrealized PnL |
+| `GET /paper/trades?limit=50` | Closed trade history |
+| `GET /paper/stats` | Winrate, Sharpe, expectancy, drawdown |
+| `GET /paper/equity-curve?last_n=200` | Equity curve data points |
+| `POST /paper/reset` | Reset account to initial capital |
+| `POST /paper/close/{symbol}` | Manually close a position `{"price": 12345}` |
+
+### Configuration
+
+```env
+TRADING_MODE=paper             # paper | disabled
+PAPER_INITIAL_CAPITAL=1000.0   # Starting capital (USDT)
+PAPER_RISK_PCT=0.02            # 2% capital risked per trade
+PAPER_SLIPPAGE_BPS=5           # 0.05% slippage per execution
+PAPER_SPREAD_BPS=2             # 0.02% half-spread
+PAPER_FEE_BPS=4                # 0.04% taker fee (Binance standard)
+PAPER_FUNDING_RATE_8H=0.01     # 0.01% funding per 8h (long pays)
+PAPER_MAX_POSITIONS=3          # Max simultaneous positions
+PAPER_MAX_EXPOSURE_PCT=0.60    # Max 60% of equity exposed
+PAPER_TRAILING_STOP=0          # Enable trailing stop (0/1)
+```
+
+### TradingView Webhook
+
+Send TradingView alerts to Titanium via `POST /webhook/tradingview`.
+
+**Alert message template** (paste in TradingView alert "Message" field):
+```json
+{
+  "secret": "your_shared_secret",
+  "ticker": "{{ticker}}",
+  "action": "{{strategy.order.action}}",
+  "price":  {{close}},
+  "score":  8,
+  "strategy": "SMC_v12",
+  "comment": "BOS + OB/FVG"
+}
+```
+
+**Webhook URL**: `http://your-ip:8080/webhook/tradingview`
+
+**Configuration**:
+```env
+WEBHOOK_ENABLED=1
+WEBHOOK_SECRET=your_shared_secret   # Leave empty to disable authentication
+```
+
+The webhook:
+1. Validates the secret
+2. Normalizes the symbol (BTCUSDT → BTC/USDT)
+3. Computes SL/TP via risk manager if not provided
+4. Filters through Fundamentals if active
+5. Executes via the Paper Executor
+6. Returns `{"status": "accepted|rejected|filtered", "position": {...}}`
+
+Check status: `GET /webhook/status`
+
+---
 
 ## Contributing
 

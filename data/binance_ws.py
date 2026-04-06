@@ -15,7 +15,12 @@ from utils.logger import get_logger
 logger = get_logger(__name__)
 
 candle_store: Dict[str, "pd.DataFrame"] = {}
+# Stocke des bougies 1-seconde agrégées (pas des trades bruts).
+# maxlen=1800 = 30 min de données, quel que soit le volume de trades.
 raw_1s: Dict[str, deque] = {s: deque(maxlen=1800) for s in SYMBOLS}
+
+# Barre 1s en cours d'agrégation (non encore poussée dans raw_1s)
+_current_1s: Dict[str, dict] = {}
 
 delta_vol: Dict[str, dict] = {
     s: {
@@ -66,13 +71,25 @@ def _resample_1s_to_30s(sym: str) -> None:
         df_raw = pd.DataFrame(buf)
         df_raw["ts"] = pd.to_datetime(df_raw["ts"], unit="s", utc=True)
         df_raw = df_raw.set_index("ts").sort_index()
-        df30 = df_raw["price"].resample("30s").ohlc()
-        df30["v"] = df_raw["qty"].resample("30s").sum()
-        df30 = df30.dropna(subset=["open"])
-        df30.columns = ["open", "high", "low", "close", "v"]
+        # Agrégation 30s depuis les barres 1s — on dispose déjà de open/high/low/close/qty
+        df30 = pd.DataFrame({
+            "open":  df_raw["open"].resample("30s").first(),
+            "high":  df_raw["high"].resample("30s").max(),
+            "low":   df_raw["low"].resample("30s").min(),
+            "close": df_raw["price"].resample("30s").last(),
+            "v":     df_raw["qty"].resample("30s").sum(),
+        }).dropna(subset=["open"])
         candle_store[sym] = df30.tail(500)
     except Exception as e:
         logger.warning("[WS] resample %s: %s", sym, e)
+
+
+def _push_1s_bar(sym: str, ts_sec: int) -> None:
+    """Pousse la barre 1s courante dans raw_1s et démarre une nouvelle barre."""
+    bar = _current_1s.pop(sym, None)
+    if bar:
+        raw_1s[sym].append(bar)
+        _resample_1s_to_30s(sym)
 
 
 async def _handle_agg_trade(sym: str, msg: dict) -> None:
@@ -80,11 +97,32 @@ async def _handle_agg_trade(sym: str, msg: dict) -> None:
         price = float(msg["p"])
         qty   = float(msg["q"])
         ts    = float(msg["T"]) / 1000.0
+        ts_sec = int(ts)
         is_buyer_maker = bool(msg["m"])
 
-        raw_1s[sym].append({"ts": ts, "price": price, "qty": qty})
+        # Agrégation en bougies 1s — évite que BTC (très haute fréquence) ne
+        # remplisse raw_1s en quelques secondes avec tous les trades dans la même
+        # fenêtre 30s (ce qui donnait < MIN_DF30_FOR_SCAN candles après resample).
+        if sym not in _current_1s:
+            _current_1s[sym] = {
+                "ts": ts_sec, "price": price, "qty": qty,
+                "open": price, "high": price, "low": price,
+            }
+        elif _current_1s[sym]["ts"] != ts_sec:
+            # Nouvelle seconde — flush la barre précédente
+            _push_1s_bar(sym, ts_sec)
+            _current_1s[sym] = {
+                "ts": ts_sec, "price": price, "qty": qty,
+                "open": price, "high": price, "low": price,
+            }
+        else:
+            bar = _current_1s[sym]
+            bar["high"]  = max(bar["high"], price)
+            bar["low"]   = min(bar["low"],  price)
+            bar["price"] = price   # close = dernier prix
+            bar["qty"]  += qty
+
         _update_delta_vol(sym, price, qty, is_buyer_maker)
-        _resample_1s_to_30s(sym)
     except Exception as e:
         logger.debug("[WS] handle_agg_trade %s: %s", sym, e)
 

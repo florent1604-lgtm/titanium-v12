@@ -1,0 +1,47 @@
+{
+  "cash": 399.76,
+  "initial_capital": 1000.0,
+  "realized_pnl": 0.0,
+  "peak_equity": 1000.0,
+  "positions": {
+    "PAXG/USDT": {
+      "symbol": "PAXG/USDT",
+      "side": "LONG",
+      "entry_price": 4680.216445999999,
+      "raw_entry_price": 4677.41,
+      "size_usdt": 600.0,
+      "size_base": 0.12819919910174174,
+      "sl": 4663.8455,
+      "tp1": 4687.2326,
+      "tp2": 4693.0793,
+      "tp3": 4698.9261,
+      "entry_ts": "2026-04-06T08:17:36.410558+00:00",
+      "correlation_id": "0451f4280510",
+      "score": 7,
+      "source": "internal",
+      "tp1_hit": false,
+      "tp2_hit": false,
+      "tp3_hit": false,
+      "remaining_pct": 1.0,
+      "sl_at_be": false,
+      "trail_sl": 0.0,
+      "funding_paid": 0.0,
+      "fee_entry": 0.24,
+      "partial_exits": []
+    }
+  },
+  "trades": [],
+  "equity_curve": [
+    {
+      "ts": "2026-04-06T08:13:00.957579+00:00",
+      "equity": 1000.0,
+      "dd_pct": 0.0
+    },
+    {
+      "ts": "2026-04-06T08:17:36.410558+00:00",
+      "equity": 399.4,
+      "dd_pct": 60.06
+    }
+  ],
+  "saved_at": "2026-04-06T08:17:36.418293+00:00"
+}

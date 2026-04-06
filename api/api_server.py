@@ -14,7 +14,7 @@ from starlette.middleware.gzip import GZipMiddleware
 from utils.config import (
     UVICORN_HOST, UVICORN_PORT, UVICORN_LOG_LEVEL,
     HTTP_POOL_SIZE, HTTP_CONNECT_LIMIT, HTTP_TIMEOUT_TOTAL,
-    SYMBOLS, FUNDAMENTALS_ENABLED,
+    SYMBOLS, FUNDAMENTALS_ENABLED, TRADING_MODE,
 )
 from utils.logger import get_logger
 from api.websocket import broadcast, ws_connect, ws_disconnect, get_client_count
@@ -81,12 +81,18 @@ async def lifespan(app: FastAPI):
     if FUNDAMENTALS_ENABLED:
         tasks.append(asyncio.create_task(fundamentals_loop(session), name="fundamentals"))
 
+    # Démarrer l'assistant Titan (si TITAN_ENABLED=1)
+    from assistant.titan_core import start_titan
+    await start_titan(session)
+
     logger.info("[APP] Titanium v12 démarré — %d tâches actives", len(tasks))
     yield
 
     # Arrêt propre
     for t in tasks:
         t.cancel()
+    from assistant.titan_core import stop_titan
+    await stop_titan()
     await session.close()
     logger.info("[APP] Titanium v12 arrêté proprement")
 
@@ -95,7 +101,18 @@ app = FastAPI(title="Titanium v12", lifespan=lifespan)
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 from api.fundamentals_routes import router as fundamentals_router
+from api.paper_routes import router as paper_router
+from api.webhook_routes import router as webhook_router
+from api.titan_routes import router as titan_router
+from api.services_routes import router as services_router
+from assistant.alexa_connector import router as alexa_router
+
 app.include_router(fundamentals_router)
+app.include_router(paper_router)
+app.include_router(webhook_router)
+app.include_router(titan_router)
+app.include_router(services_router)
+app.include_router(alexa_router)
 
 
 # ── Routes ───────────────────────────────────────────────────────────────────
@@ -110,16 +127,20 @@ async def dashboard():
 
 @app.get("/api/state")
 async def api_state():
-    """État complet : signaux, poids, historique, optimisation."""
+    """État complet : signaux, poids, historique, optimisation, paper trading."""
+    from execution.executor import executor
+    paper_state = executor.get_state() if TRADING_MODE != "disabled" else {}
     return JSONResponse({
         "signals":         get_all_signals(),
         "scoring_weights": scoring_weights,
         "delta_vol":       {s: {k: v for k, v in delta_vol[s].items() if k != "trades"} for s in SYMBOLS},
         "futures":         futures_store,
         "best_config":     get_opt_results(),
+        "paper":           paper_state,
         "ts":              datetime.now(timezone.utc).isoformat(),
         "ws_clients":      get_client_count(),
         "version":         "v12",
+        "trading_mode":    TRADING_MODE,
     })
 
 

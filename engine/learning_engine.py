@@ -16,7 +16,7 @@ from utils.config import (
     SYMBOLS, SCORE_CRITERIA, SIGNAL_HISTORY_FILE, SCORING_WEIGHTS_FILE,
     LEARNING_REPORT_EVERY, LEARNING_MIN_SIGNALS, LEARNING_ADAPT_RATE,
     LEARNING_TRIGGER_SIGNALS, CIRCUIT_BREAKER_WINRATE_MIN,
-    CIRCUIT_BREAKER_ROLLING_N,
+    CIRCUIT_BREAKER_ROLLING_N, PAPER_JOURNAL_FILE,
 )
 from utils.logger import get_logger
 
@@ -102,25 +102,66 @@ def _reset_weights(sym: str, reason: str) -> None:
 
 
 def _adapt_weights(sym: str) -> None:
-    """Adapte les poids selon les outcomes des signaux (tp = bon, sl = mauvais)."""
+    """Adapte les poids selon signal_history + journal paper trading.
+
+    Deux sources de données (la plus fiable prime) :
+      1. signal_history.json — signaux avec outcomes résolus (tp/sl)
+      2. paper_journal.json  — trades fermés avec PnL réel (source de vérité)
+    """
+    # ── Source 1 : signal_history ──────────────────────────────────────────────
     history = [s for s in signal_history[sym] if s.get("outcome") not in ("pending", "expired")]
-    if len(history) < LEARNING_MIN_SIGNALS:
+    if len(history) >= LEARNING_MIN_SIGNALS:
+        for c in SCORE_CRITERIA:
+            with_criterion = [s for s in history if c in s.get("confs", [])]
+            if not with_criterion:
+                continue
+            wins     = sum(1 for s in with_criterion if "tp" in s.get("outcome", ""))
+            win_rate = wins / len(with_criterion)
+            current  = scoring_weights[sym].get(c, 1.0)
+            delta    = LEARNING_ADAPT_RATE * (win_rate - 0.6)
+            scoring_weights[sym][c] = round(max(0.5, min(2.0, current + delta)), 4)
+        logger.info("[LEARNING] %s poids adaptés signal_history (%d résolus)", sym, len(history))
+
+    # ── Source 2 : paper journal (source de vérité — PnL réel) ────────────────
+    _adapt_from_paper_journal(sym)
+
+
+def _adapt_from_paper_journal(sym: str) -> None:
+    """Adapte les poids depuis le journal paper trading (outcomes certains).
+
+    Pour chaque critère SMC, calcule le winrate sur les trades où il était actif.
+    Applique la même formule que _adapt_weights (delta = rate × (wr - 0.6)).
+    Idempotent : peut être appelé plusieurs fois sur les mêmes données.
+    """
+    try:
+        if not PAPER_JOURNAL_FILE.exists():
+            return
+        all_trades = json.loads(PAPER_JOURNAL_FILE.read_text(encoding="utf-8"))
+    except Exception as e:
+        logger.debug("[LEARNING] Lecture journal paper: %s", e)
+        return
+
+    sym_trades = [t for t in all_trades if t.get("symbol") == sym]
+    if len(sym_trades) < LEARNING_MIN_SIGNALS:
         return
 
     for c in SCORE_CRITERIA:
-        with_criterion = [s for s in history if c in s.get("confs", [])]
-        if not with_criterion:
+        crit_trades = [t for t in sym_trades if c in t.get("confs", [])]
+        if len(crit_trades) < 3:  # pas assez de données pour ce critère
             continue
-        wins    = sum(1 for s in with_criterion if "tp" in s.get("outcome", ""))
-        total   = len(with_criterion)
-        win_rate = wins / total
+        wins     = sum(1 for t in crit_trades if float(t.get("pnl_usdt", 0)) > 0)
+        win_rate = wins / len(crit_trades)
+        current  = scoring_weights[sym].get(c, 1.0)
+        # Poids moindre sur le journal paper (factor 0.5) pour ne pas trop surpondérer
+        delta    = LEARNING_ADAPT_RATE * 0.5 * (win_rate - 0.6)
+        scoring_weights[sym][c] = round(max(0.5, min(2.0, current + delta)), 4)
 
-        current = scoring_weights[sym].get(c, 1.0)
-        delta   = LEARNING_ADAPT_RATE * (win_rate - 0.6)
-        new_w   = max(0.5, min(2.0, current + delta))
-        scoring_weights[sym][c] = round(new_w, 4)
-
-    logger.info("[LEARNING] %s poids adaptés (%d signaux résolus)", sym, len(history))
+    logger.info(
+        "[LEARNING] %s poids adaptés journal paper (%d trades, critères: %d actifs)",
+        sym, len(sym_trades),
+        sum(1 for c in SCORE_CRITERIA
+            if sum(1 for t in sym_trades if c in t.get("confs", [])) >= 3),
+    )
 
 
 def _check_circuit_breaker(sym: str) -> None:

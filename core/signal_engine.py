@@ -19,6 +19,7 @@ from fundamentals.signal_modulator import modulate as macro_modulate, is_active 
 from engine.strict_engine import get_strict_params
 from engine.learning_engine import get_weights, record_signal
 from notifications.telegram import send_signal_alert
+from execution.executor import executor
 
 logger = get_logger(__name__)
 
@@ -52,7 +53,8 @@ async def scan_symbol(sym: str, session: aiohttp.ClientSession) -> None:
             # ── Candle store 30s ─────────────────────────────────────────────
             df30 = candle_store.get(sym)
             if df30 is None or len(df30) < MIN_DF30_FOR_SCAN:
-                logger.debug("[SCAN] %s — df30 insuffisant (%s)", sym, len(df30) if df30 is not None else 0)
+                logger.info("[SCAN] %s — df30 insuffisant (%d barres, min=%d) — en attente de données WS",
+                            sym, len(df30) if df30 is not None else 0, MIN_DF30_FOR_SCAN)
                 return
 
             # ── Fetch multi-timeframes ────────────────────────────────────────
@@ -77,7 +79,7 @@ async def scan_symbol(sym: str, session: aiohttp.ClientSession) -> None:
             df_1d  = fetches.get("1d")
 
             if df_h4 is None or df_h4.empty:
-                logger.debug("[SCAN] %s — H4 manquant", sym)
+                logger.info("[SCAN] %s — H4 manquant (fetch échoué)", sym)
                 return
 
             # ── Score ─────────────────────────────────────────────────────────
@@ -128,12 +130,17 @@ async def scan_symbol(sym: str, session: aiohttp.ClientSession) -> None:
             # ── Emit signal ───────────────────────────────────────────────────
             signal = emit_signal(sym, effective_score, side, confs, ctx, levels)
 
+            # ── Mise à jour executor (SL/TP/funding) à chaque scan ────────────
+            if price > 0:
+                await executor.update_price(sym, price)
+
             # ── Broadcast WS si changement ────────────────────────────────────
             if has_changed(sym) and _broadcast_fn is not None:
                 await _broadcast_fn(sym, signals[sym])
 
-            # ── Telegram ─────────────────────────────────────────────────────
+            # ── Exécution paper + Telegram + learning ─────────────────────────
             if signal and signal.get("active"):
+                await executor.execute(signal)
                 await send_signal_alert(session, sym, signal)
                 record_signal(sym, signal)
 

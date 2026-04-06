@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Titan — Assistant Titanium</title>
+  <link rel="stylesheet" href="/assistant/style.css">
+
+  <!--
+    Import map : Three.js r168 + @pixiv/three-vrm 3.x
+    Tout est chargé via CDN (fonctionne hors ligne après premier cache navigateur).
+    Pour fonctionnement 100% offline, télécharger les libs dans assistant/web/lib/.
+  -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three":                  "https://cdn.jsdelivr.net/npm/three@0.168.0/build/three.module.js",
+      "three/addons/":          "https://cdn.jsdelivr.net/npm/three@0.168.0/examples/jsm/",
+      "@pixiv/three-vrm":       "https://cdn.jsdelivr.net/npm/@pixiv/three-vrm@3.1.2/lib/three-vrm.module.min.js",
+      "@pixiv/three-vrm-core":  "https://cdn.jsdelivr.net/npm/@pixiv/three-vrm-core@3.1.2/lib/three-vrm-core.module.min.js"
+    }
+  }
+  </script>
+
+  <script>
+    // Nom du fichier VRM — lu depuis Python via la meta tag ci-dessous
+    // (ou fallback sur le nom par défaut)
+    window.TITAN_VRM_FILE = document.querySelector('meta[name="vrm-file"]')?.content
+                            || 'VRoid_V110_Male_v1.1.3.vrm';
+  </script>
+  <meta name="vrm-file" content="VRoid_V110_Male_v1.1.3.vrm">
+</head>
+<body>
+
+  <!-- Overlay de chargement -->
+  <div id="loading-overlay">
+    <div class="loader-ring"></div>
+    <div id="loading-text">INITIALISATION</div>
+  </div>
+
+  <!-- Canvas Three.js -->
+  <div id="canvas-container"></div>
+
+  <!-- HUD bas de fenêtre -->
+  <div id="hud">
+    <span id="titan-name">TITAN</span>
+
+    <div id="voice-indicator">
+      <div class="voice-bar"></div>
+      <div class="voice-bar"></div>
+      <div class="voice-bar"></div>
+      <div class="voice-bar"></div>
+      <div class="voice-bar"></div>
+    </div>
+
+    <div id="status-dot" title="En ligne"></div>
+  </div>
+
+  <!-- ── Overlay d'état Ctrl+Alt ── -->
+  <div id="state-overlay">
+    <div id="state-icon"></div>
+    <div id="state-label">Ctrl+Alt pour parler</div>
+  </div>
+
+  <!-- Renderer principal (v=2 force le rechargement du cache) -->
+  <script type="module" src="/assistant/avatar.js?v=4"></script>
+
+</body>
+</html>
