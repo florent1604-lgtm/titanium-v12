@@ -50,8 +50,16 @@ async def scan_symbol(sym: str, session: aiohttp.ClientSession) -> None:
         try:
             is_gold = sym in ("PAXG/USDT",)
 
+            # ── Mise à jour SL/TP prioritaire (avant toute vérification de données) ──
+            # Permet de déclencher les SL/TP même si df30 est insuffisant (tokens faible volume)
+            df30_early = candle_store.get(sym)
+            if df30_early is not None and not df30_early.empty:
+                early_price = float(df30_early["close"].iloc[-1])
+                if early_price > 0:
+                    await executor.update_price(sym, early_price)
+
             # ── Candle store 30s ─────────────────────────────────────────────
-            df30 = candle_store.get(sym)
+            df30 = df30_early
             if df30 is None or len(df30) < MIN_DF30_FOR_SCAN:
                 logger.info("[SCAN] %s — df30 insuffisant (%d barres, min=%d) — en attente de données WS",
                             sym, len(df30) if df30 is not None else 0, MIN_DF30_FOR_SCAN)
@@ -130,7 +138,18 @@ async def scan_symbol(sym: str, session: aiohttp.ClientSession) -> None:
             # ── Emit signal ───────────────────────────────────────────────────
             signal = emit_signal(sym, effective_score, side, confs, ctx, levels)
 
-            # ── Mise à jour executor (SL/TP/funding) à chaque scan ────────────
+            # ── Recherche web autonome si score élevé (non-bloquant) ──────────
+            try:
+                from assistant.config import BROWSER_AUTO_RESEARCH, BROWSER_AUTO_SCORE_MIN
+                if BROWSER_AUTO_RESEARCH and effective_score >= BROWSER_AUTO_SCORE_MIN and side:
+                    from assistant.browser_agent import research_context
+                    asyncio.create_task(
+                        _enrich_signal_with_news(sym, side, effective_score, signal)
+                    )
+            except Exception:
+                pass
+
+            # ── Mise à jour executor avec le prix précis du scan (raffinement) ──
             if price > 0:
                 await executor.update_price(sym, price)
 
@@ -146,6 +165,20 @@ async def scan_symbol(sym: str, session: aiohttp.ClientSession) -> None:
 
         except Exception as e:
             logger.error("[SCAN] %s erreur inattendue: %s", sym, e, exc_info=True)
+
+
+async def _enrich_signal_with_news(sym: str, side: str, score: int, signal: dict) -> None:
+    """Enrichit un signal avec du contexte web. Fire-and-forget, jamais d'exception."""
+    try:
+        from assistant.browser_agent import research_context
+        base_sym = sym.split("/")[0]
+        web_ctx = await research_context(base_sym, side)
+        if web_ctx and signal is not None:
+            signal["algo_context"] = signal.get("algo_context", {})
+            signal["algo_context"]["web_context"] = web_ctx
+            logger.info("[SCAN] %s score=%d web_context injecté (%d chars)", sym, score, len(web_ctx))
+    except Exception as e:
+        logger.debug("[SCAN] web enrichment échoué: %s", e)
 
 
 async def scan_loop(session: aiohttp.ClientSession) -> None:

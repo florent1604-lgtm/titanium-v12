@@ -6,6 +6,7 @@
 <title>TITANIUM v12 — SMC Intelligence Terminal</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <style>
 :root{
   --bg:#060a12;--bg2:#0a0f1e;--bg3:#0d1528;
@@ -443,6 +444,14 @@ textarea:focus{border-color:var(--border2);}
 .jnl-loss td:first-child{border-left:2px solid var(--red);}
 .jnl-crit{display:flex;flex-wrap:wrap;gap:2px;}
 .jnl-crit span{font-size:8px;color:var(--cyan);opacity:.7;}
+/* ── VISION PANEL ── */
+.vision-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;}
+.vision-card-label{font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:.08em;margin-bottom:4px;text-transform:uppercase;}
+.vision-select,.vision-input-num{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:var(--r);padding:6px 8px;font-family:var(--font-mono);font-size:10px;width:100%;}
+.vision-input-num::-webkit-inner-spin-button{-webkit-appearance:none;}
+.field-label{font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-bottom:4px;letter-spacing:.08em;}
+.vision-tag{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-size:10px;color:var(--cyan);font-family:var(--font-mono);}
+.vision-tag-tp{background:var(--green3);border:1px solid var(--green2);border-radius:4px;padding:2px 7px;font-size:10px;color:var(--green);font-family:var(--font-mono);}
 </style>
 </head>
 <body>
@@ -787,24 +796,108 @@ textarea:focus{border-color:var(--border2);}
     <div id="sec-vision" class="section">
       <div class="panel">
         <div class="panel-title"><span class="ico">◉</span>VISION IA OLLAMA — ANALYSE CHART SMC<span class="badge" id="vision-model-badge">llava</span></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+
+        <!-- Contrôles -->
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:8px;margin-bottom:10px;align-items:end;">
           <div>
-            <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-bottom:6px;letter-spacing:.08em;">IMAGE BASE64 OU URL</div>
-            <textarea id="vision-img" rows="4" placeholder="Coller ici l'image base64 ou laisser vide pour analyse texte seul..."></textarea>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
-              <select id="vision-sym" style="background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:var(--r);padding:6px 8px;font-family:var(--font-mono);font-size:10px;">
-                <option>BTC/USDT</option><option>PAXG/USDT</option>
-              </select>
-              <select id="vision-tf" style="background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:var(--r);padding:6px 8px;font-family:var(--font-mono);font-size:10px;">
-                <option>5m</option><option>15m</option><option>1h</option><option>4h</option>
-              </select>
+            <div class="field-label">SYMBOLE</div>
+            <select id="vision-sym" class="vision-select"><option>BTC/USDT</option><option>PAXG/USDT</option></select>
+          </div>
+          <div>
+            <div class="field-label">TIMEFRAME</div>
+            <select id="vision-tf" class="vision-select">
+              <option>1m</option><option>3m</option><option selected>5m</option>
+              <option>15m</option><option>30m</option><option>1h</option>
+              <option>2h</option><option>4h</option><option>1d</option>
+            </select>
+          </div>
+          <div>
+            <div class="field-label">BIAIS</div>
+            <select id="vision-side" class="vision-select">
+              <option value="">AUTO</option><option value="LONG">LONG</option><option value="SHORT">SHORT</option>
+            </select>
+          </div>
+          <div>
+            <div class="field-label">PRIX ($)</div>
+            <input id="vision-price" type="number" placeholder="auto" class="vision-input-num">
+          </div>
+          <button class="btn" onclick="runVision()" id="vision-btn" style="height:32px;padding:0 18px;white-space:nowrap;align-self:end;">ANALYSER →</button>
+        </div>
+
+        <!-- Image optionnelle -->
+        <div style="margin-bottom:10px;">
+          <div class="field-label">IMAGE BASE64 (optionnel — laisser vide pour analyse contexte seul)</div>
+          <textarea id="vision-img" rows="2" placeholder="Coller ici l'image base64..."></textarea>
+        </div>
+
+        <!-- Placeholder -->
+        <div id="vision-placeholder" style="padding:16px 0;text-align:center;color:var(--text3);font-size:11px;font-family:var(--font-mono);">En attente d'analyse...</div>
+
+        <!-- Erreur -->
+        <div id="vision-error" style="display:none;padding:10px;color:var(--red);font-size:11px;font-family:var(--font-mono);"></div>
+
+        <!-- Résultat -->
+        <div id="vision-result-wrap" style="display:none;">
+
+          <!-- Signal bar -->
+          <div id="vision-signal-bar" style="display:flex;align-items:center;gap:14px;padding:10px 14px;border-radius:var(--r);margin-bottom:10px;border:1px solid var(--border);">
+            <div id="vision-signal-txt" style="font-size:20px;font-weight:700;font-family:var(--font-ui);letter-spacing:.12em;min-width:80px;">—</div>
+            <div style="flex:1;">
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+                <span style="font-size:9px;color:var(--text3);font-family:var(--font-mono);">CONFIDENCE</span>
+                <span id="vision-conf-pct" style="font-size:9px;font-family:var(--font-mono);color:var(--text2);">0%</span>
+              </div>
+              <div style="height:4px;background:var(--border);border-radius:2px;"><div id="vision-conf-bar" style="height:4px;border-radius:2px;width:0%;transition:width .6s;"></div></div>
             </div>
-            <button class="btn" onclick="runVision()" style="margin-top:8px;width:100%;">ANALYSER →</button>
+            <div style="text-align:right;">
+              <div id="vision-trend-pill" style="font-size:11px;font-family:var(--font-mono);"></div>
+              <div id="vision-timing" style="font-size:9px;color:var(--text3);font-family:var(--font-mono);"></div>
+            </div>
           </div>
-          <div>
-            <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-bottom:6px;letter-spacing:.08em;">RÉSULTAT ANALYSE</div>
-            <div id="vision-result" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px;min-height:140px;font-family:var(--font-mono);font-size:11px;color:var(--text2);">En attente d'analyse...</div>
+
+          <!-- Grille SMC 2×2 -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+            <div class="vision-card">
+              <div class="vision-card-label">Structure de marché</div>
+              <div id="vision-structure" style="font-size:11px;font-family:var(--font-mono);"></div>
+              <div id="vision-inducement" style="font-size:10px;color:var(--text3);margin-top:2px;"></div>
+            </div>
+            <div class="vision-card">
+              <div class="vision-card-label">Sweep de liquidité</div>
+              <div id="vision-sweep" style="font-size:11px;font-family:var(--font-mono);"></div>
+              <div id="vision-sweep-detail" style="font-size:10px;color:var(--text3);margin-top:2px;line-height:1.4;"></div>
+            </div>
+            <div class="vision-card">
+              <div class="vision-card-label">Order Blocks & FVG</div>
+              <div id="vision-obfvg" style="font-size:10px;color:var(--text2);line-height:1.5;"></div>
+            </div>
+            <div class="vision-card">
+              <div class="vision-card-label">Zone d'entrée & Stop Loss</div>
+              <div id="vision-entry" style="font-size:10px;color:var(--green);line-height:1.5;"></div>
+              <div id="vision-sl" style="font-size:10px;color:var(--red);margin-top:2px;"></div>
+            </div>
           </div>
+
+          <!-- Niveaux clés -->
+          <div class="vision-card" style="margin-bottom:8px;">
+            <div class="vision-card-label">Niveaux clés</div>
+            <div id="vision-levels" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;"></div>
+          </div>
+
+          <!-- Take Profits -->
+          <div class="vision-card" id="vision-tp-wrap" style="margin-bottom:8px;">
+            <div class="vision-card-label">Take Profits</div>
+            <div id="vision-tps" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;"></div>
+          </div>
+
+          <!-- Analyse -->
+          <div class="vision-card" style="margin-bottom:8px;">
+            <div class="vision-card-label">Analyse SMC</div>
+            <div id="vision-reasoning" style="font-size:10px;color:var(--text2);line-height:1.7;margin-top:4px;"></div>
+          </div>
+
+          <!-- Footer -->
+          <div id="vision-footer" style="font-size:9px;color:var(--text3);font-family:var(--font-mono);"></div>
         </div>
       </div>
     </div>
@@ -964,6 +1057,45 @@ textarea:focus{border-color:var(--border2);}
           </div>
 
         </div><!-- /grid -->
+
+        <!-- ── GitHub Push ─────────────────────────────────────────────────── -->
+        <div style="margin-top:16px;padding:14px;background:var(--bg3);border-radius:var(--r);border:1px solid var(--border);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            <div class="svc-led" id="led-github" style="flex-shrink:0;"></div>
+            <div>
+              <div style="font-size:12px;color:var(--text);font-weight:600;letter-spacing:.08em;">GITHUB</div>
+              <div style="font-size:11px;color:var(--text2);" id="github-branch-info">Chargement...</div>
+            </div>
+            <div style="margin-left:auto;font-size:11px;color:var(--text2);text-align:right;" id="github-last-commit">—</div>
+          </div>
+
+          <!-- Fichiers modifiés -->
+          <div id="github-files-list" style="font-size:11px;color:var(--text2);font-family:var(--font-mono);margin-bottom:10px;max-height:80px;overflow-y:auto;"></div>
+
+          <!-- Message de commit + bouton push -->
+          <div style="display:flex;gap:8px;">
+            <input id="github-commit-msg" type="text"
+              placeholder="Message de commit (laisser vide = auto)"
+              style="flex:1;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:var(--r);font-family:var(--font-mono);font-size:12px;"
+              onkeydown="if(event.key==='Enter')githubPush()"/>
+            <button onclick="githubPush()" id="btn-github-push"
+              style="background:var(--bg2);border:1px solid var(--cyan);color:var(--cyan);padding:6px 18px;border-radius:var(--r);cursor:pointer;font-family:var(--font-mono);font-size:12px;white-space:nowrap;">
+              ↑ PUSH
+            </button>
+            <button onclick="fetchGithubStatus()"
+              style="background:var(--bg2);border:1px solid var(--border);color:var(--text2);padding:6px 10px;border-radius:var(--r);cursor:pointer;font-size:14px;"
+              title="Rafraîchir">↺</button>
+          </div>
+
+          <!-- Log de sortie -->
+          <div id="github-log" style="margin-top:8px;font-size:11px;color:var(--text2);font-family:var(--font-mono);min-height:18px;line-height:1.6;white-space:pre-wrap;"></div>
+        </div>
+
+        <!-- Orb Titan -->
+        <div style="margin-top:12px;display:flex;flex-direction:column;align-items:center;gap:6px;">
+          <canvas id="titan-orb" width="180" height="180" style="border-radius:50%;background:transparent;"></canvas>
+          <div id="titan-orb-label" style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:.12em;">IDLE</div>
+        </div>
 
         <!-- Titan speak rapide -->
         <div style="margin-top:12px;padding:12px;background:var(--bg3);border-radius:var(--r);border:1px solid var(--border);">
@@ -1481,31 +1613,134 @@ async function triggerOptim(){
 
 // ── VISION ─────────────────────────────────────────────
 async function runVision(){
-  const img=document.getElementById('vision-img').value.trim();
-  const sym=document.getElementById('vision-sym').value;
-  const tf=document.getElementById('vision-tf').value;
-  const result=document.getElementById('vision-result');
-  result.textContent='Analyse en cours...';
-  result.style.color='var(--text3)';
+  const img   = document.getElementById('vision-img').value.trim();
+  const sym   = document.getElementById('vision-sym').value;
+  const tf    = document.getElementById('vision-tf').value;
+  const side  = document.getElementById('vision-side').value||null;
+  const price = parseFloat(document.getElementById('vision-price').value)||0;
+  const btn   = document.getElementById('vision-btn');
+  const wrap  = document.getElementById('vision-result-wrap');
+  const ph    = document.getElementById('vision-placeholder');
+  const err   = document.getElementById('vision-error');
+
+  btn.textContent='⟳ ANALYSE...'; btn.disabled=true;
+  ph.textContent='Analyse en cours — llava peut prendre 30 à 90 secondes...';
+  ph.style.display=''; wrap.style.display='none'; err.style.display='none';
+
+  const t0=Date.now();
   try{
+    // Auto-fetch état temps réel pour injecter les données algo
+    let algoCtx=null, autoPrice=price;
+    try{
+      const stateResp=await fetch(API+'/api/state');
+      const state=await stateResp.json();
+      const sig=state.signals?.[sym];
+      if(sig){
+        algoCtx=Object.assign({},sig);
+        // Enrichir avec delta_vol
+        const dv=state.delta_vol?.[sym];
+        if(dv){ algoCtx.delta_pct=dv.delta_pct; algoCtx.bullish_vol=dv.bullish; }
+        // Auto-fill prix si non renseigné
+        if(!autoPrice && sig.price){
+          autoPrice=sig.price;
+          document.getElementById('vision-price').placeholder=sig.price.toFixed(2);
+        }
+      }
+    }catch(se){ console.warn('state fetch:',se); }
+
     const resp=await fetch(API+'/api/chat',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({image:img,symbol:sym,timeframe:tf,price:0})
+      body:JSON.stringify({image:img,symbol:sym,timeframe:tf,price:autoPrice,side_hint:side||null,algo_context:algoCtx})
     });
-    const data=await resp.json();
-    result.innerHTML=`<div style="color:var(--cyan);margin-bottom:6px;">SIGNAL: <strong style="color:${data.signal==='ACHAT'?'var(--green)':data.signal==='VENTE'?'var(--red)':'var(--text2)'}">${data.signal}</strong> · Confidence: ${(data.confidence||0)*100|0}%</div>
-    <div style="color:var(--text2);margin-bottom:6px;">Trend: ${data.trend}</div>
-    <div style="color:var(--text3);font-size:10px;">${data.reasoning||''}</div>
-    ${data._source?`<div style="color:var(--text3);font-size:9px;margin-top:8px;">Source: ${data._source}${data._model?' · Model: '+data._model:''}</div>`:''}`;
-    result.style.color='';
-    const b=document.getElementById('vision-model-badge');
-    if(b&&data._model)b.textContent=data._model;
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    const d=await resp.json();
+    const elapsed=((Date.now()-t0)/1000).toFixed(1)+'s';
+
+    // ── Signal bar
+    const sig=d.signal||'NEUTRE';
+    const conf=Math.round((d.confidence||0)*100);
+    const sCol=sig==='ACHAT'?'var(--green)':sig==='VENTE'?'var(--red)':'var(--text2)';
+    const sBg =sig==='ACHAT'?'var(--green3)':sig==='VENTE'?'var(--red3)':'rgba(139,163,199,0.06)';
+    const bar=document.getElementById('vision-signal-bar');
+    bar.style.background=sBg; bar.style.borderColor=sCol;
+    const st=document.getElementById('vision-signal-txt');
+    st.textContent=sig; st.style.color=sCol;
+    document.getElementById('vision-conf-pct').textContent=conf+'%';
+    const cb=document.getElementById('vision-conf-bar');
+    cb.style.width=conf+'%'; cb.style.background=sCol;
+    document.getElementById('vision-timing').textContent=elapsed;
+
+    // ── Trend pill
+    const trend=d.trend||'neutre';
+    const tIcon=trend.includes('haussier')?'▲':trend.includes('baissier')?'▼':'◆';
+    const tCol =trend.includes('haussier')?'var(--green)':trend.includes('baissier')?'var(--red)':'var(--text3)';
+    const tp=document.getElementById('vision-trend-pill');
+    tp.innerHTML=`<span style="color:${tCol}">${tIcon} ${trend.toUpperCase()}</span>`;
+
+    // ── Structure
+    const struc=d.structure||'';
+    const strucCol=struc.includes('haussier')?'var(--green)':struc.includes('baissier')?'var(--red)':'var(--text2)';
+    const strucEl=document.getElementById('vision-structure');
+    strucEl.textContent=struc||'—'; strucEl.style.color=strucCol;
+    document.getElementById('vision-inducement').textContent=
+      d.inducement==='oui'?'⚡ Inducement détecté':'';
+
+    // ── Sweep
+    const hasSweep=(d.sweep||'').toLowerCase().startsWith('oui');
+    const swEl=document.getElementById('vision-sweep');
+    swEl.textContent=hasSweep?'⚡ SWEEP DÉTECTÉ':'— Aucun sweep';
+    swEl.style.color=hasSweep?'var(--gold)':'var(--text3)';
+    document.getElementById('vision-sweep-detail').textContent=d.sweep_detail||'';
+
+    // ── OB/FVG
+    document.getElementById('vision-obfvg').textContent=d.ob_fvg||'Aucun OB/FVG identifié';
+
+    // ── Entry & SL
+    document.getElementById('vision-entry').textContent=d.entry_zone?'⤷ '+d.entry_zone:'';
+    document.getElementById('vision-sl').textContent=d.sl_zone?'✕ SL: '+d.sl_zone:'';
+
+    // ── Key levels
+    const lvlEl=document.getElementById('vision-levels');
+    lvlEl.innerHTML='';
+    (d.key_levels||[]).forEach(l=>{
+      const s=document.createElement('span');
+      s.className='vision-tag'; s.textContent=l; lvlEl.appendChild(s);
+    });
+    if(!lvlEl.children.length) lvlEl.innerHTML='<span style="color:var(--text3);font-size:10px;">Aucun niveau identifié</span>';
+
+    // ── TP zones
+    const tpEl=document.getElementById('vision-tps');
+    const tpWrap=document.getElementById('vision-tp-wrap');
+    tpEl.innerHTML='';
+    const tps=d.tp_zones||[];
+    tpWrap.style.display=tps.length?'':'none';
+    tps.forEach(t=>{
+      const s=document.createElement('span');
+      s.className='vision-tag-tp'; s.textContent=t; tpEl.appendChild(s);
+    });
+
+    // ── Reasoning
+    document.getElementById('vision-reasoning').textContent=d.reasoning||'Analyse non disponible.';
+
+    // ── Footer
+    const mode=d._text_only?'texte seul':'image+texte';
+    document.getElementById('vision-footer').textContent=
+      `Model: ${d._model||'?'} · Source: ${d._source||'?'} · Mode: ${mode} · ${elapsed}`;
+
+    // ── Badge & pills
+    const badge=document.getElementById('vision-model-badge');
+    if(badge&&d._model) badge.textContent=d._model;
     const ol=document.getElementById('pill-ollama');
-    if(ol)ol.className='hdr-pill ok';
+    if(ol) ol.className='hdr-pill ok';
     setText('ollama-label','OLLAMA OK');
+
+    ph.style.display='none'; wrap.style.display='';
   }catch(e){
-    result.textContent='Erreur: '+e.message;
-    result.style.color='var(--red)';
+    ph.style.display='none';
+    err.textContent='Erreur: '+e.message;
+    err.style.display='';
+  }finally{
+    btn.textContent='ANALYSER →'; btn.disabled=false;
   }
 }
 
@@ -1859,6 +2094,7 @@ async function titanQuickSend() {
   if (!text) return;
   resp.textContent = '⏳ Titan réfléchit...';
   resp.style.color = 'var(--text2)';
+  if (window._titanOrb) window._titanOrb.setState('listening');
   try {
     const r = await fetch('/titan/command', {
       method: 'POST',
@@ -1869,9 +2105,83 @@ async function titanQuickSend() {
     resp.textContent = d.response || '(pas de réponse)';
     resp.style.color = 'var(--cyan)';
     if (input) input.value = '';
+    if (window._titanOrb) { window._titanOrb.setState('speaking'); setTimeout(() => window._titanOrb.setState('idle'), 3000); }
   } catch(e) {
     resp.textContent = '✗ Titan non disponible (TITAN_ENABLED=1 ?)';
     resp.style.color = 'var(--red)';
+    if (window._titanOrb) window._titanOrb.setState('error');
+    setTimeout(() => { if (window._titanOrb) window._titanOrb.setState('idle'); }, 2000);
+  }
+}
+
+// ── GitHub status + push ───────────────────────────────────────
+async function fetchGithubStatus() {
+  try {
+    const r = await fetch('/services/github/status');
+    if (!r.ok) { setLed('github','off'); return; }
+    const d = await r.json();
+
+    const branchEl  = document.getElementById('github-branch-info');
+    const lastEl    = document.getElementById('github-last-commit');
+    const filesEl   = document.getElementById('github-files-list');
+
+    if (branchEl) branchEl.textContent = `↳ ${d.remote || '?'}  [${d.branch || 'master'}]`;
+    if (lastEl)   lastEl.textContent   = d.last || '—';
+
+    const n = d.changes || 0;
+    if (n > 0) {
+      setLed('github', 'busy');
+      if (filesEl) filesEl.innerHTML =
+        `<span style="color:var(--amber)">${n} fichier(s) modifié(s) :</span><br>` +
+        (d.files || []).map(f => `  ${f}`).join('<br>');
+    } else {
+      setLed('github', 'on');
+      if (filesEl) filesEl.innerHTML = '<span style="color:var(--green-dim)">✓ Rien à commiter — dépôt à jour</span>';
+    }
+  } catch(e) {
+    setLed('github', 'off');
+    const el = document.getElementById('github-branch-info');
+    if (el) el.textContent = 'Git non disponible';
+  }
+}
+
+async function githubPush() {
+  const msgInput = document.getElementById('github-commit-msg');
+  const logEl    = document.getElementById('github-log');
+  const btn      = document.getElementById('btn-github-push');
+  const message  = msgInput?.value?.trim() || '';
+
+  if (btn)   { btn.disabled = true; btn.textContent = '↑ EN COURS...'; }
+  if (logEl) logEl.textContent = '⏳ Exécution du push...';
+  setLed('github', 'busy');
+
+  try {
+    const r = await fetch('/services/github/push', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ message, branch: 'master' }),
+    });
+    const d = await r.json();
+
+    const logLines = (d.log || []).join('\n');
+
+    if (d.status === 'pushed') {
+      if (logEl) { logEl.style.color = 'var(--cyan)'; logEl.textContent = '✓ ' + d.message + '\n' + logLines; }
+      if (msgInput) msgInput.value = '';
+      setLed('github', 'on');
+      setTimeout(fetchGithubStatus, 800);
+    } else if (d.status === 'nothing_to_commit') {
+      if (logEl) { logEl.style.color = 'var(--text2)'; logEl.textContent = '○ ' + d.message; }
+      setLed('github', 'on');
+    } else {
+      if (logEl) { logEl.style.color = 'var(--red)'; logEl.textContent = '✗ Erreur : ' + (d.message || '') + '\n' + logLines; }
+      setLed('github', 'off');
+    }
+  } catch(e) {
+    if (logEl) { logEl.style.color = 'var(--red)'; logEl.textContent = '✗ ' + e.message; }
+    setLed('github', 'off');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '↑ PUSH'; }
   }
 }
 
@@ -1879,11 +2189,130 @@ async function titanQuickSend() {
 setInterval(() => {
   if (document.getElementById('sec-services')?.classList.contains('active')) {
     fetchServicesStatus();
+    fetchGithubStatus();
   }
 }, SVC_POLL_MS);
 
 // Charger au démarrage (voyants dès l'ouverture)
 setTimeout(fetchServicesStatus, 1500);
+setTimeout(fetchGithubStatus,   2000);
+
+// ══════════════════════════════════════════════════════
+// PARTICLE ORB — Three.js
+// ══════════════════════════════════════════════════════
+(function initTitanOrb() {
+  const canvas = document.getElementById('titan-orb');
+  if (!canvas || typeof THREE === 'undefined') return;
+
+  const W = 180, H = 180;
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setSize(W, H);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  const scene  = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, W / H, 0.1, 100);
+  camera.position.z = 2.2;
+
+  // ── Particules ──────────────────────────────────────────────────
+  const N = 3000;
+  const positions  = new Float32Array(N * 3);
+  const baseRadius = new Float32Array(N);
+  const unitX      = new Float32Array(N);  // vecteurs unitaires fixes
+  const unitY      = new Float32Array(N);
+  const unitZ      = new Float32Array(N);
+  for (let i = 0; i < N; i++) {
+    const r   = 0.7 + Math.random() * 0.3;
+    const th  = Math.random() * Math.PI * 2;
+    const ph  = Math.acos(2 * Math.random() - 1);
+    baseRadius[i] = r;
+    unitX[i] = Math.sin(ph) * Math.cos(th);
+    unitY[i] = Math.sin(ph) * Math.sin(th);
+    unitZ[i] = Math.cos(ph);
+    positions[i*3]   = unitX[i] * r;
+    positions[i*3+1] = unitY[i] * r;
+    positions[i*3+2] = unitZ[i] * r;
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+  const mat = new THREE.PointsMaterial({ size: 0.012, vertexColors: false, transparent: true, opacity: 0.85 });
+  const orb  = new THREE.Points(geo, mat);
+  scene.add(orb);
+
+  // ── États ────────────────────────────────────────────────────────
+  // idle: bleu  listening: vert  speaking: blanc  alert: orange  error: rouge
+  const STATE_COLORS = {
+    idle:      new THREE.Color(0x00aaff),
+    listening: new THREE.Color(0x00ff88),
+    speaking:  new THREE.Color(0xffffff),
+    alert:     new THREE.Color(0xff8800),
+    error:     new THREE.Color(0xff2200),
+  };
+  const STATE_LABELS = {
+    idle: 'IDLE', listening: 'ÉCOUTE', speaking: 'PARLE', alert: 'ALERTE', error: 'ERREUR'
+  };
+
+  let currentState = 'idle';
+  let amplitude    = 0;   // 0-1, driven by orb_amplitude WS messages
+  let time         = 0;
+  const label = document.getElementById('titan-orb-label');
+
+  function setState(state) {
+    if (!STATE_COLORS[state]) return;
+    currentState = state;
+    mat.color = STATE_COLORS[state];
+    if (label) label.textContent = STATE_LABELS[state] || state.toUpperCase();
+  }
+
+  // ── Animation ────────────────────────────────────────────────────
+  function animate() {
+    requestAnimationFrame(animate);
+    time += 0.016;
+
+    const pos = geo.attributes.position.array;
+    const pulseFreq = currentState === 'idle' ? 0.5 : currentState === 'speaking' ? 4.0 : 1.5;
+    const pulseMag  = currentState === 'speaking' ? 0.05 + amplitude * 0.2
+                    : currentState === 'listening' ? 0.06
+                    : currentState === 'alert' ? 0.08
+                    : 0.02;
+
+    for (let i = 0; i < N; i++) {
+      const r      = baseRadius[i];
+      const expand = currentState === 'listening' ? 1.15 : currentState === 'alert' ? 1.1 : 1.0;
+      const pulse  = 1.0 + pulseMag * Math.sin(time * pulseFreq * Math.PI * 2 + i * 0.01);
+      const scale  = r * expand * pulse;
+      pos[i*3]   = unitX[i] * scale;
+      pos[i*3+1] = unitY[i] * scale;
+      pos[i*3+2] = unitZ[i] * scale;
+    }
+    geo.attributes.position.needsUpdate = true;
+
+    orb.rotation.y += 0.003;
+    renderer.render(scene, camera);
+  }
+  setState('idle');
+  animate();
+
+  // ── WebSocket Titan ──────────────────────────────────────────────
+  function connectOrbWs() {
+    const ws = new WebSocket(`ws://${location.host}/titan/ws`);
+    ws.onmessage = (ev) => {
+      try {
+        const msg = JSON.parse(ev.data);
+        if (msg.type === 'orb_state')     setState(msg.state);
+        if (msg.type === 'orb_amplitude') amplitude = Math.max(0, Math.min(1, msg.value || 0));
+        if (msg.type === 'titan_speaking') setState(msg.speaking ? 'speaking' : 'idle');
+        if (msg.type === 'titan_listening') setState('listening');
+      } catch(e) {}
+    };
+    ws.onclose = () => setTimeout(connectOrbWs, 3000);
+  }
+  connectOrbWs();
+
+  // Exposer pour contrôle externe (ex: titanQuickSend)
+  window._titanOrb = { setState, setAmplitude: v => { amplitude = v; } };
+})();
 </script>
 </body>
 </html>

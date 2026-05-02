@@ -98,6 +98,13 @@ async def _handle_voice_command(command: str) -> None:
 
     logger.info("[TITAN] Commande vocale: '%s'", command)
 
+    # Orb: passer en mode listening pendant le traitement
+    try:
+        from assistant.avatar_renderer import ws_titan_broadcast
+        await ws_titan_broadcast({"type": "orb_state", "state": "listening"})
+    except Exception:
+        pass
+
     try:
         import aiohttp as _aio
         from assistant.titan_agent import ask_titan

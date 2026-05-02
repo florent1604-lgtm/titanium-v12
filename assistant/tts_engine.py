@@ -26,7 +26,10 @@ from typing import Optional, Tuple
 
 import numpy as np
 
-from assistant.config import TITAN_VOICE_MODEL, TITAN_VOICE_DIR, TITAN_ASSISTANT_DIR
+from assistant.config import (
+    TITAN_VOICE_MODEL, TITAN_VOICE_DIR, TITAN_ASSISTANT_DIR,
+    ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID, ELEVENLABS_MODEL, ELEVENLABS_TIMEOUT,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -146,9 +149,56 @@ class PiperTTS:
             return None, 22050
 
     async def synthesize_async(self, text: str) -> Tuple[Optional[np.ndarray], int]:
-        """Version asynchrone de synthesize (exécution dans executor)."""
+        """Version asynchrone — essaie ElevenLabs si clé présente, sinon Piper."""
+        if ELEVENLABS_API_KEY:
+            result = await self._synthesize_elevenlabs(text)
+            if result[0] is not None:
+                return result
+            logger.warning("[TTS] ElevenLabs échoué, fallback Piper")
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, self.synthesize, text)
+
+    async def _synthesize_elevenlabs(self, text: str) -> Tuple[Optional[np.ndarray], int]:
+        """Synthèse via ElevenLabs API. Retourne (None, 22050) si indisponible."""
+        try:
+            import aiohttp as _aiohttp
+            url = f"https://api.elevenlabs.io/v1/text-to-speech/{ELEVENLABS_VOICE_ID}"
+            headers = {
+                "xi-api-key": ELEVENLABS_API_KEY,
+                "Content-Type": "application/json",
+                "Accept": "audio/mpeg",
+            }
+            payload = {
+                "text": text,
+                "model_id": ELEVENLABS_MODEL,
+                "voice_settings": {"stability": 0.5, "similarity_boost": 0.75},
+            }
+            timeout = _aiohttp.ClientTimeout(total=ELEVENLABS_TIMEOUT)
+            async with _aiohttp.ClientSession() as session:
+                async with session.post(url, json=payload, headers=headers, timeout=timeout) as resp:
+                    if resp.status != 200:
+                        logger.warning("[TTS] ElevenLabs HTTP %d", resp.status)
+                        return None, 22050
+                    mp3_bytes = await resp.read()
+
+            # Décoder MP3 → numpy float32
+            try:
+                import io
+                from pydub import AudioSegment  # type: ignore
+                seg = AudioSegment.from_mp3(io.BytesIO(mp3_bytes))
+                seg = seg.set_frame_rate(22050).set_channels(1).set_sample_width(2)
+                audio_int16 = np.frombuffer(seg.raw_data, dtype=np.int16)
+                audio_float = audio_int16.astype(np.float32) / 32768.0
+                logger.info("[TTS] ElevenLabs OK (%d samples)", len(audio_float))
+                return audio_float, 22050
+            except ImportError:
+                # pydub non installé — sauvegarder MP3 et jouer avec sounddevice indirect
+                logger.warning("[TTS] pydub non installé, ElevenLabs désactivé (pip install pydub)")
+                return None, 22050
+
+        except Exception as e:
+            logger.warning("[TTS] ElevenLabs erreur: %s", e)
+            return None, 22050
 
     # ── Lecture audio ─────────────────────────────────────────────────────────
 

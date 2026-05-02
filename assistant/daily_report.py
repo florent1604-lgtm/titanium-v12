@@ -37,6 +37,27 @@ async def _fetch(session: aiohttp.ClientSession, path: str) -> Optional[Dict[str
         return None
 
 
+async def _fetch_web_context() -> str:
+    """Récupère un contexte web pour enrichir le rapport. Timeout 5s."""
+    try:
+        from assistant.browser_agent import search
+        import asyncio as _asyncio
+        results_crypto, results_macro = await _asyncio.gather(
+            _asyncio.wait_for(search("crypto market summary today", max_results=2), timeout=5),
+            _asyncio.wait_for(search("macro events fed inflation today", max_results=2), timeout=5),
+            return_exceptions=True,
+        )
+        parts = []
+        for r_list in (results_crypto, results_macro):
+            if isinstance(r_list, list):
+                for r in r_list:
+                    if r.get("snippet"):
+                        parts.append(r["snippet"][:150])
+        return " ".join(parts) if parts else ""
+    except Exception:
+        return ""
+
+
 async def build_daily_report(session: aiohttp.ClientSession) -> str:
     """Construit le texte du rapport quotidien."""
     now_str = datetime.now().strftime("%A %d %B %Y, %H heures %M")
@@ -46,6 +67,9 @@ async def build_daily_report(session: aiohttp.ClientSession) -> str:
     paper_stats  = await _fetch(session, "/paper/stats") or {}
     paper_pos    = await _fetch(session, "/paper/positions") or {}
     fund_state   = await _fetch(session, "/fundamentals/state") or {}
+
+    # Contexte web (non-bloquant, best-effort)
+    web_ctx = await _fetch_web_context()
 
     lines = [f"Rapport Titan du {now_str}."]
 
@@ -100,6 +124,9 @@ async def build_daily_report(session: aiohttp.ClientSession) -> str:
             lines.append(f"Risque macro modéré à {risk:.1f} sur 10.")
         else:
             lines.append(f"Risque macro faible à {risk:.1f} sur 10. Conditions favorables.")
+
+    if web_ctx:
+        lines.append(f"Contexte marché : {web_ctx[:300]}")
 
     return " ".join(lines)
 

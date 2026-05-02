@@ -192,7 +192,15 @@ async def ask_titan_stream(
         intent, _ = classify(user_message)
         trading_ctx  = await _get_trading_context(session)
         knowledge_ctx = get_context_for_intent(intent)
-        system_msg = TITAN_SYSTEM_PROMPT + trading_ctx + knowledge_ctx
+        memory_ctx = ""
+        try:
+            from assistant.memory_store import get_context_summary
+            memory_ctx = get_context_summary()
+            if memory_ctx:
+                memory_ctx = "\n\n[Mémoire utilisateur]\n" + memory_ctx
+        except Exception:
+            pass
+        system_msg = TITAN_SYSTEM_PROMPT + trading_ctx + knowledge_ctx + memory_ctx
 
         messages = [{"role": "system", "content": system_msg}]
         messages.extend(_conversation[-_MAX_HISTORY * 2:])
@@ -342,7 +350,15 @@ async def ask_titan(
         except Exception:
             pass
 
-        system_msg = TITAN_SYSTEM_PROMPT + trading_ctx + knowledge_ctx
+        memory_ctx = ""
+        try:
+            from assistant.memory_store import get_context_summary
+            memory_ctx = get_context_summary()
+            if memory_ctx:
+                memory_ctx = "\n\n[Mémoire utilisateur]\n" + memory_ctx
+        except Exception:
+            pass
+        system_msg = TITAN_SYSTEM_PROMPT + trading_ctx + knowledge_ctx + memory_ctx
         if extra_context:
             system_msg += "\n\n" + extra_context
 

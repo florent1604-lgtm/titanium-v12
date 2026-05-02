@@ -50,6 +50,13 @@ class PopupManager:
         if self._auto_hide_task and not self._auto_hide_task.done():
             self._auto_hide_task.cancel()
 
+        # Orb: passer en mode speaking
+        try:
+            from assistant.avatar_renderer import ws_titan_broadcast
+            asyncio.create_task(ws_titan_broadcast({"type": "orb_state", "state": "speaking"}))
+        except Exception:
+            pass
+
         try:
             from assistant.tts_engine import get_tts
             from assistant.lip_sync import generate_lip_frames, generate_rms_frames, blend_frames
@@ -98,6 +105,12 @@ class PopupManager:
             logger.error("[POPUP] Erreur speak: %s", e)
         finally:
             self._speaking = False
+            # Orb: revenir en idle
+            try:
+                from assistant.avatar_renderer import ws_titan_broadcast
+                asyncio.create_task(ws_titan_broadcast({"type": "orb_state", "state": "idle"}))
+            except Exception:
+                pass
 
     async def _delayed_hide(self, delay: float, window) -> None:
         await asyncio.sleep(delay)

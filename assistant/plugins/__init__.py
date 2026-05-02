@@ -36,8 +36,11 @@ def _init_plugins() -> None:
     _initialized = True
 
     for cls_path in [
-        ("assistant.plugins.trading_plugin", "TradingPlugin"),
-        ("assistant.plugins.system_plugin",  "SystemPlugin"),
+        ("assistant.plugins.trading_plugin",    "TradingPlugin"),
+        ("assistant.plugins.system_plugin",     "SystemPlugin"),
+        ("assistant.plugins.web_search_plugin", "WebSearchPlugin"),
+        ("assistant.plugins.memory_plugin",     "MemoryPlugin"),
+        ("assistant.plugins.diagnostic_plugin", "DiagnosticPlugin"),
     ]:
         module_path, cls_name = cls_path
         try:

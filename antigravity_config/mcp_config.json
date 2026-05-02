@@ -1,0 +1,19 @@
+{
+  "_readme": {
+    "description": "Titanium v12 MCP server for Antigravity Cascade",
+    "placement_windows": "%APPDATA%\\Antigravity\\User\\globalStorage\\antigravity.antigravity\\mcp_config.json",
+    "verify": "Open Antigravity → Cascade panel → check 'titanium-v12' appears in context sources",
+    "reload": "Antigravity Command Palette → 'Developer: Reload Window' (Ctrl+Shift+P)",
+    "prerequisite": "Titanium v12 must be running on http://localhost:8090 for live data"
+  },
+  "mcpServers": {
+    "titanium-v12": {
+      "command": "C:\\Users\\flore\\Desktop\\v12\\venv\\Scripts\\python.exe",
+      "args": ["C:\\Users\\flore\\Desktop\\v12\\mcp_server.py"],
+      "transport": "stdio",
+      "env": {
+        "PYTHONIOENCODING": "utf-8"
+      }
+    }
+  }
+}

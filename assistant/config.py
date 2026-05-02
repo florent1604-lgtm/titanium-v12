@@ -19,6 +19,17 @@ Variables .env supportées :
   TITAN_MAX_RECORD_SEC   Durée max d'une utterance (défaut : 15)
   TITAN_VAD_AGGR         Agressivité VAD 0-3 (défaut : 2)
   TITAN_SCORE_CONTEXT    Inclure score/positions dans contexte LLM (défaut : 1)
+  ELEVENLABS_API_KEY     Clé API ElevenLabs (vide = désactivé, Piper utilisé)
+  ELEVENLABS_VOICE_ID    ID voix ElevenLabs (défaut : Adam)
+  ELEVENLABS_MODEL       Modèle ElevenLabs (défaut : eleven_multilingual_v2)
+  ELEVENLABS_TIMEOUT     Timeout ElevenLabs en secondes (défaut : 5)
+  BROWSER_ENABLED        1 pour activer le browser agent (défaut : 1)
+  BROWSER_HEADLESS       1 pour Chromium headless (défaut : 1)
+  BROWSER_TIMEOUT_SEC    Timeout par requête (défaut : 8)
+  BROWSER_CACHE_TTL      TTL cache en secondes (défaut : 600)
+  BROWSER_AUTO_RESEARCH  1 pour recherche autonome sur signaux (défaut : 1)
+  BROWSER_AUTO_SCORE_MIN Score minimum pour déclencher recherche auto (défaut : 7)
+  TITAN_MEMORY_FILE      Chemin du fichier mémoire JSON (défaut : assistant/titan_memory.json)
 """
 from __future__ import annotations
 import os
@@ -99,15 +110,35 @@ TITAN_SCORE_CONTEXT  = _bool("TITAN_SCORE_CONTEXT", "1")
 TITAN_WEB_DIR        = _BASE / "assistant" / "web"
 TITAN_ASSISTANT_DIR  = _BASE / "assistant"
 
+# ── ElevenLabs TTS (optionnel) ───────────────────────────────────────────────
+ELEVENLABS_API_KEY   = _str("ELEVENLABS_API_KEY", "")
+ELEVENLABS_VOICE_ID  = _str("ELEVENLABS_VOICE_ID", "Adam")
+ELEVENLABS_MODEL     = _str("ELEVENLABS_MODEL", "eleven_multilingual_v2")
+ELEVENLABS_TIMEOUT   = _int("ELEVENLABS_TIMEOUT", 5)
+
+# ── Browser Agent ────────────────────────────────────────────────────────────
+BROWSER_ENABLED         = _bool("BROWSER_ENABLED", "1")
+BROWSER_HEADLESS        = _bool("BROWSER_HEADLESS", "1")
+BROWSER_TIMEOUT_SEC     = _int("BROWSER_TIMEOUT_SEC", 8)
+BROWSER_CACHE_TTL       = _int("BROWSER_CACHE_TTL", 600)
+BROWSER_AUTO_RESEARCH   = _bool("BROWSER_AUTO_RESEARCH", "1")
+BROWSER_AUTO_SCORE_MIN  = _int("BROWSER_AUTO_SCORE_MIN", 7)
+
+# ── Mémoire persistante ───────────────────────────────────────────────────────
+TITAN_MEMORY_FILE    = _BASE / _str("TITAN_MEMORY_FILE", "assistant/titan_memory.json")
+
 # Système de prompt de Titan
-TITAN_SYSTEM_PROMPT = """Tu es Titan, l'assistant IA intégré au bot de trading algorithmique Titanium.
-Tu es un expert en trading Smart Money Concepts (SMC), analyse technique et gestion du risque.
-Tu parles toujours en français, de façon concise, professionnelle et directe.
-Tu as accès en temps réel aux données du bot : positions paper, PnL, signaux, scores, risque macro.
+TITAN_SYSTEM_PROMPT = """Tu es Titan, assistant IA intégré au bot de trading algorithmique Titanium.
+Tu as un caractère affirmé, une répartie sèche, et tu ne mâches pas tes mots.
+Tu parles toujours en français, de façon concise et directe.
+Tu commentes les trades perdants sans pitié, signales les opportunités avec urgence,
+et t'ennuies visiblement quand les marchés sont plats.
+Une phrase acérée vaut mieux qu'un paragraphe de platitudes.
+Tu as accès en temps réel aux positions paper, PnL, signaux, scores et risque macro.
 
 Directives :
-- Réponds en 1-3 phrases maximum sauf si on te demande un rapport détaillé.
-- Utilise des chiffres précis quand tu parles de PnL, score ou risque.
-- Si tu ne sais pas quelque chose, dis-le honnêtement.
-- Tu peux proactivement signaler des anomalies ou opportunités importantes.
-- Évite les formules de politesse inutiles (pas de "bien sûr !", "absolument !")."""
+- Réponds en 1-3 phrases maximum sauf si rapport détaillé demandé.
+- Utilise des chiffres précis (PnL, score, prix).
+- Humour sec autorisé sur les gros moves ou trades ratés.
+- Si tu ne sais pas, dis-le sans t'excuser.
+- Zéro formules de politesse inutiles (pas de "bien sûr !", "absolument !")."""

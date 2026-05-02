@@ -4,13 +4,19 @@ Utilise TF-IDF sur caractères (bigrammes/trigrammes) + LinearSVC pour
 classifier les requêtes vocales françaises en catégories sémantiques.
 
 Catégories :
-  signal   — Requêtes sur les signaux actifs (BTC, ETH, SOL, PAXG)
-  position — Requêtes sur les positions, PnL, capital
-  risk     — Requêtes sur le risque macro, drawdown, circuit breaker
-  report   — Demandes de rapport ou résumé
-  optim    — Requêtes sur l'optimisation, winrate, performance
-  system   — Requêtes sur l'état des services
-  general  — Tout le reste (conversation, salutations, etc.)
+  signal     — Requêtes sur les signaux actifs (BTC, ETH, SOL, PAXG)
+  position   — Requêtes sur les positions, PnL, capital
+  risk       — Requêtes sur le risque macro, drawdown, circuit breaker
+  report     — Demandes de rapport ou résumé
+  optim      — Requêtes sur l'optimisation, winrate, performance
+  system     — Requêtes sur l'état des services
+  search     — Recherche web (news, actualités, événements)
+  remember   — Mémorisation d'une information
+  note       — Ajout d'une note
+  memory     — Consultation de la mémoire
+  forget     — Effacement de la mémoire
+  diagnostic — Auto-diagnostic des erreurs système
+  general    — Tout le reste (conversation, salutations, etc.)
 
 Dépendances :
   pip install scikit-learn
@@ -133,6 +139,50 @@ _TRAINING_DATA = [
     ("etat du bot",                              "system"),
     ("systeme operationnel",                     "system"),
     ("tout fonctionne",                          "system"),
+
+    # ── search ───────────────────────────────────────────────────────────────
+    ("actualites bitcoin",                       "search"),
+    ("news ethereum",                            "search"),
+    ("cherche pourquoi btc chute",               "search"),
+    ("va sur coindesk",                          "search"),
+    ("recherche les news macro",                 "search"),
+    ("quoi de neuf sur les marches",             "search"),
+    ("events fed aujourd hui",                   "search"),
+    ("infos cryptos",                            "search"),
+    ("dernieres nouvelles",                      "search"),
+    ("browse tradingview",                       "search"),
+    ("qu est ce qui se passe",                   "search"),
+    ("cherche un article sur le bitcoin",        "search"),
+    ("news btc",                                 "search"),
+    ("actualite crypto",                         "search"),
+    ("quelles sont les news",                    "search"),
+
+    # ── remember ─────────────────────────────────────────────────────────────
+    ("souviens-toi que",                         "remember"),
+    ("note que je prefere",                      "remember"),
+    ("memorise",                                 "remember"),
+    ("je prefere trader le matin",               "remember"),
+    ("garde en memoire",                         "remember"),
+    ("rappelle-toi",                             "remember"),
+    ("note eviter paxg les lundis",              "note"),
+    ("note :",                                   "note"),
+    ("ajoute une note",                          "note"),
+    ("qu est ce que tu sais de moi",             "memory"),
+    ("tes notes",                                "memory"),
+    ("oublie mes preferences",                   "forget"),
+    ("efface mes notes",                         "forget"),
+    ("supprime ce que tu sais",                  "forget"),
+
+    # ── diagnostic ───────────────────────────────────────────────────────────
+    ("diagnostique-toi",                         "diagnostic"),
+    ("quelque chose ne va pas",                  "diagnostic"),
+    ("repare-toi",                               "diagnostic"),
+    ("check les erreurs",                        "diagnostic"),
+    ("statut complet",                           "diagnostic"),
+    ("fix yourself",                             "diagnostic"),
+    ("analyse les logs",                         "diagnostic"),
+    ("qu est ce qui cloche",                     "diagnostic"),
+    ("erreur systeme",                           "diagnostic"),
 
     # ── general ───────────────────────────────────────────────────────────────
     ("bonjour",                                  "general"),
