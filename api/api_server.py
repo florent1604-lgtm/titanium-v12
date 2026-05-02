@@ -85,6 +85,13 @@ async def lifespan(app: FastAPI):
     from assistant.titan_core import start_titan
     await start_titan(session)
 
+    # Démarrer les alertes vocales JARVIS
+    try:
+        from assistant.signal_alert import get_signal_alert_engine
+        await get_signal_alert_engine().start()
+    except Exception as e:
+        logger.warning("[APP] Signal alert engine non démarré: %s", e)
+
     logger.info("[APP] Titanium v12 démarré — %d tâches actives", len(tasks))
     yield
 
@@ -93,6 +100,11 @@ async def lifespan(app: FastAPI):
         t.cancel()
     from assistant.titan_core import stop_titan
     await stop_titan()
+    try:
+        from assistant.signal_alert import get_signal_alert_engine
+        await get_signal_alert_engine().stop()
+    except Exception:
+        pass
     await session.close()
     logger.info("[APP] Titanium v12 arrêté proprement")
 
