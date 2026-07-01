@@ -23,8 +23,9 @@ websockets>=12.0               # signal_alert.py — bridge WS JARVIS
 # Browser agent (optionnel — pip install playwright && playwright install)
 ddgs>=6.0                      # browser_agent.py — DuckDuckGo search
 beautifulsoup4>=4.12.0         # browser_agent.py — parsing HTML
-lxml>=5.0.0                    # browser_agent.py — parser rapide
+lxml>=6.1.0                    # browser_agent.py — parser rapide
 # playwright>=1.40.0           # Optionnel : navigation headless
 
 # Monitoring & hotkeys
 pynput>=1.7.6                  # hotkey_manager.py — Ctrl+Alt
+protobuf>=4.25.8 # not directly required, pinned by Snyk to avoid a vulnerability
