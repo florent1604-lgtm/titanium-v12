@@ -1,0 +1,694 @@
+INFO:     Started server process [21976]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
+INFO:     127.0.0.1:53669 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:64956 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:58020 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:62543 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:61581 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:50430 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:58135 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:56425 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:53542 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:64456 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:51886 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:57700 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:53289 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:65352 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55606 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:57343 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:59381 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:57512 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:53860 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:57471 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55645 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:64326 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:58195 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:61211 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:59457 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:58919 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:51344 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:51979 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:62576 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:53059 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:50238 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:52852 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:58782 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:54196 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:51062 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:50181 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:60923 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:52205 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:50826 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:64717 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:62391 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:65520 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:62724 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:56632 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:57063 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:60359 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:57436 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:53296 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:63744 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:57732 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:64489 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:61511 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:51492 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55409 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:49765 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:61644 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:57130 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:59206 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:57442 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:52455 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:52630 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:51518 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:61807 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55369 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:63049 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:56618 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:62789 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:50318 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:57403 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:51207 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:62644 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:52654 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:58030 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:53728 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:54305 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:60533 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55975 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:57371 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:56013 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:54905 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:57948 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:64199 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:61370 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:63997 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:57186 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:64971 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:53241 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:63069 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:51007 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:62600 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:62978 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:50697 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:62638 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:63551 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:49620 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:59778 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:63022 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55508 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:53154 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:52846 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:50160 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:60342 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55548 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:64050 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:62903 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:62596 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:54208 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:52197 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:61791 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:50217 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:59635 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     connection open
+INFO:     127.0.0.1:54337 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:56813 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:62555 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:60061 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:50517 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:50652 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:57060 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:53307 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:57473 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:49678 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:50090 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55528 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:50798 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:59411 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:59889 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:49412 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:60532 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:54591 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:51228 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:50678 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:54022 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:63461 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:58048 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:54213 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:52568 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:56885 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55180 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:56987 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55126 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:57848 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:62718 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:52605 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:64134 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:52133 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:58191 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:52607 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:52048 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:54752 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:54055 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:60898 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:58116 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:64554 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55529 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:50785 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:59769 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:58133 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:52844 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:64222 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:59790 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:58618 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:63898 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:50325 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55378 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:53301 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:50252 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:60209 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:63409 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:58738 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:51616 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:56127 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:54556 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:58410 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:51330 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:61343 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:64802 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:58009 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:51552 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:59274 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:54816 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:49271 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:62875 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55535 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:49328 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:54475 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:57919 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:60298 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:52823 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:59462 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:57154 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:62257 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:54138 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:52695 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:49552 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:51093 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:59802 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:58454 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:57502 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:57694 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:54259 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:56326 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:58481 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:49681 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:51533 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:60005 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:58092 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:58546 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:62876 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:60251 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:61756 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:58377 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:64302 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:64837 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:59562 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:63594 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:58848 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:54648 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:54512 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:51847 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:58896 - "WebSocket /ws/BTCUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:49646 - "WebSocket /ws/PAXGUSDT" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:63210 - "WebSocket /titan/ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     connection closed

@@ -6,6 +6,19 @@
 <title>TITANIUM v12 — SMC Intelligence Terminal</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three":                  "https://cdn.jsdelivr.net/npm/three@0.168.0/build/three.module.js",
+    "three/addons/":          "https://cdn.jsdelivr.net/npm/three@0.168.0/examples/jsm/",
+    "@pixiv/three-vrm":       "https://cdn.jsdelivr.net/npm/@pixiv/three-vrm@3.1.2/lib/three-vrm.module.min.js",
+    "@pixiv/three-vrm-core":  "https://cdn.jsdelivr.net/npm/@pixiv/three-vrm-core@3.1.2/lib/three-vrm-core.module.min.js"
+  }
+}
+</script>
+<script>
+  window.TITAN_VRM_FILE = 'VRoid_V110_Male_v1.1.3.vrm';
+</script>
 <style>
 :root{
   --bg:#060a12;--bg2:#0a0f1e;--bg3:#0d1528;
@@ -443,6 +456,65 @@ textarea:focus{border-color:var(--border2);}
 .jnl-loss td:first-child{border-left:2px solid var(--red);}
 .jnl-crit{display:flex;flex-wrap:wrap;gap:2px;}
 .jnl-crit span{font-size:8px;color:var(--cyan);opacity:.7;}
+/* ── VISION PANEL ── */
+.vision-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;}
+.vision-card-label{font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:.08em;margin-bottom:4px;text-transform:uppercase;}
+.vision-select,.vision-input-num{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:var(--r);padding:6px 8px;font-family:var(--font-mono);font-size:10px;width:100%;}
+.vision-input-num::-webkit-inner-spin-button{-webkit-appearance:none;}
+.field-label{font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-bottom:4px;letter-spacing:.08em;}
+.vision-tag{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-size:10px;color:var(--cyan);font-family:var(--font-mono);}
+.vision-tag-tp{background:var(--green3);border:1px solid var(--green2);border-radius:4px;padding:2px 7px;font-size:10px;color:var(--green);font-family:var(--font-mono);}
+
+/* ══ PORTFOLIO OVERVIEW STRIP (inspired by trading-bot-platform Dashboard) ══ */
+.port-overview{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.port-card{
+  background:linear-gradient(135deg,var(--panel) 0%,var(--panel2) 100%);
+  border:1px solid var(--border);border-radius:var(--r2);
+  padding:14px 16px;position:relative;overflow:hidden;
+  transition:border-color .3s,box-shadow .3s;
+}
+.port-card:hover{border-color:rgba(255,255,255,.12);}
+.port-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.port-card.c-equity::before{background:linear-gradient(90deg,transparent,var(--cyan),transparent);}
+.port-card.c-win::before{background:linear-gradient(90deg,transparent,var(--green),transparent);}
+.port-card.c-pnl::before{background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.port-card.c-pos::before{background:linear-gradient(90deg,transparent,var(--purple),transparent);}
+.port-card-icon{font-size:22px;margin-bottom:6px;opacity:.7;}
+.port-card-label{font-family:var(--font-mono);font-size:9px;letter-spacing:.15em;color:var(--text3);text-transform:uppercase;margin-bottom:6px;}
+.port-card-val{font-family:var(--font-mono);font-size:28px;font-weight:700;color:var(--text);line-height:1;letter-spacing:-.01em;}
+.port-card-sub{font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-top:5px;display:flex;align-items:center;gap:5px;}
+.port-card-delta{font-size:10px;font-family:var(--font-mono);padding:1px 6px;border-radius:3px;}
+.port-card-delta.pos{background:var(--green3);color:var(--green);}
+.port-card-delta.neg{background:var(--red3);color:var(--red);}
+
+/* ══ TRADE STATISTICS GRID (inspired by trading-bot-platform TradesStats) ══ */
+.tstat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.tstat-card{
+  background:var(--bg);border:1px solid var(--border);border-radius:var(--r);
+  padding:14px 12px;text-align:center;transition:border-color .2s;
+}
+.tstat-card:hover{border-color:rgba(0,245,212,.2);}
+.tstat-label{font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;margin-bottom:8px;}
+.tstat-val{font-family:var(--font-mono);font-size:24px;font-weight:700;color:var(--text);}
+.tstat-sub{font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-top:4px;}
+
+/* ══ EQUITY CHART FULL-WIDTH ══ */
+.pt-chart-full{position:relative;height:240px;padding:4px 0;}
+.pt-chart-footer{display:flex;gap:20px;margin-top:8px;font-family:var(--font-mono);font-size:9px;color:var(--text3);flex-wrap:wrap;}
+.pt-chart-footer span{display:flex;align-items:center;gap:4px;}
+.pt-chart-footer .dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);}
+
+/* ══ POSITIONS TABLE (inspired by trading-bot-platform PositionsPanel) ══ */
+.pos-table{width:100%;border-collapse:collapse;font-family:var(--font-mono);font-size:10px;}
+.pos-table th{color:var(--text3);letter-spacing:.08em;padding:6px 8px;text-align:left;border-bottom:1px solid var(--border);font-weight:400;font-size:9px;text-transform:uppercase;}
+.pos-table td{padding:7px 8px;border-bottom:1px solid rgba(30,58,95,.3);color:var(--text);vertical-align:middle;}
+.pos-table tr:hover td{background:rgba(0,245,212,.02);}
+.pos-table .side-long{color:var(--green);font-weight:700;}
+.pos-table .side-short{color:var(--red);font-weight:700;}
+.pos-table .pnl-pos{color:var(--green);font-weight:600;}
+.pos-table .pnl-neg{color:var(--red);font-weight:600;}
+.pos-table .sym-cell{color:var(--cyan);font-weight:600;letter-spacing:.06em;}
+.pos-be-badge{background:rgba(0,245,212,.1);border:1px solid rgba(0,245,212,.2);color:var(--cyan);padding:1px 5px;border-radius:3px;font-size:8px;margin-left:4px;}
 </style>
 </head>
 <body>
@@ -515,6 +587,40 @@ textarea:focus{border-color:var(--border2);}
         </div>
       </div>
 
+      <!-- PORTFOLIO OVERVIEW STRIP (inspired by trading-bot-platform Dashboard) -->
+      <div class="port-overview" id="port-overview">
+        <div class="port-card c-equity">
+          <div class="port-card-label">EQUITY PAPER</div>
+          <div class="port-card-val" id="pov-equity">—</div>
+          <div class="port-card-sub">
+            <span class="port-card-delta" id="pov-equity-delta">+0.00%</span>
+            <span id="pov-equity-sub">depuis départ</span>
+          </div>
+        </div>
+        <div class="port-card c-win">
+          <div class="port-card-label">WIN RATE</div>
+          <div class="port-card-val" id="pov-winrate">—</div>
+          <div class="port-card-sub">
+            <span id="pov-trades-txt">0 trades · —W / —L</span>
+          </div>
+        </div>
+        <div class="port-card c-pnl">
+          <div class="port-card-label">P&amp;L NET</div>
+          <div class="port-card-val" id="pov-pnl">—</div>
+          <div class="port-card-sub">
+            Sharpe&nbsp;<span id="pov-sharpe" style="color:var(--text)">—</span>
+            &nbsp;·&nbsp;DD&nbsp;<span id="pov-dd" style="color:var(--red)">—</span>
+          </div>
+        </div>
+        <div class="port-card c-pos">
+          <div class="port-card-label">POSITIONS OUVERTES</div>
+          <div class="port-card-val" id="pov-open-pos">0</div>
+          <div class="port-card-sub">
+            Expectancy&nbsp;<span id="pov-expect" style="color:var(--text)">—</span>
+          </div>
+        </div>
+      </div>
+
       <!-- SIGNAL CARDS -->
       <div class="signal-grid" id="signal-cards">
         <!-- BTC/USDT -->
@@ -533,7 +639,7 @@ textarea:focus{border-color:var(--border2);}
           <div class="sc-price-sub" id="ema-BTC">EMA200·H4: — · EMA200·1D: —</div>
           <div class="neon-div"></div>
           <div class="score-row">
-            <div class="score-gauge"><canvas id="gauge-BTC" width="72" height="72"></canvas><div class="score-gauge-val"><div class="score-num" id="score-num-BTC">0</div><div class="score-den">/11</div></div></div>
+            <div class="score-gauge"><canvas id="gauge-BTC" width="72" height="72"></canvas><div class="score-gauge-val"><div class="score-num" id="score-num-BTC">0</div><div class="score-den">/16</div></div></div>
             <div class="score-info">
               <div class="score-label" id="score-label-BTC">—</div>
               <div class="score-bar-wrap"><div class="score-bar" id="score-bar-BTC" style="width:0%;background:var(--text3)"></div></div>
@@ -569,7 +675,7 @@ textarea:focus{border-color:var(--border2);}
           <div class="sc-price-sub" id="ema-PAXG">EMA200·H4: — · EMA200·1D: —</div>
           <div class="neon-div"></div>
           <div class="score-row">
-            <div class="score-gauge"><canvas id="gauge-PAXG" width="72" height="72"></canvas><div class="score-gauge-val"><div class="score-num" id="score-num-PAXG">0</div><div class="score-den">/11</div></div></div>
+            <div class="score-gauge"><canvas id="gauge-PAXG" width="72" height="72"></canvas><div class="score-gauge-val"><div class="score-num" id="score-num-PAXG">0</div><div class="score-den">/16</div></div></div>
             <div class="score-info">
               <div class="score-label" id="score-label-PAXG">—</div>
               <div class="score-bar-wrap"><div class="score-bar" id="score-bar-PAXG" style="width:0%;background:var(--text3)"></div></div>
@@ -668,13 +774,13 @@ textarea:focus{border-color:var(--border2);}
       </div>
       <div id="criteria-BTC">
         <div class="panel">
-          <div class="panel-title"><span class="ico">◈</span>SCORING SMC — 11 CRITÈRES · BTC/USDT</div>
+          <div class="panel-title"><span class="ico">◈</span>SCORING SMC — 16 CRITÈRES · BTC/USDT</div>
           <div class="criteria-grid" id="crit-grid-BTC"></div>
         </div>
       </div>
       <div id="criteria-PAXG" style="display:none">
         <div class="panel">
-          <div class="panel-title"><span class="ico">◈</span>SCORING SMC — 11 CRITÈRES · PAXG/USDT</div>
+          <div class="panel-title"><span class="ico">◈</span>SCORING SMC — 16 CRITÈRES · PAXG/USDT</div>
           <div class="criteria-grid" id="crit-grid-PAXG"></div>
         </div>
       </div>
@@ -728,6 +834,28 @@ textarea:focus{border-color:var(--border2);}
             <thead><tr><th>SYMBOLE</th><th>BUY VOL</th><th>SELL VOL</th><th>DELTA PCT</th><th>BIAIS</th></tr></thead>
             <tbody id="dvol-table-body"></tbody>
           </table>
+        </div>
+      </div>
+        <div class="panel">
+          <div class="panel-title"><span class="ico">⚖</span>INSIGHTS INSTITUTIONNELS L2</div>
+          <div class="row2">
+            <div id="ob-l2-BTC">
+              <div class="dvol-title">BTC/USDT L2</div>
+              <div class="ctx-grid" style="grid-template-columns:1fr 1fr;">
+                <div class="ctx-item"><div class="ctx-label">SPREAD</div><div class="ctx-val" id="l2-spread-BTC">—</div><div class="ctx-sub">bps</div></div>
+                <div class="ctx-item"><div class="ctx-label">IMBALANCE</div><div class="ctx-val" id="l2-imb-BTC">—</div><div class="ctx-sub" id="l2-imb-sub-BTC">—</div></div>
+                <div class="ctx-item col-span2"><div class="ctx-label">MUR DÉTECTÉ</div><div class="ctx-val" style="font-size:14px;" id="l2-wall-BTC">—</div></div>
+              </div>
+            </div>
+            <div id="ob-l2-PAXG">
+              <div class="dvol-title">PAXG/USDT L2</div>
+              <div class="ctx-grid" style="grid-template-columns:1fr 1fr;">
+                <div class="ctx-item"><div class="ctx-label">SPREAD</div><div class="ctx-val" id="l2-spread-PAXG">—</div><div class="ctx-sub">bps</div></div>
+                <div class="ctx-item"><div class="ctx-label">IMBALANCE</div><div class="ctx-val" id="l2-imb-PAXG">—</div><div class="ctx-sub" id="l2-imb-sub-PAXG">—</div></div>
+                <div class="ctx-item col-span2"><div class="ctx-label">MUR DÉTECTÉ</div><div class="ctx-val" style="font-size:14px;" id="l2-wall-PAXG">—</div></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div><!-- /sec-market -->
@@ -787,24 +915,116 @@ textarea:focus{border-color:var(--border2);}
     <div id="sec-vision" class="section">
       <div class="panel">
         <div class="panel-title"><span class="ico">◉</span>VISION IA OLLAMA — ANALYSE CHART SMC<span class="badge" id="vision-model-badge">llava</span></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+
+        <!-- Contrôles -->
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:8px;margin-bottom:10px;align-items:end;">
           <div>
-            <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-bottom:6px;letter-spacing:.08em;">IMAGE BASE64 OU URL</div>
-            <textarea id="vision-img" rows="4" placeholder="Coller ici l'image base64 ou laisser vide pour analyse texte seul..."></textarea>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
-              <select id="vision-sym" style="background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:var(--r);padding:6px 8px;font-family:var(--font-mono);font-size:10px;">
-                <option>BTC/USDT</option><option>PAXG/USDT</option>
-              </select>
-              <select id="vision-tf" style="background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:var(--r);padding:6px 8px;font-family:var(--font-mono);font-size:10px;">
-                <option>5m</option><option>15m</option><option>1h</option><option>4h</option>
-              </select>
+            <div class="field-label">SYMBOLE</div>
+            <select id="vision-sym" class="vision-select"><option>BTC/USDT</option><option>PAXG/USDT</option></select>
+          </div>
+          <div>
+            <div class="field-label">TIMEFRAME</div>
+            <select id="vision-tf" class="vision-select">
+              <option>1m</option><option>3m</option><option selected>5m</option>
+              <option>15m</option><option>30m</option><option>1h</option>
+              <option>2h</option><option>4h</option><option>1d</option>
+            </select>
+          </div>
+          <div>
+            <div class="field-label">BIAIS</div>
+            <select id="vision-side" class="vision-select">
+              <option value="">AUTO</option><option value="LONG">LONG</option><option value="SHORT">SHORT</option>
+            </select>
+          </div>
+          <div>
+            <div class="field-label">PRIX ($)</div>
+            <input id="vision-price" type="number" placeholder="auto" class="vision-input-num">
+          </div>
+          <button class="btn" onclick="runVision()" id="vision-btn" style="height:32px;padding:0 18px;white-space:nowrap;align-self:end;">ANALYSER →</button>
+        </div>
+
+        <!-- Capture écran (stream vidéo) -->
+        <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center;flex-wrap:wrap;">
+          <button class="btn" onclick="enableVisionCapture()" id="vision-capture-btn" style="height:32px;padding:0 14px;font-size:11px;">📷 ACTIVER CAPTURE</button>
+          <button class="btn" onclick="captureVisionFrame().then(f=>{ if(f){ document.getElementById('vision-img').value=f; document.getElementById('vision-capture-status').textContent='✓ Frame capturée'; } })" id="vision-snap-btn" style="height:32px;padding:0 14px;font-size:11px;" disabled>⊙ CAPTURER FRAME</button>
+          <span id="vision-capture-status" style="font-size:10px;font-family:var(--font-mono);color:var(--text3);">— Aucun stream actif</span>
+          <canvas id="vision-preview" style="display:none;max-height:48px;max-width:140px;border:1px solid var(--border);border-radius:4px;object-fit:contain;"></canvas>
+        </div>
+
+        <!-- Image optionnelle -->
+        <div style="margin-bottom:10px;">
+          <div class="field-label">IMAGE BASE64 (auto-rempli si stream actif — ou coller manuellement)</div>
+          <textarea id="vision-img" rows="2" placeholder="Activer le stream ci-dessus pour capture auto, ou coller ici..."></textarea>
+        </div>
+
+        <!-- Placeholder -->
+        <div id="vision-placeholder" style="padding:16px 0;text-align:center;color:var(--text3);font-size:11px;font-family:var(--font-mono);">En attente d'analyse...</div>
+
+        <!-- Erreur -->
+        <div id="vision-error" style="display:none;padding:10px;color:var(--red);font-size:11px;font-family:var(--font-mono);"></div>
+
+        <!-- Résultat -->
+        <div id="vision-result-wrap" style="display:none;">
+
+          <!-- Signal bar -->
+          <div id="vision-signal-bar" style="display:flex;align-items:center;gap:14px;padding:10px 14px;border-radius:var(--r);margin-bottom:10px;border:1px solid var(--border);">
+            <div id="vision-signal-txt" style="font-size:20px;font-weight:700;font-family:var(--font-ui);letter-spacing:.12em;min-width:80px;">—</div>
+            <div style="flex:1;">
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+                <span style="font-size:9px;color:var(--text3);font-family:var(--font-mono);">CONFIDENCE</span>
+                <span id="vision-conf-pct" style="font-size:9px;font-family:var(--font-mono);color:var(--text2);">0%</span>
+              </div>
+              <div style="height:4px;background:var(--border);border-radius:2px;"><div id="vision-conf-bar" style="height:4px;border-radius:2px;width:0%;transition:width .6s;"></div></div>
             </div>
-            <button class="btn" onclick="runVision()" style="margin-top:8px;width:100%;">ANALYSER →</button>
+            <div style="text-align:right;">
+              <div id="vision-trend-pill" style="font-size:11px;font-family:var(--font-mono);"></div>
+              <div id="vision-timing" style="font-size:9px;color:var(--text3);font-family:var(--font-mono);"></div>
+            </div>
           </div>
-          <div>
-            <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-bottom:6px;letter-spacing:.08em;">RÉSULTAT ANALYSE</div>
-            <div id="vision-result" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px;min-height:140px;font-family:var(--font-mono);font-size:11px;color:var(--text2);">En attente d'analyse...</div>
+
+          <!-- Grille SMC 2×2 -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+            <div class="vision-card">
+              <div class="vision-card-label">Structure de marché</div>
+              <div id="vision-structure" style="font-size:11px;font-family:var(--font-mono);"></div>
+              <div id="vision-inducement" style="font-size:10px;color:var(--text3);margin-top:2px;"></div>
+            </div>
+            <div class="vision-card">
+              <div class="vision-card-label">Sweep de liquidité</div>
+              <div id="vision-sweep" style="font-size:11px;font-family:var(--font-mono);"></div>
+              <div id="vision-sweep-detail" style="font-size:10px;color:var(--text3);margin-top:2px;line-height:1.4;"></div>
+            </div>
+            <div class="vision-card">
+              <div class="vision-card-label">Order Blocks & FVG</div>
+              <div id="vision-obfvg" style="font-size:10px;color:var(--text2);line-height:1.5;"></div>
+            </div>
+            <div class="vision-card">
+              <div class="vision-card-label">Zone d'entrée & Stop Loss</div>
+              <div id="vision-entry" style="font-size:10px;color:var(--green);line-height:1.5;"></div>
+              <div id="vision-sl" style="font-size:10px;color:var(--red);margin-top:2px;"></div>
+            </div>
           </div>
+
+          <!-- Niveaux clés -->
+          <div class="vision-card" style="margin-bottom:8px;">
+            <div class="vision-card-label">Niveaux clés</div>
+            <div id="vision-levels" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;"></div>
+          </div>
+
+          <!-- Take Profits -->
+          <div class="vision-card" id="vision-tp-wrap" style="margin-bottom:8px;">
+            <div class="vision-card-label">Take Profits</div>
+            <div id="vision-tps" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;"></div>
+          </div>
+
+          <!-- Analyse -->
+          <div class="vision-card" style="margin-bottom:8px;">
+            <div class="vision-card-label">Analyse SMC</div>
+            <div id="vision-reasoning" style="font-size:10px;color:var(--text2);line-height:1.7;margin-top:4px;"></div>
+          </div>
+
+          <!-- Footer -->
+          <div id="vision-footer" style="font-size:9px;color:var(--text3);font-family:var(--font-mono);"></div>
         </div>
       </div>
     </div>
@@ -812,7 +1032,7 @@ textarea:focus{border-color:var(--border2);}
     <!-- ═══════════════════════ PAPER TRADING ═══════════════════════ -->
     <div id="sec-paper" class="section">
 
-      <!-- KPIs -->
+      <!-- KPIs compact -->
       <div class="pt-kpi-bar">
         <div class="pt-kpi">
           <div class="pt-kpi-label">EQUITY</div>
@@ -841,28 +1061,67 @@ textarea:focus{border-color:var(--border2);}
         </div>
       </div>
 
-      <!-- Chart + Positions -->
-      <div class="pt-grid">
-        <div class="panel">
-          <div class="panel-title"><span class="ico">◆</span>EQUITY CURVE</div>
-          <div style="position:relative;height:200px;padding:4px 0;">
-            <canvas id="pt-chart"></canvas>
-          </div>
-          <div style="display:flex;gap:16px;margin-top:8px;font-family:var(--font-mono);font-size:9px;color:var(--text3);">
-            <span>Capital initial : <span id="pt-init-cap" style="color:var(--text)">—</span></span>
-            <span>Cash dispo : <span id="pt-cash" style="color:var(--cyan)">—</span></span>
-          </div>
+      <!-- TRADE STATISTICS GRID (inspired by trading-bot-platform TradesStats) -->
+      <div class="tstat-grid">
+        <div class="tstat-card">
+          <div class="tstat-label">TRADES TOTAL</div>
+          <div class="tstat-val" id="ts-total">—</div>
+          <div class="tstat-sub" id="ts-wl">—W / —L</div>
         </div>
-        <div class="panel">
-          <div class="panel-title">
-            <span class="ico">⬡</span>POSITIONS OUVERTES
-            <span class="badge" id="pt-pos-count">0</span>
-            <a href="/webhook/positions-for-tv" target="_blank" class="btn" style="margin-left:auto;font-size:8px;padding:2px 8px;color:var(--text3);">📺 TV EXPORT</a>
-          </div>
-          <div id="pt-positions-wrap" style="overflow-y:auto;max-height:240px;">
-            <div style="color:var(--text3);font-family:var(--font-mono);font-size:10px;padding:20px;text-align:center;">
-              Aucune position ouverte — les positions apparaîtront ici à chaque signal qualifié
-            </div>
+        <div class="tstat-card">
+          <div class="tstat-label">WIN RATE</div>
+          <div class="tstat-val" id="ts-winrate">—</div>
+          <div class="tstat-sub">taux de réussite</div>
+        </div>
+        <div class="tstat-card">
+          <div class="tstat-label">SHARPE RATIO</div>
+          <div class="tstat-val" id="ts-sharpe">—</div>
+          <div class="tstat-sub">annualisé</div>
+        </div>
+        <div class="tstat-card">
+          <div class="tstat-label">MEILLEUR TRADE</div>
+          <div class="tstat-val" id="ts-best" style="color:var(--green)">—</div>
+          <div class="tstat-sub" id="ts-best-sub">en %</div>
+        </div>
+        <div class="tstat-card">
+          <div class="tstat-label">PIRE TRADE</div>
+          <div class="tstat-val" id="ts-worst" style="color:var(--red)">—</div>
+          <div class="tstat-sub" id="ts-worst-sub">en %</div>
+        </div>
+        <div class="tstat-card">
+          <div class="tstat-label">EXPECTANCY</div>
+          <div class="tstat-val" id="ts-expect">—</div>
+          <div class="tstat-sub">$/trade moyen</div>
+        </div>
+      </div>
+
+      <!-- EQUITY CURVE full-width (inspired by trading-bot-platform PortfolioChart) -->
+      <div class="panel">
+        <div class="panel-title">
+          <span class="ico">◆</span>EQUITY CURVE · PORTFOLIO
+          <span class="badge" id="pt-curve-pts">0 pts</span>
+          <span style="margin-left:auto;font-size:9px;color:var(--text3);">Capital initial : <span id="pt-init-cap" style="color:var(--text)">—</span> · Cash : <span id="pt-cash" style="color:var(--cyan)">—</span></span>
+        </div>
+        <div class="pt-chart-full">
+          <canvas id="pt-chart"></canvas>
+        </div>
+        <div class="pt-chart-footer">
+          <span><span class="dot" style="background:var(--cyan)"></span>Equity courante</span>
+          <span><span class="dot" style="background:rgba(255,255,255,.2)"></span>Ligne de base</span>
+          <span id="pt-chart-range" style="margin-left:auto;color:var(--text3)"></span>
+        </div>
+      </div>
+
+      <!-- POSITIONS OUVERTES — table style (inspired by trading-bot-platform PositionsPanel) -->
+      <div class="panel">
+        <div class="panel-title">
+          <span class="ico">⬡</span>POSITIONS OUVERTES
+          <span class="badge" id="pt-pos-count">0</span>
+          <a href="/webhook/positions-for-tv" target="_blank" class="btn" style="margin-left:auto;font-size:8px;padding:2px 8px;color:var(--text3);">📺 TV EXPORT</a>
+        </div>
+        <div style="overflow-x:auto;overflow-y:auto;max-height:220px;" id="pt-positions-wrap">
+          <div style="color:var(--text3);font-family:var(--font-mono);font-size:10px;padding:20px;text-align:center;">
+            Aucune position ouverte — les positions apparaîtront ici à chaque signal qualifié
           </div>
         </div>
       </div>
@@ -965,6 +1224,55 @@ textarea:focus{border-color:var(--border2);}
 
         </div><!-- /grid -->
 
+        <!-- ── GitHub Push ─────────────────────────────────────────────────── -->
+        <div style="margin-top:16px;padding:14px;background:var(--bg3);border-radius:var(--r);border:1px solid var(--border);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            <div class="svc-led" id="led-github" style="flex-shrink:0;"></div>
+            <div>
+              <div style="font-size:12px;color:var(--text);font-weight:600;letter-spacing:.08em;">GITHUB</div>
+              <div style="font-size:11px;color:var(--text2);" id="github-branch-info">Chargement...</div>
+            </div>
+            <div style="margin-left:auto;font-size:11px;color:var(--text2);text-align:right;" id="github-last-commit">—</div>
+          </div>
+
+          <!-- Fichiers modifiés -->
+          <div id="github-files-list" style="font-size:11px;color:var(--text2);font-family:var(--font-mono);margin-bottom:10px;max-height:80px;overflow-y:auto;"></div>
+
+          <!-- Message de commit + bouton push -->
+          <div style="display:flex;gap:8px;">
+            <input id="github-commit-msg" type="text"
+              placeholder="Message de commit (laisser vide = auto)"
+              style="flex:1;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:var(--r);font-family:var(--font-mono);font-size:12px;"
+              onkeydown="if(event.key==='Enter')githubPush()"/>
+            <button onclick="githubPush()" id="btn-github-push"
+              style="background:var(--bg2);border:1px solid var(--cyan);color:var(--cyan);padding:6px 18px;border-radius:var(--r);cursor:pointer;font-family:var(--font-mono);font-size:12px;white-space:nowrap;">
+              ↑ PUSH
+            </button>
+            <button onclick="fetchGithubStatus()"
+              style="background:var(--bg2);border:1px solid var(--border);color:var(--text2);padding:6px 10px;border-radius:var(--r);cursor:pointer;font-size:14px;"
+              title="Rafraîchir">↺</button>
+          </div>
+
+          <!-- Log de sortie -->
+          <div id="github-log" style="margin-top:8px;font-size:11px;color:var(--text2);font-family:var(--font-mono);min-height:18px;line-height:1.6;white-space:pre-wrap;"></div>
+        </div>
+
+        <!-- Avatar WebGL Titan -->
+        <div style="margin-top:12px;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;">
+          <div id="loading-overlay" style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--bg3); border-radius:var(--r); z-index:10;">
+            <div id="loading-text" style="font-family:var(--font-mono);font-size:10px;color:var(--cyan);">CHARGEMENT...</div>
+          </div>
+          <div id="canvas-container" style="width:240px; height:240px; border-radius:8px; overflow:hidden; background:var(--bg2); border:1px solid var(--border);"></div>
+          
+          <div id="state-overlay" class="state-idle" style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:.12em;display:flex;align-items:center;gap:6px;">
+            <span id="state-icon">🎙️</span><span id="state-label">IDLE</span>
+          </div>
+          
+          <!-- Elements requis par avatar.js -->
+          <div id="voice-indicator" style="display:none;"></div>
+          <div id="status-dot" style="display:none;"></div>
+        </div>
+
         <!-- Titan speak rapide -->
         <div style="margin-top:12px;padding:12px;background:var(--bg3);border-radius:var(--r);border:1px solid var(--border);">
           <div style="font-size:11px;color:var(--text2);letter-spacing:.08em;margin-bottom:8px;">⚡ COMMANDE RAPIDE TITAN</div>
@@ -1010,14 +1318,17 @@ let scanCount = 0;
 let gauges = {};
 let prevPrices = {};
 
+const SCORE_MAX = 16;
 const SCORE_LABELS = {
   0:'AUCUN SIGNAL',1:'SIGNAL NUIT',2:'SIGNAL FAIBLE',3:'SIGNAL FAIBLE',
   4:'SURVEILLANCE',5:'SURVEILLANCE',6:'BON SETUP',
   7:'SETUP FORT',8:'SETUP OPTIMAL',9:'SIGNAL PREMIUM',
-  10:'SETUP PARFAIT',11:'SIGNAL ABSOLU'
+  10:'SETUP PREMIUM+',11:'SETUP PARFAIT',12:'SIGNAL ABSOLU',
+  13:'SIGNAL ABSOLU+',14:'CONFLUENCE TOTALE',15:'INSTITUTIONNEL',
+  16:'SIGNAL PARFAIT (L2)'
 };
 const CRITERIA_META = {
-  EMA200_H4:     {icon:'⬡', desc:'Biais directeur H4'},
+  EMA200_H4:     {icon:'⬡', desc:'Biais directeur H4 (distance)'},
   STRUCT_H2H1:   {icon:'◈', desc:'Break of Structure H2/H1'},
   OB_FVG_30M:    {icon:'▣', desc:'Order Block / FVG 30m'},
   OB_FVG_15M_CONFIRM:{icon:'◫', desc:'Double confirmation 15m'},
@@ -1027,7 +1338,12 @@ const CRITERIA_META = {
   EMA200_1D:     {icon:'⊡', desc:'Biais macro journalier 1D'},
   DELTA_VOL:     {icon:'⚡', desc:'Pression acheteur/vendeur'},
   LIQ_SWEEP:     {icon:'◬', desc:'Liquidity sweep détecté'},
-  ADX_REGIME:    {icon:'⊕', desc:'Régime marché ADX'},
+  ADX_REGIME:    {icon:'⊕', desc:'Régime marché TREND'},
+  RSI_DIVERGENCE:{icon:'⟲', desc:'Divergence RSI haussière/baissière'},
+  VOL_SPIKE:     {icon:'▮', desc:'Pic de volume confirmant'},
+  DISPLACEMENT:  {icon:'⚔', desc:'Sweep + bougie d\'impulsion'},
+  ORDERBOOK_IMBALANCE: {icon:'⚖', desc:'Déséquilibre L2 institutionnel'},
+  ORDERBOOK_WALL: {icon:'🧱', desc:'Mur de liquidité L2 détecté'},
 };
 
 // ── CLOCK ──────────────────────────────────────────────
@@ -1054,14 +1370,14 @@ function createGauge(canvasId){
   if(!ctx)return null;
   return new Chart(ctx,{
     type:'doughnut',
-    data:{datasets:[{data:[0,11],backgroundColor:['#374151','rgba(255,255,255,0.03)'],borderWidth:0,cutout:'72%'}]},
+    data:{datasets:[{data:[0,SCORE_MAX],backgroundColor:['#374151','rgba(255,255,255,0.03)'],borderWidth:0,cutout:'72%'}]},
     options:{responsive:false,animation:{duration:600},plugins:{legend:{display:false},tooltip:{enabled:false}}}
   });
 }
 
 function updateGauge(gauge,score,side){
   if(!gauge)return;
-  const max=11;
+  const max=SCORE_MAX;
   const color=side==='ACHAT'?'#00ff88':side==='VENTE'?'#ff2d55':'#4d9fff';
   gauge.data.datasets[0].data=[score,Math.max(0,max-score)];
   gauge.data.datasets[0].backgroundColor=[color,'rgba(255,255,255,0.03)'];
@@ -1143,7 +1459,7 @@ function updateCard(sym,sig,weights){
   setText('score-label-'+k,label);
   const barEl=document.getElementById('score-bar-'+k);
   if(barEl){
-    barEl.style.width=(score/11*100)+'%';
+    barEl.style.width=(score/SCORE_MAX*100)+'%';
     barEl.style.background=side==='ACHAT'?'var(--green)':side==='VENTE'?'var(--red)':'var(--text3)';
   }
 
@@ -1153,7 +1469,7 @@ function updateCard(sym,sig,weights){
   setText('reg-'+k,sig.regime||'—');
 
   // Bottom bar
-  setText('bb-'+k.toLowerCase()+'-score',`${score}/11`);
+  setText('bb-'+k.toLowerCase()+'-score',`${score}/${SCORE_MAX}`);
 
   // Levels
   if(sig.sl){
@@ -1202,6 +1518,26 @@ function updateCard(sym,sig,weights){
   setText('ctx-ema1d-'+k,fmt(sig.ema200_1d,0));
   setText('ctx-obq-'+k,sig.ob_quality!=null?Number(sig.ob_quality).toFixed(3):'—');
   setText('ctx-rsidiv-'+k,sig.rsi_divergence||'none');
+
+  // L2 Order Book Insights
+  const spread=sig.spread_realtime_bps||0;
+  const spreadEl=document.getElementById('l2-spread-'+k);
+  if(spreadEl){spreadEl.textContent=spread.toFixed(1);spreadEl.className='ctx-val'+(spread>10?' bear':spread<2?' bull':'');}
+  
+  const imb=sig.orderbook_imbalance||0;
+  const imbEl=document.getElementById('l2-imb-'+k);
+  if(imbEl){
+    imbEl.textContent=imb.toFixed(2);
+    imbEl.className='ctx-val'+(imb>1.5?' bull':imb<0.67?' bear':'');
+  }
+  setText('l2-imb-sub-'+k,imb>1.5?'BULLISH DEPTH':imb<0.67?'BEARISH DEPTH':'BALANCED');
+  
+  const wall=sig.orderbook_wall||'none';
+  const wallEl=document.getElementById('l2-wall-'+k);
+  if(wallEl){
+    wallEl.textContent=wall==='none'?'AUCUN':wall.toUpperCase();
+    wallEl.className='ctx-val'+(wall==='bid'?' bull':wall==='ask'?' bear':'');
+  }
 }
 
 // ── UPDATE DELTA VOL ────────────────────────────────────
@@ -1416,6 +1752,9 @@ async function fetchState(){
     SYMBOLS.forEach(sym=>{
       const sig=data.signals?.[sym]||{};
       const w=data.scoring_weights?.[sym]||{};
+      const sp=data.spreads?.[sym]||{};
+      // Inject spread into signal for updateCard
+      if(sp.spread_bps) sig.spread_realtime_bps = sp.spread_bps;
       updateCard(sym,sig,w);
     });
 
@@ -1479,33 +1818,232 @@ async function triggerOptim(){
   }catch(e){console.error(e);}
 }
 
-// ── VISION ─────────────────────────────────────────────
+// ── VISION — CAPTURE ÉCRAN ─────────────────────────────
+let _visionStream = null;
+
+async function enableVisionCapture() {
+  const btn    = document.getElementById('vision-capture-btn');
+  const snap   = document.getElementById('vision-snap-btn');
+  const status = document.getElementById('vision-capture-status');
+  const preview= document.getElementById('vision-preview');
+
+  if (_visionStream) {
+    _visionStream.getTracks().forEach(t => t.stop());
+    _visionStream = null;
+    btn.textContent = '📷 ACTIVER CAPTURE';
+    btn.style.color = '';
+    snap.disabled = true;
+    status.textContent = '— Stream arrêté';
+    status.style.color = 'var(--text3)';
+    preview.style.display = 'none';
+    return;
+  }
+
+  try {
+    _visionStream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 1 }, audio: false });
+    const _track = _visionStream.getVideoTracks()[0];
+    if (_track) _track.addEventListener('ended', () => {
+      _visionStream = null;
+      btn.textContent = '📷 ACTIVER CAPTURE';
+      btn.style.color = '';
+      snap.disabled = true;
+      status.textContent = '— Stream arrêté par l\'utilisateur';
+      status.style.color = 'var(--text3)';
+    });
+    btn.textContent = '◉ CAPTURE ACTIVE';
+    btn.style.color = 'var(--green)';
+    snap.disabled = false;
+    status.textContent = '✓ Stream actif — cliquer sur CAPTURER FRAME ou ANALYSER →';
+    status.style.color = 'var(--green)';
+  } catch(e) {
+    status.textContent = '✗ ' + (e.message || 'Refusé');
+    status.style.color = 'var(--red)';
+  }
+}
+
+async function captureVisionFrame() {
+  if (!_visionStream) return null;
+  const status = document.getElementById('vision-capture-status');
+  return new Promise(resolve => {
+    const video = document.createElement('video');
+    video.muted = true;
+    video.playsInline = true;
+    video.srcObject = _visionStream;
+    video.onloadedmetadata = async () => {
+      try {
+        await video.play();
+        const maxW = 1280;
+        const ratio = video.videoWidth > maxW ? maxW / video.videoWidth : 1;
+        const w = Math.round(video.videoWidth * ratio);
+        const h = Math.round(video.videoHeight * ratio);
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx2d = canvas.getContext('2d');
+        if (!ctx2d) { resolve(null); return; }
+        ctx2d.drawImage(video, 0, 0, w, h);
+
+        // Miniature de prévisualisation
+        const preview = document.getElementById('vision-preview');
+        preview.style.display = '';
+        preview.width = Math.min(140, w);
+        preview.height = Math.round(h * (preview.width / w));
+        const pCtx = preview.getContext('2d');
+        pCtx.drawImage(canvas, 0, 0, preview.width, preview.height);
+
+        const b64 = canvas.toDataURL('image/jpeg', 0.82).split(',')[1];
+        if (status) {
+          status.textContent = `✓ Frame capturée (${w}×${h})`;
+          status.style.color = 'var(--cyan)';
+        }
+        resolve(b64);
+      } catch(e) {
+        console.error('[VISION] Capture error:', e);
+        resolve(null);
+      } finally {
+        video.pause();
+        video.srcObject = null;
+      }
+    };
+    video.onerror = () => resolve(null);
+    setTimeout(() => resolve(null), 5000);
+  });
+}
+
+// ── VISION — ANALYSE ────────────────────────────────────
 async function runVision(){
-  const img=document.getElementById('vision-img').value.trim();
-  const sym=document.getElementById('vision-sym').value;
-  const tf=document.getElementById('vision-tf').value;
-  const result=document.getElementById('vision-result');
-  result.textContent='Analyse en cours...';
-  result.style.color='var(--text3)';
+  // Auto-capture si stream vidéo actif
+  if (_visionStream) {
+    const captured = await captureVisionFrame();
+    if (captured) document.getElementById('vision-img').value = captured;
+  }
+  const img   = document.getElementById('vision-img').value.trim();
+  const sym   = document.getElementById('vision-sym').value;
+  const tf    = document.getElementById('vision-tf').value;
+  const side  = document.getElementById('vision-side').value||null;
+  const price = parseFloat(document.getElementById('vision-price').value)||0;
+  const btn   = document.getElementById('vision-btn');
+  const wrap  = document.getElementById('vision-result-wrap');
+  const ph    = document.getElementById('vision-placeholder');
+  const err   = document.getElementById('vision-error');
+
+  btn.textContent='⟳ ANALYSE...'; btn.disabled=true;
+  ph.textContent='Analyse en cours — llava peut prendre 30 à 90 secondes...';
+  ph.style.display=''; wrap.style.display='none'; err.style.display='none';
+
+  const t0=Date.now();
   try{
+    // Auto-fetch état temps réel pour injecter les données algo
+    let algoCtx=null, autoPrice=price;
+    try{
+      const stateResp=await fetch(API+'/api/state');
+      const state=await stateResp.json();
+      const sig=state.signals?.[sym];
+      if(sig){
+        algoCtx=Object.assign({},sig);
+        // Enrichir avec delta_vol
+        const dv=state.delta_vol?.[sym];
+        if(dv){ algoCtx.delta_pct=dv.delta_pct; algoCtx.bullish_vol=dv.bullish; }
+        // Auto-fill prix si non renseigné
+        if(!autoPrice && sig.price){
+          autoPrice=sig.price;
+          document.getElementById('vision-price').placeholder=sig.price.toFixed(2);
+        }
+      }
+    }catch(se){ console.warn('state fetch:',se); }
+
     const resp=await fetch(API+'/api/chat',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({image:img,symbol:sym,timeframe:tf,price:0})
+      body:JSON.stringify({image:img,symbol:sym,timeframe:tf,price:autoPrice,side_hint:side||null,algo_context:algoCtx})
     });
-    const data=await resp.json();
-    result.innerHTML=`<div style="color:var(--cyan);margin-bottom:6px;">SIGNAL: <strong style="color:${data.signal==='ACHAT'?'var(--green)':data.signal==='VENTE'?'var(--red)':'var(--text2)'}">${data.signal}</strong> · Confidence: ${(data.confidence||0)*100|0}%</div>
-    <div style="color:var(--text2);margin-bottom:6px;">Trend: ${data.trend}</div>
-    <div style="color:var(--text3);font-size:10px;">${data.reasoning||''}</div>
-    ${data._source?`<div style="color:var(--text3);font-size:9px;margin-top:8px;">Source: ${data._source}${data._model?' · Model: '+data._model:''}</div>`:''}`;
-    result.style.color='';
-    const b=document.getElementById('vision-model-badge');
-    if(b&&data._model)b.textContent=data._model;
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    const d=await resp.json();
+    const elapsed=((Date.now()-t0)/1000).toFixed(1)+'s';
+
+    // ── Signal bar
+    const sig=d.signal||'NEUTRE';
+    const conf=Math.round((d.confidence||0)*100);
+    const sCol=sig==='ACHAT'?'var(--green)':sig==='VENTE'?'var(--red)':'var(--text2)';
+    const sBg =sig==='ACHAT'?'var(--green3)':sig==='VENTE'?'var(--red3)':'rgba(139,163,199,0.06)';
+    const bar=document.getElementById('vision-signal-bar');
+    bar.style.background=sBg; bar.style.borderColor=sCol;
+    const st=document.getElementById('vision-signal-txt');
+    st.textContent=sig; st.style.color=sCol;
+    document.getElementById('vision-conf-pct').textContent=conf+'%';
+    const cb=document.getElementById('vision-conf-bar');
+    cb.style.width=conf+'%'; cb.style.background=sCol;
+    document.getElementById('vision-timing').textContent=elapsed;
+
+    // ── Trend pill
+    const trend=d.trend||'neutre';
+    const tIcon=trend.includes('haussier')?'▲':trend.includes('baissier')?'▼':'◆';
+    const tCol =trend.includes('haussier')?'var(--green)':trend.includes('baissier')?'var(--red)':'var(--text3)';
+    const tp=document.getElementById('vision-trend-pill');
+    tp.innerHTML=`<span style="color:${tCol}">${tIcon} ${trend.toUpperCase()}</span>`;
+
+    // ── Structure
+    const struc=d.structure||'';
+    const strucCol=struc.includes('haussier')?'var(--green)':struc.includes('baissier')?'var(--red)':'var(--text2)';
+    const strucEl=document.getElementById('vision-structure');
+    strucEl.textContent=struc||'—'; strucEl.style.color=strucCol;
+    document.getElementById('vision-inducement').textContent=
+      d.inducement==='oui'?'⚡ Inducement détecté':'';
+
+    // ── Sweep
+    const hasSweep=(d.sweep||'').toLowerCase().startsWith('oui');
+    const swEl=document.getElementById('vision-sweep');
+    swEl.textContent=hasSweep?'⚡ SWEEP DÉTECTÉ':'— Aucun sweep';
+    swEl.style.color=hasSweep?'var(--gold)':'var(--text3)';
+    document.getElementById('vision-sweep-detail').textContent=d.sweep_detail||'';
+
+    // ── OB/FVG
+    document.getElementById('vision-obfvg').textContent=d.ob_fvg||'Aucun OB/FVG identifié';
+
+    // ── Entry & SL
+    document.getElementById('vision-entry').textContent=d.entry_zone?'⤷ '+d.entry_zone:'';
+    document.getElementById('vision-sl').textContent=d.sl_zone?'✕ SL: '+d.sl_zone:'';
+
+    // ── Key levels
+    const lvlEl=document.getElementById('vision-levels');
+    lvlEl.innerHTML='';
+    (d.key_levels||[]).forEach(l=>{
+      const s=document.createElement('span');
+      s.className='vision-tag'; s.textContent=l; lvlEl.appendChild(s);
+    });
+    if(!lvlEl.children.length) lvlEl.innerHTML='<span style="color:var(--text3);font-size:10px;">Aucun niveau identifié</span>';
+
+    // ── TP zones
+    const tpEl=document.getElementById('vision-tps');
+    const tpWrap=document.getElementById('vision-tp-wrap');
+    tpEl.innerHTML='';
+    const tps=d.tp_zones||[];
+    tpWrap.style.display=tps.length?'':'none';
+    tps.forEach(t=>{
+      const s=document.createElement('span');
+      s.className='vision-tag-tp'; s.textContent=t; tpEl.appendChild(s);
+    });
+
+    // ── Reasoning
+    document.getElementById('vision-reasoning').textContent=d.reasoning||'Analyse non disponible.';
+
+    // ── Footer
+    const mode=d._text_only?'texte seul':'image+texte';
+    document.getElementById('vision-footer').textContent=
+      `Model: ${d._model||'?'} · Source: ${d._source||'?'} · Mode: ${mode} · ${elapsed}`;
+
+    // ── Badge & pills
+    const badge=document.getElementById('vision-model-badge');
+    if(badge&&d._model) badge.textContent=d._model;
     const ol=document.getElementById('pill-ollama');
-    if(ol)ol.className='hdr-pill ok';
+    if(ol) ol.className='hdr-pill ok';
     setText('ollama-label','OLLAMA OK');
+
+    ph.style.display='none'; wrap.style.display='';
   }catch(e){
-    result.textContent='Erreur: '+e.message;
-    result.style.color='var(--red)';
+    ph.style.display='none';
+    err.textContent='Erreur: '+e.message;
+    err.style.display='';
+  }finally{
+    btn.textContent='ANALYSER →'; btn.disabled=false;
   }
 }
 
@@ -1610,51 +2148,76 @@ async function fetchPaper(){
 function _ptUpdateKPIs(s){
   const eq=s.equity||0, init=s.initial_capital||1000;
   const pct=s.total_pnl_pct||0;
+
+  // ── compact KPI bar ────────────────────────────────────
   setText('pt-equity',fmt(eq,2)+'$');
   setText('pt-init-cap',fmt(init,2)+'$');
   setText('pt-cash',fmt(s.cash||0,2)+'$');
   const pctEl=document.getElementById('pt-equity-pct');
-  if(pctEl){
-    pctEl.textContent=(pct>=0?'+':'')+pct.toFixed(2)+'%';
-    pctEl.style.color=pct>=0?'var(--green)':'var(--red)';
-  }
+  if(pctEl){pctEl.textContent=(pct>=0?'+':'')+pct.toFixed(2)+'%';pctEl.style.color=pct>=0?'var(--green)':'var(--red)';}
   const wr=s.winrate;
   const wrEl=document.getElementById('pt-winrate');
-  if(wrEl){
-    wrEl.textContent=wr!=null?wr.toFixed(1)+'%':'—';
-    wrEl.style.color=wr>55?'var(--green)':wr>40?'var(--text)':'var(--red)';
-  }
+  if(wrEl){wrEl.textContent=wr!=null?wr.toFixed(1)+'%':'—';wrEl.style.color=wr>55?'var(--green)':wr>40?'var(--text)':'var(--red)';}
   setText('pt-trades',(s.total_trades||0)+' trades ('+( s.wins||0)+'W/'+(s.losses||0)+'L)');
   const sp=s.sharpe;
   const spEl=document.getElementById('pt-sharpe');
-  if(spEl){
-    spEl.textContent=sp!=null?sp.toFixed(2):'—';
-    spEl.style.color=sp>1?'var(--green)':sp>0?'var(--text)':'var(--red)';
-  }
+  if(spEl){spEl.textContent=sp!=null?sp.toFixed(2):'—';spEl.style.color=sp>1?'var(--green)':sp>0?'var(--text)':'var(--red)';}
   const dd=s.max_drawdown_pct;
   const ddEl=document.getElementById('pt-maxdd');
-  if(ddEl){
-    ddEl.textContent=dd!=null?dd.toFixed(1)+'%':'—';
-    ddEl.style.color=dd>15?'var(--red)':dd>7?'var(--orange)':'var(--text)';
-  }
+  if(ddEl){ddEl.textContent=dd!=null?dd.toFixed(1)+'%':'—';ddEl.style.color=dd>15?'var(--red)':dd>7?'var(--orange)':'var(--text)';}
   setText('pt-curdd','actuel: '+(s.current_drawdown_pct||0).toFixed(1)+'%');
   const exp=s.expectancy_usdt;
   const expEl=document.getElementById('pt-expect');
-  if(expEl){
-    expEl.textContent=exp!=null?(exp>=0?'+':'')+exp.toFixed(2)+'$':'—';
-    expEl.style.color=exp>=0?'var(--green)':'var(--red)';
-  }
+  if(expEl){expEl.textContent=exp!=null?(exp>=0?'+':'')+exp.toFixed(2)+'$':'—';expEl.style.color=exp>=0?'var(--green)':'var(--red)';}
   setText('pt-open-pos',(s.open_positions||0)+' ouvertes');
-  // Stats bar bas du journal
+
+  // ── trade stats grid (inspired by trading-bot-platform TradesStats) ──────
+  const tot=s.total_trades||0;
+  setText('ts-total', tot>0?tot:'—');
+  setText('ts-wl', tot>0?`${s.wins||0}W / ${s.losses||0}L`:'—');
+  const tsWr=document.getElementById('ts-winrate');
+  if(tsWr){tsWr.textContent=wr!=null?wr.toFixed(1)+'%':'—';tsWr.style.color=wr>55?'var(--green)':wr>40?'var(--text)':'var(--red)';}
+  const tsSp=document.getElementById('ts-sharpe');
+  if(tsSp){tsSp.textContent=sp!=null?sp.toFixed(2):'—';tsSp.style.color=sp>1?'var(--green)':sp>0?'var(--text)':'var(--red)';}
+  const best=s.best_trade_pct;
+  const tsBest=document.getElementById('ts-best');
+  if(tsBest){tsBest.textContent=best!=null?(best>=0?'+':'')+best.toFixed(1)+'%':'—';}
+  setText('ts-best-sub',s.best_trade_usdt!=null?(s.best_trade_usdt>=0?'+':'')+s.best_trade_usdt.toFixed(2)+'$':'—');
+  const worst=s.worst_trade_pct;
+  const tsWorst=document.getElementById('ts-worst');
+  if(tsWorst){tsWorst.textContent=worst!=null?worst.toFixed(1)+'%':'—';}
+  setText('ts-worst-sub',s.worst_trade_usdt!=null?s.worst_trade_usdt.toFixed(2)+'$':'—');
+  const tsExp=document.getElementById('ts-expect');
+  if(tsExp){tsExp.textContent=exp!=null?(exp>=0?'+':'')+exp.toFixed(2)+'$':'—';tsExp.style.color=exp>=0?'var(--green)':'var(--red)';}
+
+  // ── portfolio overview strip (main dashboard) ──────────────────────────
+  const povEq=document.getElementById('pov-equity');
+  if(povEq)povEq.textContent=fmt(eq,2)+'$';
+  const povDelta=document.getElementById('pov-equity-delta');
+  if(povDelta){povDelta.textContent=(pct>=0?'+':'')+pct.toFixed(2)+'%';povDelta.className='port-card-delta '+(pct>=0?'pos':'neg');}
+  const povWr=document.getElementById('pov-winrate');
+  if(povWr){povWr.textContent=wr!=null?wr.toFixed(1)+'%':'—';povWr.style.color=wr>55?'var(--green)':wr>40?'var(--text)':'var(--red)';}
+  setText('pov-trades-txt',`${tot} trades · ${s.wins||0}W / ${s.losses||0}L`);
+  const pnl=(eq-init);
+  const povPnl=document.getElementById('pov-pnl');
+  if(povPnl){povPnl.textContent=(pnl>=0?'+':'')+fmt(pnl,2)+'$';povPnl.style.color=pnl>=0?'var(--green)':'var(--red)';}
+  const povSharpe=document.getElementById('pov-sharpe');
+  if(povSharpe){povSharpe.textContent=sp!=null?sp.toFixed(2):'—';povSharpe.style.color=sp>1?'var(--green)':sp>0?'var(--text)':'var(--red)';}
+  const povDd=document.getElementById('pov-dd');
+  if(povDd){povDd.textContent=dd!=null?dd.toFixed(1)+'%':'—';}
+  setText('pov-open-pos',s.open_positions||0);
+  const povExp=document.getElementById('pov-expect');
+  if(povExp){povExp.textContent=exp!=null?(exp>=0?'+':'')+exp.toFixed(2)+'$':'—';povExp.style.color=exp>=0?'var(--green)':'var(--red)';}
+
+  // ── journal footer stats ────────────────────────────────────────────────
   setText('pt-avg-win',s.avg_win_usdt!=null?'+'+s.avg_win_usdt.toFixed(2)+'$':'—');
   setText('pt-avg-loss',s.avg_loss_usdt!=null?'-'+s.avg_loss_usdt.toFixed(2)+'$':'—');
   setText('pt-fees',s.total_fees!=null?s.total_fees.toFixed(2)+'$':'—');
-  setText('pt-best',s.best_trade_pct!=null?(s.best_trade_pct>=0?'+':'')+s.best_trade_pct.toFixed(1)+'%':'—');
-  setText('pt-worst',s.worst_trade_pct!=null?s.worst_trade_pct.toFixed(1)+'%':'—');
+  setText('pt-best',best!=null?(best>=0?'+':'')+best.toFixed(1)+'%':'—');
+  setText('pt-worst',worst!=null?worst.toFixed(1)+'%':'—');
   const sumEl=document.getElementById('pt-perf-summary');
-  if(sumEl&&s.total_trades>0){
-    const rr=s.avg_win_usdt&&s.avg_loss_usdt&&s.avg_loss_usdt>0
-      ?(s.avg_win_usdt/s.avg_loss_usdt).toFixed(2):null;
+  if(sumEl&&tot>0){
+    const rr=s.avg_win_usdt&&s.avg_loss_usdt&&s.avg_loss_usdt>0?(s.avg_win_usdt/s.avg_loss_usdt).toFixed(2):null;
     sumEl.textContent=rr?'RR moyen: '+rr:'';
   }
 }
@@ -1666,38 +2229,40 @@ function _ptUpdatePositions(positions){
   if(cnt) cnt.textContent=syms.length;
   if(!wrap) return;
   if(!syms.length){
-    wrap.innerHTML='<div style="color:var(--text3);font-family:var(--font-mono);font-size:10px;padding:20px;text-align:center;">Aucune position ouverte — en attente de signal qualifié (score ≥ 7/11)</div>';
+    wrap.innerHTML='<div style="color:var(--text3);font-family:var(--font-mono);font-size:10px;padding:20px;text-align:center;">Aucune position ouverte — en attente de signal qualifié (score ≥ 7/'+SCORE_MAX+')</div>';
     return;
   }
-  wrap.innerHTML=syms.map(sym=>{
-    const p=positions[sym];
-    const isLong=p.side==='LONG';
-    const pnl=p.unrealized_pnl||0, pct=p.unrealized_pct||0;
-    const rem=Math.round((p.remaining_pct||1)*100);
-    const sideColor=isLong?'var(--green)':'var(--red)';
-    const pnlColor=pnl>=0?'var(--green)':'var(--red)';
-    const confsHtml=(p.confs||[]).length
-      ?`<div class="pt-conf-tags">${(p.confs||[]).map(c=>`<span class="pt-conf-tag">${c}</span>`).join('')}</div>`:'';
-    const beIcon=p.sl_at_be?'🛡':'';
-    return `<div class="pt-pos-card" style="border-color:${isLong?'rgba(0,255,136,0.2)':'rgba(255,45,85,0.2)'};background:${isLong?'var(--green3)':'var(--red3)'};">
-      <div class="pt-pos-header">
-        <span class="pt-pos-side" style="color:${sideColor};">${p.side} ${sym.replace('/USDT','')} ${beIcon}</span>
-        <span class="pt-pos-pnl" style="color:${pnlColor};">${pnl>=0?'+':''}${pnl.toFixed(2)}$ (${pct>=0?'+':''}${pct.toFixed(1)}%)</span>
-      </div>
-      <div class="pt-pos-grid">
-        <div>ENTRÉE<div>${fmt(p.entry_price,2)}</div></div>
-        <div>PRIX ACT.<div style="color:var(--cyan);">${fmt(p.current_price,2)}</div></div>
-        <div>SL ${beIcon?'(BE)':''}<div style="color:var(--red);">${fmt(p.sl,2)}</div></div>
-        <div>RESTE<div>${rem}%</div></div>
-      </div>
-      ${confsHtml}
-      <div style="margin-top:5px;font-family:var(--font-mono);font-size:8px;color:var(--text3);">
-        Score: <span style="color:var(--cyan);">${p.score||'?'}/11</span>
-        · Size: <span style="color:var(--text);">${fmt(p.size_usdt,1)}$</span>
-        · ${p.entry_ts?new Date(p.entry_ts).toLocaleTimeString('fr-FR'):'—'}
-      </div>
-    </div>`;
-  }).join('');
+  // Table layout inspired by trading-bot-platform PositionsPanel
+  wrap.innerHTML=`<table class="pos-table">
+    <thead><tr>
+      <th>SYMBOLE</th><th>SIDE</th><th>ENTRÉE</th><th>PRIX ACT.</th>
+      <th>SL</th><th>SIZE</th><th>RESTE</th><th>PNL $</th><th>PNL %</th>
+      <th>SCORE</th><th>OUVERT</th>
+    </tr></thead>
+    <tbody>${syms.map(sym=>{
+      const p=positions[sym];
+      const isLong=p.side==='LONG';
+      const pnl=p.unrealized_pnl||0, pct=p.unrealized_pct||0;
+      const rem=Math.round((p.remaining_pct||1)*100);
+      const beTag=p.sl_at_be?'<span class="pos-be-badge">BE</span>':'';
+      const pnlCls=pnl>=0?'pnl-pos':'pnl-neg';
+      const confs=(p.confs||[]).slice(0,3).join(' ');
+      return`<tr>
+        <td class="sym-cell">${sym.replace('/USDT','')}<br><span style="font-size:8px;color:var(--text3);font-weight:400;">${confs}</span></td>
+        <td class="${isLong?'side-long':'side-short'}">${p.side}</td>
+        <td>${fmt(p.entry_price,2)}</td>
+        <td style="color:var(--cyan)">${fmt(p.current_price,2)}</td>
+        <td style="color:var(--red)">${fmt(p.sl,2)}${beTag}</td>
+        <td>${fmt(p.size_usdt,1)}$</td>
+        <td style="color:var(--text2)">${rem}%</td>
+        <td class="${pnlCls}">${pnl>=0?'+':''}${pnl.toFixed(2)}$</td>
+        <td class="${pnlCls}">${pct>=0?'+':''}${pct.toFixed(1)}%</td>
+        <td style="color:var(--cyan)">${p.score||'?'}/${SCORE_MAX}</td>
+        <td style="color:var(--text3);font-size:9px;">${p.entry_ts?new Date(p.entry_ts).toLocaleTimeString('fr-FR'):'—'}</td>
+      </tr>`;
+    }).join('')}
+    </tbody>
+  </table>`;
 }
 
 function _ptUpdateJournal(trades){
@@ -1723,7 +2288,7 @@ function _ptUpdateJournal(trades){
       <td style="color:${sideColor};font-weight:700;">${t.side}</td>
       <td>${fmt(t.entry_price,2)}</td>
       <td>${fmt(t.avg_exit_price,2)}</td>
-      <td style="color:var(--cyan);">${t.score||'—'}/11</td>
+      <td style="color:var(--cyan);">${t.score||'—'}/${SCORE_MAX}</td>
       <td style="max-width:220px;">${confsHtml}</td>
       <td style="white-space:nowrap;">${exitLabel}</td>
       <td style="color:${pnlColor};font-weight:700;">${(t.pnl_usdt||0)>=0?'+':''}${(t.pnl_usdt||0).toFixed(2)}$</td>
@@ -1744,8 +2309,16 @@ function _ptUpdateChart(curve){
   _ptChart.data.labels=labels;
   _ptChart.data.datasets[0].data=vals;
   _ptChart.data.datasets[0].borderColor=positive?'#00f5d4':'#ff2d55';
-  _ptChart.data.datasets[0].backgroundColor=positive?'rgba(0,245,212,0.06)':'rgba(255,45,85,0.06)';
+  _ptChart.data.datasets[0].backgroundColor=positive?'rgba(0,245,212,0.09)':'rgba(255,45,85,0.09)';
   _ptChart.update('none');
+  // Update badge + range
+  setText('pt-curve-pts',curve.length+' pts');
+  const rangeEl=document.getElementById('pt-chart-range');
+  if(rangeEl&&curve.length>1){
+    const t0=new Date(curve[0].ts).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'});
+    const t1=new Date(curve[curve.length-1].ts).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'});
+    rangeEl.textContent=t0+' → '+t1;
+  }
 }
 
 async function resetPaperAccount(){
@@ -1859,6 +2432,7 @@ async function titanQuickSend() {
   if (!text) return;
   resp.textContent = '⏳ Titan réfléchit...';
   resp.style.color = 'var(--text2)';
+  if (window._titanOrb) window._titanOrb.setState('listening');
   try {
     const r = await fetch('/titan/command', {
       method: 'POST',
@@ -1869,9 +2443,83 @@ async function titanQuickSend() {
     resp.textContent = d.response || '(pas de réponse)';
     resp.style.color = 'var(--cyan)';
     if (input) input.value = '';
+    if (window._titanOrb) { window._titanOrb.setState('speaking'); setTimeout(() => window._titanOrb.setState('idle'), 3000); }
   } catch(e) {
     resp.textContent = '✗ Titan non disponible (TITAN_ENABLED=1 ?)';
     resp.style.color = 'var(--red)';
+    if (window._titanOrb) window._titanOrb.setState('error');
+    setTimeout(() => { if (window._titanOrb) window._titanOrb.setState('idle'); }, 2000);
+  }
+}
+
+// ── GitHub status + push ───────────────────────────────────────
+async function fetchGithubStatus() {
+  try {
+    const r = await fetch('/services/github/status');
+    if (!r.ok) { setLed('github','off'); return; }
+    const d = await r.json();
+
+    const branchEl  = document.getElementById('github-branch-info');
+    const lastEl    = document.getElementById('github-last-commit');
+    const filesEl   = document.getElementById('github-files-list');
+
+    if (branchEl) branchEl.textContent = `↳ ${d.remote || '?'}  [${d.branch || 'master'}]`;
+    if (lastEl)   lastEl.textContent   = d.last || '—';
+
+    const n = d.changes || 0;
+    if (n > 0) {
+      setLed('github', 'busy');
+      if (filesEl) filesEl.innerHTML =
+        `<span style="color:var(--amber)">${n} fichier(s) modifié(s) :</span><br>` +
+        (d.files || []).map(f => `  ${f}`).join('<br>');
+    } else {
+      setLed('github', 'on');
+      if (filesEl) filesEl.innerHTML = '<span style="color:var(--green-dim)">✓ Rien à commiter — dépôt à jour</span>';
+    }
+  } catch(e) {
+    setLed('github', 'off');
+    const el = document.getElementById('github-branch-info');
+    if (el) el.textContent = 'Git non disponible';
+  }
+}
+
+async function githubPush() {
+  const msgInput = document.getElementById('github-commit-msg');
+  const logEl    = document.getElementById('github-log');
+  const btn      = document.getElementById('btn-github-push');
+  const message  = msgInput?.value?.trim() || '';
+
+  if (btn)   { btn.disabled = true; btn.textContent = '↑ EN COURS...'; }
+  if (logEl) logEl.textContent = '⏳ Exécution du push...';
+  setLed('github', 'busy');
+
+  try {
+    const r = await fetch('/services/github/push', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ message, branch: 'master' }),
+    });
+    const d = await r.json();
+
+    const logLines = (d.log || []).join('\n');
+
+    if (d.status === 'pushed') {
+      if (logEl) { logEl.style.color = 'var(--cyan)'; logEl.textContent = '✓ ' + d.message + '\n' + logLines; }
+      if (msgInput) msgInput.value = '';
+      setLed('github', 'on');
+      setTimeout(fetchGithubStatus, 800);
+    } else if (d.status === 'nothing_to_commit') {
+      if (logEl) { logEl.style.color = 'var(--text2)'; logEl.textContent = '○ ' + d.message; }
+      setLed('github', 'on');
+    } else {
+      if (logEl) { logEl.style.color = 'var(--red)'; logEl.textContent = '✗ Erreur : ' + (d.message || '') + '\n' + logLines; }
+      setLed('github', 'off');
+    }
+  } catch(e) {
+    if (logEl) { logEl.style.color = 'var(--red)'; logEl.textContent = '✗ ' + e.message; }
+    setLed('github', 'off');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '↑ PUSH'; }
   }
 }
 
@@ -1879,11 +2527,20 @@ async function titanQuickSend() {
 setInterval(() => {
   if (document.getElementById('sec-services')?.classList.contains('active')) {
     fetchServicesStatus();
+    fetchGithubStatus();
   }
 }, SVC_POLL_MS);
 
 // Charger au démarrage (voyants dès l'ouverture)
 setTimeout(fetchServicesStatus, 1500);
+setTimeout(fetchGithubStatus,   2000);
+
+// ══════════════════════════════════════════════════════
+// AVATAR WEBGL — Three.js / VRM
+// ══════════════════════════════════════════════════════
+// L'avatar.js est chargé en module externe (voir la balise script ci-dessous).
+window._titanOrb = { setState: () => {}, setAmplitude: () => {} }; // Mock pour la rétrocompatibilité
 </script>
+<script type="module" src="/assistant/avatar.js?v=4"></script>
 </body>
 </html>
