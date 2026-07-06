@@ -28,6 +28,7 @@ from utils.config import (
     PAPER_INITIAL_CAPITAL,
     PAPER_JOURNAL_CSV,
     PAPER_JOURNAL_FILE,
+    PAPER_MAX_AGE_HOURS,
     PAPER_MAX_EXPOSURE_PCT,
     PAPER_MAX_POSITIONS,
     PAPER_RISK_PCT,
@@ -424,6 +425,28 @@ class PaperEngine:
                     new_ts = current_price + offset
                     if new_ts < pos.trail_sl:
                         pos.trail_sl = new_ts
+
+            # ── Time-stop ────────────────────────────────────────────────────
+            # Une position qui n'a touché ni SL ni TP après N heures est un
+            # trade dont la thèse est invalidée — on la ferme au prix courant
+            # plutôt que de la laisser dériver (cf. position PAXG restée
+            # ouverte 90 jours pour finir à -11%).
+            if PAPER_MAX_AGE_HOURS > 0:
+                try:
+                    t_entry = datetime.fromisoformat(pos.entry_ts.replace("Z", "+00:00"))
+                    age_h = (datetime.now(timezone.utc) - t_entry).total_seconds() / 3600.0
+                except Exception:
+                    age_h = 0.0
+                if age_h >= PAPER_MAX_AGE_HOURS:
+                    msg = self._close_partial_unsafe(pos, current_price, pos.remaining_pct, "time_stop")
+                    messages.append(msg)
+                    logger.info("[PAPER] ⏱ TIME-STOP %s après %.0fh (max=%.0fh)",
+                                sym, age_h, PAPER_MAX_AGE_HOURS)
+                    trade = self._finalize_position_unsafe(sym, pos)
+                    self._append_csv(trade)
+                    self._update_equity_curve()
+                    await self._save_state_unsafe()
+                    return messages
 
             eff_sl = pos.effective_sl()
 

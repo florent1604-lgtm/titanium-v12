@@ -268,6 +268,13 @@ FUNDAMENTALS_CONFIG_FILE    = Path(_str("FUNDAMENTALS_CONFIG_FILE", "config/fund
 # "disabled" = signaux seulement, aucune position
 TRADING_MODE = _str("TRADING_MODE", "paper")
 
+# ── Analyse spectrale (Phase 1 — filtre de régime, cf. CLAUDE.md) ────────────
+SPECTRAL_ENABLED         = _bool("SPECTRAL_ENABLED", "1")
+SPECTRAL_TF              = _str("SPECTRAL_TF", "30m")       # timeframe d'analyse
+SPECTRAL_PMIN            = _int("SPECTRAL_PMIN", 8)          # période cycle min (barres)
+SPECTRAL_PMAX            = _int("SPECTRAL_PMAX", 50)         # période cycle max (barres)
+SPECTRAL_POWER_THRESHOLD = _float("SPECTRAL_POWER_THRESHOLD", 0.35)
+
 # ── Paper Trading ─────────────────────────────────────────────────────────────
 PAPER_INITIAL_CAPITAL  = _float("PAPER_INITIAL_CAPITAL", 1000.0)    # USDT de départ
 PAPER_RISK_PCT         = _float("PAPER_RISK_PCT", 0.02)             # 2% du capital risqué/trade
@@ -277,6 +284,7 @@ PAPER_FEE_BPS          = _float("PAPER_FEE_BPS", 4.0)               # 0.04% frai
 PAPER_FUNDING_RATE_8H  = _float("PAPER_FUNDING_RATE_8H", 0.01)      # 0.01% funding/8h (longs paient)
 PAPER_MAX_POSITIONS    = _int("PAPER_MAX_POSITIONS", 3)              # positions simultanées max
 PAPER_MAX_EXPOSURE_PCT = _float("PAPER_MAX_EXPOSURE_PCT", 0.60)      # % capital max exposé
+PAPER_MAX_AGE_HOURS    = _float("PAPER_MAX_AGE_HOURS", 72.0)         # time-stop: fermeture forcée après N heures (0=désactivé)
 PAPER_TRAILING_STOP    = _bool("PAPER_TRAILING_STOP", "0")           # trailing stop activé
 PAPER_TRAILING_PCT     = _float("PAPER_TRAILING_PCT", 0.8)           # multiple ATR pour trailing
 PAPER_JOURNAL_FILE     = Path(_str("PAPER_JOURNAL_FILE", "data/paper_journal.json"))

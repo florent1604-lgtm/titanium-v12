@@ -1,1 +1,23 @@
-[]
+[
+  {
+    "symbol": "PAXG/USDT",
+    "side": "LONG",
+    "entry_price": 4680.216446,
+    "avg_exit_price": 4166.208774,
+    "size_usdt": 600.0,
+    "pnl_usdt": -66.1354,
+    "pnl_pct": -11.02,
+    "fee_total": 0.48,
+    "funding_paid": 0.0,
+    "entry_ts": "2026-04-06T08:17:36.410558+00:00",
+    "exit_ts": "2026-07-05T17:00:27.385613+00:00",
+    "duration_min": 130122.8,
+    "score": 7,
+    "exit_reason": "sl",
+    "correlation_id": "0451f4280510",
+    "source": "internal",
+    "confs": [],
+    "regime": "",
+    "macro_risk": 0.0
+  }
+]

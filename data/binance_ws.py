@@ -127,6 +127,43 @@ async def _handle_agg_trade(sym: str, msg: dict) -> None:
         logger.debug("[WS] handle_agg_trade %s: %s", sym, e)
 
 
+async def seed_candle_store(session: aiohttp.ClientSession) -> None:
+    """Amorce raw_1s avec l'historique REST 1m au démarrage.
+
+    Sans ce seed, candle_store part de zéro à chaque lancement et le scan
+    reste bloqué sur "df30 insuffisant" jusqu'à accumuler MIN_DF30_FOR_SCAN
+    bougies 30s depuis le flux live — plusieurs minutes pour BTC, bien pire
+    pour PAXG (trades rares). Chaque bougie 1m est convertie en 2 barres
+    synthétiques placées dans des fenêtres 30s consécutives, puis le
+    pipeline de resample existant reconstruit candle_store normalement.
+    """
+    from data.binance_rest import fetch_klines
+    for sym in SYMBOLS:
+        try:
+            df1m = await fetch_klines(session, sym, "1m", limit=30)
+        except Exception as e:
+            logger.warning("[SEED] %s — backfill REST impossible (%s), le scan attendra le flux WS", sym, e)
+            continue
+        if df1m is None or df1m.empty:
+            logger.warning("[SEED] %s — aucune bougie 1m reçue, le scan attendra le flux WS", sym)
+            continue
+        for ts, row in df1m.iterrows():
+            base = int(ts.timestamp())
+            half_qty = float(row["v"]) / 2.0
+            for offset in (0, 30):
+                raw_1s[sym].append({
+                    "ts":    base + offset,
+                    "open":  float(row["open"]),
+                    "high":  float(row["high"]),
+                    "low":   float(row["low"]),
+                    "price": float(row["close"]),
+                    "qty":   half_qty,
+                })
+        _resample_1s_to_30s(sym)
+        n = len(candle_store.get(sym, []))
+        logger.info("[SEED] %s — %d bougies 30s amorcées depuis REST 1m, scan prêt immédiatement", sym, n)
+
+
 async def ws_binance(sym: str) -> None:
     stream = f"{_BINANCE_SYM[sym]}@aggTrade"
     ws_idx = 0

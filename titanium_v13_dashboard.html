@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TITANIUM v13</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+/* ── v13 : un écran, trois questions — santé / capital / vision ── */
+:root{
+  --bg:#0b0e14;--surface:#12161f;--surface2:#181d29;
+  --line:#232a3a;
+  --txt:#e6ebf4;--txt2:#9aa7bd;--txt3:#66738c;
+  --ok:#3ddc97;--warn:#ffb454;--err:#ff6b81;--accent:#59c2ff;
+  --long:#3ddc97;--short:#ff6b81;
+  --mono:'Cascadia Code','JetBrains Mono',Consolas,monospace;
+  --sans:'Segoe UI',system-ui,sans-serif;
+  --r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:var(--sans);min-height:100vh;padding:20px 24px}
+a{color:var(--accent)}
+
+/* Bandeau santé : LA réponse à "le bot va-t-il bien ?" en un regard */
+#healthbar{display:flex;align-items:center;gap:16px;padding:14px 20px;border-radius:var(--r);
+  background:var(--surface);border:1px solid var(--line);margin-bottom:18px;flex-wrap:wrap}
+#healthbar .brand{font-family:var(--mono);font-weight:700;font-size:15px;letter-spacing:.12em;color:var(--accent)}
+.hchip{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:12px;color:var(--txt2)}
+.hchip .led{width:9px;height:9px;border-radius:50%;background:var(--txt3)}
+.hchip.ok .led{background:var(--ok);box-shadow:0 0 8px var(--ok)}
+.hchip.warn .led{background:var(--warn);box-shadow:0 0 8px var(--warn)}
+.hchip.err .led{background:var(--err);box-shadow:0 0 8px var(--err)}
+#healthbar .spacer{margin-left:auto}
+#uptime,#clock{font-family:var(--mono);font-size:12px;color:var(--txt3)}
+
+/* Grille principale */
+#grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:1100px){#grid{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.panel h2{font-size:12px;font-weight:600;color:var(--txt3);text-transform:uppercase;
+  letter-spacing:.14em;margin-bottom:14px;font-family:var(--mono)}
+
+/* Capital */
+#equity-num{font-family:var(--mono);font-size:34px;font-weight:700}
+#equity-sub{font-size:13px;color:var(--txt2);margin:4px 0 14px}
+#equity-chart-wrap{height:180px}
+
+/* Cartes signaux */
+.sig{background:var(--surface2);border:1px solid var(--line);border-radius:var(--r);
+  padding:14px 16px;margin-bottom:12px}
+.sig .row1{display:flex;align-items:baseline;gap:12px;margin-bottom:8px}
+.sig .sym{font-family:var(--mono);font-weight:700;font-size:16px}
+.sig .px{font-family:var(--mono);font-size:15px;color:var(--txt2);margin-left:auto}
+.badge{font-family:var(--mono);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
+.badge.long{background:rgba(61,220,151,.12);color:var(--long)}
+.badge.short{background:rgba(255,107,129,.12);color:var(--short)}
+.badge.neutral{background:rgba(154,167,189,.1);color:var(--txt2)}
+.sig .meta{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--txt2)}
+.sig .meta b{color:var(--txt);font-family:var(--mono)}
+.spec-chip{font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:12px;
+  background:rgba(89,194,255,.1);color:var(--accent)}
+
+/* Positions */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:var(--txt3);font-weight:600;font-size:11px;text-transform:uppercase;
+  letter-spacing:.08em;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:8px;border-bottom:1px solid var(--line);font-family:var(--mono)}
+.pnl-pos{color:var(--ok)}.pnl-neg{color:var(--err)}
+.empty{color:var(--txt3);font-size:13px;padding:12px 4px}
+
+/* Contexte marché */
+.ctx-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.ctx-item{background:var(--surface2);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.ctx-item .k{font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.ctx-item .v{font-family:var(--mono);font-size:20px;font-weight:700}
+.ctx-item .s{font-size:11px;color:var(--txt2);margin-top:2px}
+
+footer{margin-top:18px;font-size:11px;color:var(--txt3);display:flex;gap:16px}
+</style>
+</head>
+<body>
+
+<div id="healthbar">
+  <span class="brand">TITANIUM v13</span>
+  <span class="hchip" id="c-api"><span class="led"></span>API</span>
+  <span class="hchip" id="c-feed"><span class="led"></span><span id="c-feed-txt">FEED</span></span>
+  <span class="hchip" id="c-scan"><span class="led"></span>SCAN</span>
+  <span class="spacer"></span>
+  <span id="uptime">⏱ —</span>
+  <span id="clock">--:--:--</span>
+</div>
+
+<div id="grid">
+  <div class="panel">
+    <h2>Capital (paper)</h2>
+    <div id="equity-num">— $</div>
+    <div id="equity-sub">—</div>
+    <div id="equity-chart-wrap"><canvas id="equity-chart"></canvas></div>
+  </div>
+
+  <div class="panel">
+    <h2>Signaux en direct</h2>
+    <div id="signals"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Positions ouvertes</h2>
+    <table>
+      <thead><tr><th>Symbole</th><th>Sens</th><th>Entrée</th><th>PnL</th><th>Âge</th></tr></thead>
+      <tbody id="positions"></tbody>
+    </table>
+    <div class="empty" id="pos-empty" style="display:none">Aucune position ouverte</div>
+  </div>
+
+  <div class="panel">
+    <h2>Contexte marché — flux externes</h2>
+    <div class="ctx-grid">
+      <div class="ctx-item"><div class="k">Fear &amp; Greed</div><div class="v" id="fng-v">—</div><div class="s" id="fng-s">—</div></div>
+      <div class="ctx-item"><div class="k">Dominance BTC</div><div class="v" id="btcd-v">—</div><div class="s">CoinGecko</div></div>
+      <div class="ctx-item"><div class="k">MCap 24h</div><div class="v" id="mcap-v">—</div><div class="s">variation globale</div></div>
+      <div class="ctx-item"><div class="k">Risque macro</div><div class="v" id="macro-v">—</div><div class="s" id="macro-s">news scorées</div></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <span>v13 — santé · capital · vision</span>
+  <a href="/">ancien dashboard v12</a>
+</footer>
+
+<script>
+const API='';
+let equityChart=null;
+
+function led(id,state){const el=document.getElementById(id);if(el)el.className='hchip '+state;}
+function txt(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
+function fmtUp(s){if(s>=86400)return Math.floor(s/86400)+'j '+Math.floor(s%86400/3600)+'h';
+  if(s>=3600)return Math.floor(s/3600)+'h'+String(Math.floor(s%3600/60)).padStart(2,'0');
+  return Math.floor(s/60)+'m'+String(s%60).padStart(2,'0');}
+
+function renderSignals(signals,spreads){
+  const box=document.getElementById('signals');box.innerHTML='';
+  for(const[sym,s]of Object.entries(signals||{})){
+    const side=(s.side||'NEUTRE').toUpperCase();
+    const cls=side.includes('ACHAT')||side==='LONG'?'long':(side.includes('VENTE')||side==='SHORT'?'short':'neutral');
+    const spec=s.spectral;
+    const div=document.createElement('div');div.className='sig';
+    div.innerHTML=`
+      <div class="row1">
+        <span class="sym">${sym}</span>
+        <span class="badge ${cls}">${side}</span>
+        ${spec&&spec.has_cycle?`<span class="spec-chip" title="Analyse spectrale : cycle dominant ${spec.dominant_cycle} barres, puissance ${spec.cycle_power}">◉ cycle ${spec.dominant_cycle}b · ${spec.phase_zone}</span>`:''}
+        <span class="px">${s.price?Number(s.price).toLocaleString('fr-FR',{maximumFractionDigits:2})+' $':'—'}</span>
+      </div>
+      <div class="meta">
+        <span>score <b>${s.score??'—'}/16</b></span>
+        <span>SL <b>${s.sl?Number(s.sl).toFixed(2):'—'}</b></span>
+        <span>TP1 <b>${s.tp1?Number(s.tp1).toFixed(2):'—'}</b></span>
+        ${s.macro_risk?`<span>macro <b>${s.macro_risk}</b></span>`:''}
+        ${spec&&!spec.has_cycle?'<span title="Pas de cycle dominant détecté — marché en tendance ou range">spectral: <b>trend/range</b></span>':''}
+      </div>`;
+    box.appendChild(div);
+  }
+  if(!box.children.length)box.innerHTML='<div class="empty">En attente du premier scan…</div>';
+}
+
+function renderPositions(paper){
+  const tb=document.getElementById('positions');tb.innerHTML='';
+  const pos=Object.values(paper?.positions||{});
+  document.getElementById('pos-empty').style.display=pos.length?'none':'block';
+  for(const p of pos){
+    const pnl=p.unrealized_pnl??0;
+    const age=p.entry_ts?Math.round((Date.now()-new Date(p.entry_ts))/3600000)+'h':'—';
+    tb.insertAdjacentHTML('beforeend',`<tr>
+      <td>${p.symbol||'—'}</td>
+      <td class="${p.side==='LONG'?'pnl-pos':'pnl-neg'}">${p.side||'—'}</td>
+      <td>${p.entry_price?Number(p.entry_price).toFixed(2):'—'}</td>
+      <td class="${pnl>=0?'pnl-pos':'pnl-neg'}">${pnl>=0?'+':''}${pnl.toFixed(2)} $</td>
+      <td>${age}</td></tr>`);
+  }
+}
+
+function renderEquity(paper){
+  const eq=paper?.equity??paper?.cash;
+  const init=paper?.initial_capital||1000;
+  if(eq!=null){
+    txt('equity-num',Number(eq).toLocaleString('fr-FR',{maximumFractionDigits:2})+' $');
+    const pct=(eq/init-1)*100;
+    const el=document.getElementById('equity-sub');
+    el.textContent=`${pct>=0?'+':''}${pct.toFixed(1)} % depuis le départ (${init} $) · ${paper?.trades_count??paper?.trades?.length??'—'} trades`;
+    el.style.color=pct>=0?'var(--ok)':'var(--err)';
+  }
+  const curve=paper?.equity_curve||[];
+  if(curve.length&&window.Chart){
+    const labels=curve.map(p=>p.ts?new Date(p.ts).toLocaleDateString('fr-FR'):'');
+    const data=curve.map(p=>p.equity??p.value??null);
+    if(!equityChart){
+      equityChart=new Chart(document.getElementById('equity-chart'),{
+        type:'line',
+        data:{labels,datasets:[{data,borderColor:'#59c2ff',borderWidth:2,pointRadius:0,tension:.25,
+          fill:true,backgroundColor:'rgba(89,194,255,.06)'}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+          scales:{x:{display:false},y:{grid:{color:'#232a3a'},ticks:{color:'#66738c',font:{family:'Consolas'}}}}}
+      });
+    }else{equityChart.data.labels=labels;equityChart.data.datasets[0].data=data;equityChart.update('none');}
+  }
+}
+
+async function refresh(){
+  try{
+    const r=await fetch(API+'/api/state');
+    if(!r.ok)throw 0;
+    const d=await r.json();
+    led('c-api','ok');
+    const h=d.health;
+    if(h){
+      if(h.scan_ready){led('c-feed','ok');txt('c-feed-txt','FEED');led('c-scan','ok');}
+      else{led('c-feed','warn');
+        txt('c-feed-txt','FEED '+Object.entries(h.candles||{}).map(([s,c])=>s.split('/')[0]+' '+c.bars).join(' '));
+        led('c-scan','warn');}
+      txt('uptime','⏱ '+fmtUp(h.uptime_sec||0));
+    }
+    renderSignals(d.signals,d.spreads);
+    renderPositions(d.paper);
+    renderEquity(d.paper);
+    const fg=d.external?.fear_greed,gm=d.external?.global_market;
+    if(fg){txt('fng-v',fg.value);txt('fng-s',fg.label);
+      document.getElementById('fng-v').style.color=fg.value<=25?'var(--err)':fg.value>=75?'var(--warn)':'var(--txt)';}
+    if(gm){txt('btcd-v',gm.btc_dominance_pct+' %');
+      txt('mcap-v',(gm.mcap_change_24h_pct>=0?'+':'')+gm.mcap_change_24h_pct+' %');
+      document.getElementById('mcap-v').style.color=gm.mcap_change_24h_pct>=0?'var(--ok)':'var(--err)';}
+    const anySig=Object.values(d.signals||{})[0];
+    if(anySig?.macro_risk!=null)txt('macro-v',anySig.macro_risk);
+  }catch(e){led('c-api','err');led('c-feed','err');led('c-scan','err');}
+}
+
+setInterval(()=>{document.getElementById('clock').textContent=new Date().toLocaleTimeString('fr-FR');},1000);
+refresh();setInterval(refresh,5000);
+</script>
+</body>
+</html>

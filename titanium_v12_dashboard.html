@@ -29,7 +29,7 @@
   --red:#ff2d55;--red2:#cc2244;--red3:rgba(255,45,85,0.08);
   --gold:#ffd700;--gold2:#cc9900;--gold3:rgba(255,215,0,0.08);
   --blue:#4d9fff;--purple:#b44dff;--orange:#ff6b2d;
-  --text:#e8f0fe;--text2:#8ba3c7;--text3:#4a6080;
+  --text:#e8f0fe;--text2:#8ba3c7;--text3:#647ea3; /* text3 éclairci : 4a6080 était illisible (contraste WCAG ~3.2:1) */
   --buy:#00ff88;--sell:#ff2d55;--neutral:#8ba3c7;
   --glow-cyan:0 0 20px rgba(0,245,212,0.4);
   --glow-green:0 0 20px rgba(0,255,136,0.4);
@@ -552,8 +552,10 @@ textarea:focus{border-color:var(--border2);}
     <div class="hdr-pill" id="pill-ws"><div class="dot"></div><span id="ws-label">WS INIT</span></div>
     <div class="hdr-pill" id="pill-api"><div class="dot"></div><span id="api-label">API</span></div>
     <div class="hdr-pill" id="pill-ollama"><div class="dot"></div><span id="ollama-label">OLLAMA</span></div>
+    <div class="hdr-pill" id="pill-feed" title="État du flux de données — bougies 30s accumulées par symbole"><div class="dot"></div><span id="feed-label">FEED</span></div>
     <div class="hdr-sep"></div>
     <span id="scan-count" style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">scan #0</span>
+    <span id="hdr-uptime" style="font-family:var(--font-mono);font-size:10px;color:var(--text3)" title="Uptime du bot">—</span>
     <div class="hdr-sep"></div>
     <div class="hdr-ver">SMC·11P · WF · STRICT · LEARN</div>
     <div class="hdr-clock" id="clock">--:--:--</div>
@@ -1747,6 +1749,25 @@ async function fetchState(){
     setText('bb-scan','#'+scanCount);
     setText('bb-ts',data.ts?new Date(data.ts).toLocaleTimeString():'—');
     setText('ws-clients-val',data.ws_clients||0);
+
+    // Santé du feed de données — visible en permanence dans le header.
+    // Vert = scan opérationnel ; orange = accumulation en cours (détail par symbole).
+    const h=data.health;
+    if(h){
+      if(h.scan_ready){
+        setHeaderPill('pill-feed','feed-label','FEED OK','ok');
+      }else{
+        const detail=Object.entries(h.candles||{})
+          .map(([s,c])=>s.split('/')[0]+' '+c.bars)
+          .join(' · ');
+        setHeaderPill('pill-feed','feed-label','FEED '+detail,'warn');
+      }
+      const up=h.uptime_sec||0;
+      const fmt=up>=86400?Math.floor(up/86400)+'j'+Math.floor(up%86400/3600)+'h'
+               :up>=3600?Math.floor(up/3600)+'h'+String(Math.floor(up%3600/60)).padStart(2,'0')
+               :Math.floor(up/60)+'m'+String(up%60).padStart(2,'0');
+      setText('hdr-uptime','⏱ '+fmt);
+    }
 
     // Signals
     SYMBOLS.forEach(sym=>{

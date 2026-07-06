@@ -7,6 +7,8 @@
 # POST /services/ollama/stop     Arreter Ollama
 # POST /services/gitnexus/start  Demarrer gitnexus server
 # POST /services/gitnexus/stop   Arreter gitnexus server
+# GET  /services/github/status   Etat du depot git (branche, remote, fichiers modifies)
+# POST /services/github/push     add + commit + push vers origin
 
 from __future__ import annotations
 import asyncio
@@ -19,6 +21,7 @@ from typing import Optional
 import aiohttp
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/services", tags=["services"])
@@ -251,3 +254,98 @@ async def gitnexus_stop():
         return JSONResponse({"status": "stopped", "message": "GitNexus arrete"})
     return JSONResponse({"status": "not_managed",
                          "message": "GitNexus non gere par ce dashboard"})
+
+
+# ── GitHub status / push ──────────────────────────────────────────────────────
+
+def _git(*args: str) -> tuple[int, str]:
+    """Execute une commande git dans BASE_DIR ; retourne (code retour, sortie)."""
+    try:
+        r = subprocess.run(
+            ["git", *args],
+            cwd=str(BASE_DIR),
+            capture_output=True, text=True, timeout=60,
+            creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
+        )
+        return r.returncode, (r.stdout + r.stderr).strip()
+    except FileNotFoundError:
+        return 127, "git non trouve (installer Git : https://git-scm.com)"
+    except subprocess.TimeoutExpired:
+        return 124, "git : timeout (60s)"
+
+
+@router.get("/github/status")
+async def github_status():
+    """Etat du depot : branche, remote, dernier commit, fichiers modifies."""
+    code, _ = await asyncio.to_thread(_git, "rev-parse", "--is-inside-work-tree")
+    if code != 0:
+        return JSONResponse({"status": "error", "message": "Pas un depot git"},
+                            status_code=503)
+
+    _, branch = await asyncio.to_thread(_git, "rev-parse", "--abbrev-ref", "HEAD")
+    rc, remote = await asyncio.to_thread(_git, "remote", "get-url", "origin")
+    _, last = await asyncio.to_thread(_git, "log", "-1", "--format=%h %s (%cr)")
+    _, porcelain = await asyncio.to_thread(_git, "status", "--porcelain")
+    files = [line.strip() for line in porcelain.splitlines() if line.strip()]
+
+    return JSONResponse({
+        "branch":  branch,
+        "remote":  remote if rc == 0 else "(pas de remote)",
+        "last":    last,
+        "changes": len(files),
+        "files":   files[:30],
+    })
+
+
+class GithubPushBody(BaseModel):
+    message: str = ""
+    branch: str = ""
+
+
+@router.post("/github/push")
+async def github_push(body: GithubPushBody):
+    """git add -A + commit + push origin. Retourne le log de chaque etape."""
+    log: list[str] = []
+
+    code, _ = await asyncio.to_thread(_git, "rev-parse", "--is-inside-work-tree")
+    if code != 0:
+        return JSONResponse({"status": "error", "message": "Pas un depot git", "log": log},
+                            status_code=503)
+
+    _, branch = await asyncio.to_thread(_git, "rev-parse", "--abbrev-ref", "HEAD")
+    branch = body.branch or branch or "master"
+
+    _, porcelain = await asyncio.to_thread(_git, "status", "--porcelain")
+    has_changes = bool(porcelain.strip())
+
+    if has_changes:
+        code, out = await asyncio.to_thread(_git, "add", "-A")
+        log.append(f"$ git add -A\n{out}" if out else "$ git add -A")
+        if code != 0:
+            return JSONResponse({"status": "error", "message": "git add a echoue", "log": log},
+                                status_code=500)
+
+        from datetime import datetime
+        msg = body.message.strip() or f"Update {datetime.now():%Y-%m-%d %H:%M}"
+        code, out = await asyncio.to_thread(_git, "commit", "-m", msg)
+        log.append(f"$ git commit -m \"{msg}\"\n{out}")
+        if code != 0:
+            return JSONResponse({"status": "error", "message": "git commit a echoue", "log": log},
+                                status_code=500)
+
+    # Des commits locaux non pousses ? (@{u} absent => tout pousser)
+    code, ahead = await asyncio.to_thread(_git, "rev-list", "--count", "@{u}..HEAD")
+    nothing_to_push = (code == 0 and ahead.strip() == "0")
+
+    if not has_changes and nothing_to_push:
+        return JSONResponse({"status": "nothing_to_commit",
+                             "message": "Rien a commiter — depot a jour", "log": log})
+
+    code, out = await asyncio.to_thread(_git, "push", "origin", branch)
+    log.append(f"$ git push origin {branch}\n{out}")
+    if code != 0:
+        return JSONResponse({"status": "error", "message": "git push a echoue", "log": log},
+                            status_code=500)
+
+    return JSONResponse({"status": "pushed",
+                         "message": f"Push effectue sur origin/{branch}", "log": log})

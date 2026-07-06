@@ -4,7 +4,10 @@ import asyncio
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 import aiohttp
-from utils.config import SYMBOLS, SCAN_INTERVAL, MIN_DF30_FOR_SCAN, ACTIVE_TF
+from utils.config import (
+    SYMBOLS, SCAN_INTERVAL, MIN_DF30_FOR_SCAN, ACTIVE_TF,
+    SPECTRAL_ENABLED, SPECTRAL_TF,
+)
 from utils.logger import get_logger
 from data.binance_rest import fetch_klines
 from data.binance_ws import candle_store, delta_vol
@@ -25,6 +28,10 @@ logger = get_logger(__name__)
 
 # [FIX] asyncio.Lock() au lieu de flags booléens
 _scan_locks: Dict[str, asyncio.Lock] = {s: asyncio.Lock() for s in SYMBOLS}
+
+# Throttle du log "df30 insuffisant" — une ligne / 30s / symbole au lieu
+# d'une ligne par scan (3s), pour garder les logs lisibles
+_wait_log_ts: Dict[str, float] = {}
 
 # Broadcast callback — injecté par api/websocket.py
 _broadcast_fn = None
@@ -53,8 +60,12 @@ async def scan_symbol(sym: str, session: aiohttp.ClientSession) -> None:
             # ── Candle store 30s ─────────────────────────────────────────────
             df30 = candle_store.get(sym)
             if df30 is None or len(df30) < MIN_DF30_FOR_SCAN:
-                logger.info("[SCAN] %s — df30 insuffisant (%d barres, min=%d) — en attente de données WS",
-                            sym, len(df30) if df30 is not None else 0, MIN_DF30_FOR_SCAN)
+                now = datetime.now(timezone.utc).timestamp()
+                if now - _wait_log_ts.get(sym, 0.0) >= 30.0:
+                    _wait_log_ts[sym] = now
+                    logger.info("[SCAN] %s — en attente de données : %d/%d bougies 30s "
+                                "(seed REST + flux WS en cours d'accumulation)",
+                                sym, len(df30) if df30 is not None else 0, MIN_DF30_FOR_SCAN)
                 return
 
             # ── Fetch multi-timeframes ────────────────────────────────────────
@@ -104,6 +115,23 @@ async def scan_symbol(sym: str, session: aiohttp.ClientSession) -> None:
                 delta_vol_state=dv_state,
                 futures_data_state=fut_state,
             )
+
+            # ── Analyse spectrale (Phase 1 : instrumentation seulement) ──────
+            # Exposé dans ctx → API → dashboard. NE MODIFIE PAS le score /16
+            # tant que la validation walk-forward n'est pas faite (roadmap).
+            if SPECTRAL_ENABLED:
+                try:
+                    from indicators.spectral import analyze as spectral_analyze
+                    df_spec = fetches.get(SPECTRAL_TF)
+                    if df_spec is not None and not df_spec.empty:
+                        spec = spectral_analyze(df_spec["close"])
+                        if spec:
+                            ctx["spectral"] = spec
+                            logger.info("[SPECTRAL] %s — cycle=%s barres power=%.2f phase=%s (%s°)",
+                                        sym, spec["dominant_cycle"], spec["cycle_power"],
+                                        spec["phase_zone"], spec["phase_deg"])
+                except Exception as e:
+                    logger.debug("[SPECTRAL] %s: %s", sym, e)
 
             # ── SL/TP ─────────────────────────────────────────────────────────
             price   = ctx.get("price", 0)

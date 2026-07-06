@@ -29,12 +29,13 @@ logger = get_logger(__name__)
 
 # Chemin du dashboard HTML v12
 _DASHBOARD_HTML = Path(__file__).resolve().parent.parent / "titanium_v12_dashboard.html"
+_DASHBOARD_V13  = Path(__file__).resolve().parent.parent / "titanium_v13_dashboard.html"
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Gestion du cycle de vie FastAPI — démarre toutes les tâches asyncio."""
-    from data.binance_ws import ws_binance
+    from data.binance_ws import ws_binance, seed_candle_store
     from data.gold_provider import gold_refresh_loop
     from data.futures_data import futures_refresh_loop
     from core.signal_engine import scan_loop, set_broadcast_fn
@@ -43,6 +44,7 @@ async def lifespan(app: FastAPI):
     from engine.learning_engine import learning_report_loop, load_state
     from execution.risk_manager import circuit_breaker_loop
     from fundamentals.fetcher_loop import fundamentals_loop
+    from fundamentals.external_feeds import external_feeds_loop
     import asyncio
 
     # Charger l'état persisté
@@ -63,6 +65,10 @@ async def lifespan(app: FastAPI):
     # Vérifier Ollama
     await check_ollama_available(session)
 
+    # Amorcer candle_store depuis REST avant de démarrer les tâches —
+    # le scan est ainsi opérationnel en secondes au lieu de minutes
+    await seed_candle_store(session)
+
     # Démarrer toutes les tâches en arrière-plan
     tasks = []
     # WebSocket aggTrade par symbole
@@ -77,6 +83,7 @@ async def lifespan(app: FastAPI):
         asyncio.create_task(strict_recalib_loop(session),           name="strict_recalib"),
         asyncio.create_task(learning_report_loop(),                  name="learning"),
         asyncio.create_task(circuit_breaker_loop(get_opt_results()), name="circuit_breaker"),
+        asyncio.create_task(external_feeds_loop(session),            name="external_feeds"),
     ]
     if FUNDAMENTALS_ENABLED:
         tasks.append(asyncio.create_task(fundamentals_loop(session), name="fundamentals"))
@@ -125,12 +132,46 @@ async def dashboard():
     return HTMLResponse("<h1>Titanium v12</h1><p>Dashboard HTML non trouvé.</p>")
 
 
+@app.get("/v13", response_class=HTMLResponse)
+async def dashboard_v13():
+    """Dashboard v13 — un écran : santé, capital, vision."""
+    if _DASHBOARD_V13.exists():
+        return HTMLResponse(_DASHBOARD_V13.read_text(encoding="utf-8"))
+    return HTMLResponse("<h1>Titanium v13</h1><p>Dashboard v13 non trouvé.</p>")
+
+
+_APP_START_TS = datetime.now(timezone.utc)
+
+
+def _health_snapshot() -> dict:
+    """Santé du système : feed de données, scan prêt, uptime.
+
+    Rendu en permanence dans le header du dashboard — le bot ne doit
+    plus jamais 'tourner à vide' sans que ce soit visible d'un coup d'œil.
+    """
+    from data.binance_ws import candle_store
+    from utils.config import MIN_DF30_FOR_SCAN
+    candles = {}
+    for sym in SYMBOLS:
+        df = candle_store.get(sym)
+        n = len(df) if df is not None else 0
+        candles[sym] = {"bars": n, "ready": n >= MIN_DF30_FOR_SCAN}
+    return {
+        "candles":    candles,
+        "scan_ready": all(c["ready"] for c in candles.values()),
+        "uptime_sec": int((datetime.now(timezone.utc) - _APP_START_TS).total_seconds()),
+    }
+
+
 @app.get("/api/state")
 async def api_state():
     """État complet : signaux, poids, historique, optimisation, paper trading."""
     from execution.executor import executor
+    from fundamentals.external_feeds import get_external_snapshot
     paper_state = executor.get_state() if TRADING_MODE != "disabled" else {}
     return JSONResponse({
+        "health":          _health_snapshot(),
+        "external":        get_external_snapshot(),
         "signals":         get_all_signals(),
         "scoring_weights": scoring_weights,
         "delta_vol":       {s: {k: v for k, v in delta_vol[s].items() if k != "trades"} for s in SYMBOLS},
