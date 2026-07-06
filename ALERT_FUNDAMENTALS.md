@@ -1,5 +1,6 @@
-# ALERT — Module Fundamentals
+# ALERT — Module Fundamentals désactivé
 
-Aucune alerte active. Le module fonctionne normalement.
+**Date** : 2026-05-13T06:43:01.322411+00:00
+**Raison** : Rollback auto: réduction moyenne 30% > seuil 30%
 
-> Ce fichier est écrit automatiquement par `signal_modulator.py` quand le circuit breaker se déclenche.
+Pour réactiver : `FUNDAMENTALS_ENABLED=1` dans `.env` et redémarrer.
