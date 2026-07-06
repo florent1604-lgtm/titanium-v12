@@ -1,4 +1,4 @@
-"""notifications/telegram.py — Alertes Telegram avec seuil 7/11 et anti-spam."""
+"""notifications/telegram.py — Alertes Telegram avec seuil dynamique et anti-spam."""
 from __future__ import annotations
 import asyncio
 from datetime import datetime, timezone
@@ -6,7 +6,7 @@ from typing import Any, Dict
 import aiohttp
 from utils.config import (
     TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_IDS, TELEGRAM_MIN_INTERVAL,
-    TELEGRAM_SCORE_THRESHOLD, TELEGRAM_SCORE_LABELS, SYMBOLS,
+    TELEGRAM_SCORE_THRESHOLD, TELEGRAM_SCORE_LABELS, SYMBOLS, SCORE_CRITERIA,
 )
 from utils.logger import get_logger
 
@@ -18,6 +18,7 @@ _tg_lock = asyncio.Lock()
 def _format_signal(sym: str, signal: Dict[str, Any]) -> str:
     """Formate le message Telegram avec détail des confirmations."""
     score   = signal.get("score", 0)
+    score_max = signal.get("score_max", len(SCORE_CRITERIA))
     side    = signal.get("side", "?")
     price   = signal.get("price", 0)
     label   = TELEGRAM_SCORE_LABELS.get(score, "Signal")
@@ -39,7 +40,7 @@ def _format_signal(sym: str, signal: Dict[str, Any]) -> str:
         f"{label}\n"
         f"<b>{sym_clean}</b> {side_emoji} <b>{side}</b>\n"
         f"━━━━━━━━━━━━━━━━━\n"
-        f"📊 Score : <b>{score}/11</b>\n"
+        f"📊 Score : <b>{score}/{score_max}</b>\n"
         f"💰 Prix  : <b>{price:,.2f}</b>\n"
         f"📈 Régime: {regime} | RSI: {rsi:.1f} | ADX: {adx:.1f}\n"
         f"\n<b>Confirmations :</b>\n{conf_lines}\n"

@@ -5,7 +5,7 @@ import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
-from utils.config import SYMBOLS, get_sym_override, SCORE_MIN_REQUIRED, SIGNAL_COOLDOWN_SEC
+from utils.config import SYMBOLS, get_sym_override, SCORE_MIN_REQUIRED, SIGNAL_COOLDOWN_SEC, SCORE_CRITERIA
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -111,7 +111,7 @@ def emit_signal(
     signal = {
         "symbol":        sym,
         "score":         score,
-        "score_max":     11,
+        "score_max":     len(SCORE_CRITERIA),
         "side":          side,
         "active":        True,
         "confs":         confs,
@@ -127,14 +127,23 @@ def emit_signal(
         "tp3":           levels.get("tp3", 0),
         "atr":           levels.get("atr", 0),
         "rr":            levels.get("rr", 0),
+        # Order Book L2 metrics
+        "orderbook_imbalance": ctx.get("orderbook_imbalance", 0),
+        "orderbook_wall":     ctx.get("orderbook_wall", "none"),
+        "spread_realtime_bps": ctx.get("spread_realtime_bps", 0),
         **{k: v for k, v in ctx.items() if k not in ("price", "regime", "rsi", "adx")},
     }
 
     signals[sym] = signal
     logger.info(
-        "[SIGNAL] %s %s score=%d/11 confs=%s cid=%s",
-        sym, side, score, confs, signal["correlation_id"],
+        "[SIGNAL] %s %s score=%d/%d confs=%s cid=%s",
+        sym, side, score, len(SCORE_CRITERIA), confs, signal["correlation_id"],
     )
+    from utils.event_bus import emit as _emit_event
+    _emit_event("SIGNAL", {
+        "symbol": sym, "side": side, "score": score, "score_max": len(SCORE_CRITERIA),
+        "correlation_id": signal["correlation_id"],
+    })
     return signal
 
 

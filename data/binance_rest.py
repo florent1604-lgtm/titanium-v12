@@ -97,7 +97,11 @@ async def fetch_klines_history(
     tf: str,
     days: int,
 ) -> pd.DataFrame:
-    """Fetch plusieurs pages de klines pour couvrir `days` jours d'historique."""
+    """Fetch plusieurs pages de klines pour couvrir `days` jours d'historique.
+
+    Pagination arrière : chaque page récupère des candles plus anciennes
+    en utilisant endTime = timestamp de la bougie la plus ancienne de la page précédente.
+    """
     tf_minutes = {
         "1m": 1, "3m": 3, "5m": 5, "15m": 15,
         "30m": 30, "1h": 60, "2h": 120, "4h": 240, "1d": 1440,
@@ -105,14 +109,56 @@ async def fetch_klines_history(
     minutes_per_candle = tf_minutes.get(tf, 5)
     candles_needed = int(days * 1440 / minutes_per_candle)
     pages = (candles_needed // 1000) + 1
+
+    binance_sym = symbol.replace("/", "")
+    interval    = _TF_MAP.get(tf, tf)
+    headers     = {"X-MBX-APIKEY": BINANCE_KEY} if BINANCE_KEY else {}
+
     all_dfs = []
-    for _ in range(min(pages, 10)):
+    end_time: int | None = None    # None = dernières bougies
+
+    for page in range(min(pages, 10)):
         try:
-            df = await fetch_klines(session, symbol, tf, limit=1000)
-            if not df.empty:
-                all_dfs.append(df)
+            params = {"symbol": binance_sym, "interval": interval, "limit": "1000"}
+            if end_time is not None:
+                params["endTime"] = str(end_time)
+
+            df = pd.DataFrame()
+            last_error = None
+            for base in (REST_BASE, REST_FALLBACK):
+                try:
+                    url = f"{base}/api/v3/klines"
+                    async with session.get(
+                        url, params=params, headers=headers,
+                        timeout=aiohttp.ClientTimeout(total=15),
+                    ) as r:
+                        if r.status != 200:
+                            last_error = f"HTTP {r.status}"
+                            continue
+                        raw = await r.json(content_type=None)
+                        df = _parse_klines(raw)
+                        if not df.empty:
+                            break
+                        last_error = "empty response"
+                except Exception as e:
+                    last_error = str(e)
+                    await asyncio.sleep(0.3)
+
+            if df.empty:
+                logger.warning("[REST] fetch_klines_history %s/%s page %d: %s", symbol, tf, page, last_error)
+                break
+
+            all_dfs.append(df)
+
+            # Pagination arrière : prochaine page = avant la bougie la plus ancienne
+            earliest_ts = int(df.index.min().timestamp() * 1000) - 1
+            if end_time is not None and earliest_ts >= end_time:
+                break   # pas de progrès — on a atteint la fin des données
+            end_time = earliest_ts
+
         except Exception as e:
             logger.warning("[REST] fetch_klines_history %s/%s: %s", symbol, tf, e)
+            break
         await asyncio.sleep(0.2)
 
     if not all_dfs:
@@ -129,3 +175,4 @@ def invalidate_cache(symbol: str = "", tf: str = "") -> None:
         _cache.delete(f"{symbol}:{tf}")
     else:
         _cache.clear()
+

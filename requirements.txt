@@ -1,7 +1,30 @@
+# ═══════════════════════════════════════════════════════════════════════
+# Titanium v12 — Dépendances complètes
+# ═══════════════════════════════════════════════════════════════════════
+
+# Core API
 fastapi>=0.110.0
 uvicorn[standard]>=0.27.0
 aiohttp>=3.9.0
+python-dotenv>=1.0.0
+
+# Data & calcul
 numpy>=1.26.0
+scipy>=1.11.0
 pandas>=2.1.0
 pandas-ta>=0.3.14b
-python-dotenv>=1.0.0
+
+# Assistant / JARVIS
+scikit-learn>=1.4.0            # intent_classifier.py — SVM classification
+faster-whisper>=1.0.0          # voice_engine.py — STT
+piper-tts>=1.2.0               # tts_engine.py — synthèse vocale locale
+websockets>=12.0               # signal_alert.py — bridge WS JARVIS
+
+# Browser agent (optionnel — pip install playwright && playwright install)
+ddgs>=6.0                      # browser_agent.py — DuckDuckGo search
+beautifulsoup4>=4.12.0         # browser_agent.py — parsing HTML
+lxml>=5.0.0                    # browser_agent.py — parser rapide
+# playwright>=1.40.0           # Optionnel : navigation headless
+
+# Monitoring & hotkeys
+pynput>=1.7.6                  # hotkey_manager.py — Ctrl+Alt

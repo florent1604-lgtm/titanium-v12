@@ -44,7 +44,7 @@ def _backtest_config(
     Signale LONG quand prix > EMA20 et haussier, SHORT quand prix < EMA20 et baissier.
     Returns: dict avec sharpe, expectancy, winrate, max_drawdown, trades
     """
-    if df is None or len(df) < 30:
+    if df is None or len(df) < 50:
         return {"sharpe": -_SHARPE_CAP, "expectancy": 0.0, "winrate": 0.0, "max_drawdown": 0.0, "trades": 0}
 
     try:
@@ -158,7 +158,7 @@ def _backtest_config(
 def _opt_score(result: dict) -> float:
     """Score combiné pour sélectionner la meilleure config."""
     trades = result.get("trades", 0)
-    if trades < 3:
+    if trades < 2:
         return -1e18
     sharpe = result.get("sharpe", -_SHARPE_CAP)
     expect = result.get("expectancy", 0.0)
@@ -221,12 +221,14 @@ def run_optimization(sym: str, df_full: pd.DataFrame) -> Dict[str, Any]:
     # ── Sanity check OOS ──────────────────────────────────────────────────────
     oos_valid = oos_res["trades"] >= OPT_MIN_OOS_TRADES
     if not oos_valid:
-        # Trop peu de trades OOS → reporter IS avec pénalité 50%
+        # Trop peu de trades OOS → reporter IS avec pénalité proportionnelle
+        # (70% si on a quelques trades, 50% si zéro)
+        penalty = 0.7 if oos_res["trades"] > 0 else 0.5
         logger.warning(
-            "[OPT] %s OOS invalide (%d trades < %d min) — fallback IS×0.5",
-            sym, oos_res["trades"], OPT_MIN_OOS_TRADES,
+            "[OPT] %s OOS invalide (%d trades < %d min) — fallback IS×%.1f",
+            sym, oos_res["trades"], OPT_MIN_OOS_TRADES, penalty,
         )
-        reported_sharpe = round(best_is_result.get("sharpe", -_SHARPE_CAP) * 0.5, 4)
+        reported_sharpe = round(best_is_result.get("sharpe", -_SHARPE_CAP) * penalty, 4)
         oos_res = {
             **best_is_result,
             "sharpe":  reported_sharpe,

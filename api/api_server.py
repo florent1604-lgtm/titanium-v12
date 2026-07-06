@@ -11,6 +11,7 @@ from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi import Request as FARequest
 from fastapi.responses import HTMLResponse, JSONResponse
 from starlette.middleware.gzip import GZipMiddleware
+from fastapi.middleware.cors import CORSMiddleware
 from utils.config import (
     UVICORN_HOST, UVICORN_PORT, UVICORN_LOG_LEVEL,
     HTTP_POOL_SIZE, HTTP_CONNECT_LIMIT, HTTP_TIMEOUT_TOTAL,
@@ -31,6 +32,57 @@ logger = get_logger(__name__)
 _DASHBOARD_HTML = Path(__file__).resolve().parent.parent / "titanium_v12_dashboard.html"
 
 
+async def _seed_candle_store(session: aiohttp.ClientSession) -> None:
+    """Pré-charge candle_store via REST 1m pour éviter le warm-up de 5min.
+
+    Fetche les 60 dernières bougies 1m (= 1h de données), les convertit en
+    format identique aux barres 1s du WS, puis les resample en 30s pour
+    alimenter immédiatement candle_store.
+    """
+    import pandas as pd
+    from data.binance_rest import fetch_klines
+    from data.binance_ws import candle_store, raw_1s
+    from data.gold_provider import fetch_gold_candles, gold_store
+
+    for sym in SYMBOLS:
+        try:
+            is_gold = sym in ("PAXG/USDT",)
+            if is_gold:
+                df_1m = await fetch_gold_candles(session, "1m")
+            else:
+                df_1m = await fetch_klines(session, sym, "1m", limit=60)
+
+            if df_1m is None or df_1m.empty or len(df_1m) < 5:
+                logger.warning("[SEED] %s — pas assez de données 1m REST", sym)
+                continue
+
+            # Resampler les bougies 1m en pseudo-30s (chaque bougie 1m → 2×30s)
+            # On crée un DataFrame 30s directement lisible par signal_engine
+            rows = []
+            for ts, row in df_1m.iterrows():
+                ts_pd = pd.Timestamp(ts)
+                mid = (row["open"] + row["close"]) / 2
+                vol_half = row.get("v", 0) / 2
+                # Première moitié (seconde 0)
+                rows.append({"open": row["open"], "high": row["high"],
+                             "low": row["low"], "close": mid, "v": vol_half})
+                # Deuxième moitié (seconde 30)
+                rows.append({"open": mid, "high": row["high"],
+                             "low": row["low"], "close": row["close"], "v": vol_half})
+
+            df30 = pd.DataFrame(rows)
+            # Créer un index temporel 30s aligné
+            start = pd.Timestamp(df_1m.index[0])
+            idx = pd.date_range(start=start, periods=len(df30), freq="30s", tz="UTC")
+            df30.index = idx[:len(df30)]
+            df30 = df30.tail(500)
+
+            candle_store[sym] = df30
+            logger.info("[SEED] %s — %d bougies 30s pré-chargées via REST (warm-up éliminé)",
+                        sym, len(df30))
+        except Exception as e:
+            logger.warning("[SEED] %s — seed REST échoué: %s", sym, e)
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Gestion du cycle de vie FastAPI — démarre toutes les tâches asyncio."""
@@ -43,6 +95,8 @@ async def lifespan(app: FastAPI):
     from engine.learning_engine import learning_report_loop, load_state
     from execution.risk_manager import circuit_breaker_loop
     from fundamentals.fetcher_loop import fundamentals_loop
+    from fundamentals.external_feeds import external_feeds_loop
+    from data.orderbook_ws import start_orderbook_streams
     import asyncio
 
     # Charger l'état persisté
@@ -63,6 +117,15 @@ async def lifespan(app: FastAPI):
     # Vérifier Ollama
     await check_ollama_available(session)
 
+    # Démarrer les streams de carnet d'ordres L2
+    await start_orderbook_streams()
+
+    # ── Fix C3 : Seed REST → warm-up instantané ──────────────────────────
+    # Pré-charger les bougies 1m via REST et les resampler en 30s pour
+    # alimenter candle_store AVANT que le WS aggTrade ne s'accumule.
+    # Élimine l'attente de ~5 min au démarrage.
+    await _seed_candle_store(session)
+
     # Démarrer toutes les tâches en arrière-plan
     tasks = []
     # WebSocket aggTrade par symbole
@@ -77,6 +140,7 @@ async def lifespan(app: FastAPI):
         asyncio.create_task(strict_recalib_loop(session),           name="strict_recalib"),
         asyncio.create_task(learning_report_loop(),                  name="learning"),
         asyncio.create_task(circuit_breaker_loop(get_opt_results()), name="circuit_breaker"),
+        asyncio.create_task(external_feeds_loop(session),            name="external_feeds"),
     ]
     if FUNDAMENTALS_ENABLED:
         tasks.append(asyncio.create_task(fundamentals_loop(session), name="fundamentals"))
@@ -111,12 +175,21 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Titanium v12", lifespan=lifespan)
 app.add_middleware(GZipMiddleware, minimum_size=1000)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173",
+                   "http://localhost:5174", "http://127.0.0.1:5174",
+                   "http://localhost:8090", "http://127.0.0.1:8090"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
 
 from api.fundamentals_routes import router as fundamentals_router
 from api.paper_routes import router as paper_router
 from api.webhook_routes import router as webhook_router
 from api.titan_routes import router as titan_router
 from api.services_routes import router as services_router
+from api.cockpit_routes import router as cockpit_router
 from assistant.alexa_connector import router as alexa_router
 
 app.include_router(fundamentals_router)
@@ -124,6 +197,7 @@ app.include_router(paper_router)
 app.include_router(webhook_router)
 app.include_router(titan_router)
 app.include_router(services_router)
+app.include_router(cockpit_router)
 app.include_router(alexa_router)
 
 
@@ -137,16 +211,49 @@ async def dashboard():
     return HTMLResponse("<h1>Titanium v12</h1><p>Dashboard HTML non trouvé.</p>")
 
 
+_DASHBOARD_V13 = Path(__file__).resolve().parent.parent / "titanium_v13_dashboard.html"
+_APP_START_TS = datetime.now(timezone.utc)
+
+
+@app.get("/v13", response_class=HTMLResponse)
+async def dashboard_v13():
+    """Dashboard v13 — un écran : santé, capital, vision."""
+    if _DASHBOARD_V13.exists():
+        return HTMLResponse(_DASHBOARD_V13.read_text(encoding="utf-8"))
+    return HTMLResponse("<h1>Titanium v13</h1><p>Dashboard v13 non trouvé.</p>")
+
+
+def _health_snapshot() -> dict:
+    """Santé du système : feed de données, scan prêt, uptime."""
+    from data.binance_ws import candle_store
+    from utils.config import MIN_DF30_FOR_SCAN
+    candles = {}
+    for sym in SYMBOLS:
+        df = candle_store.get(sym)
+        n = len(df) if df is not None else 0
+        candles[sym] = {"bars": n, "ready": n >= MIN_DF30_FOR_SCAN}
+    return {
+        "candles":    candles,
+        "scan_ready": all(c["ready"] for c in candles.values()),
+        "uptime_sec": int((datetime.now(timezone.utc) - _APP_START_TS).total_seconds()),
+    }
+
+
 @app.get("/api/state")
 async def api_state():
     """État complet : signaux, poids, historique, optimisation, paper trading."""
     from execution.executor import executor
     paper_state = executor.get_state() if TRADING_MODE != "disabled" else {}
+    from data.spread_tracker import spread_tracker
+    from fundamentals.external_feeds import get_external_snapshot
     return JSONResponse({
+        "health":          _health_snapshot(),
+        "external":        get_external_snapshot(),
         "signals":         get_all_signals(),
         "scoring_weights": scoring_weights,
         "delta_vol":       {s: {k: v for k, v in delta_vol[s].items() if k != "trades"} for s in SYMBOLS},
         "futures":         futures_store,
+        "spreads":         {s: spread_tracker.get_stats(s) for s in SYMBOLS},
         "best_config":     get_opt_results(),
         "paper":           paper_state,
         "ts":              datetime.now(timezone.utc).isoformat(),

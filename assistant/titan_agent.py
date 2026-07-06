@@ -83,7 +83,7 @@ def _format_state(data: Dict[str, Any], parts: List[str]) -> None:
         parts.append("Signaux actifs :")
         for sym, s in active:
             parts.append(
-                f"  {sym} {s.get('side')} score={s.get('score',0)}/11 "
+                f"  {sym} {s.get('side')} score={s.get('score',0)}/{s.get('score_max',14)} "
                 f"prix={s.get('price',0):.4f}$ régime={s.get('regime','?')}"
             )
     else:

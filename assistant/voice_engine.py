@@ -1,17 +1,18 @@
 """assistant/voice_engine.py — Détection wake word + transcription STT.
 
 Pipeline :
-  1. Écoute continue en arrière-plan (sounddevice)
-  2. WebRTC VAD frame par frame (30ms)
-  3. Buffer vocal → tiny Whisper → cherche le wake word
-  4. Si wake word : enregistre l'utterance complète (silence = fin)
-  5. Transcrit avec Whisper small pour la précision
+  1. Thread audio lit les trames 30ms en continu (jamais bloqué)
+  2. Accumulation dans un buffer glissant de 2s
+  3. Thread Whisper séparé transcrit par batch quand énergie détectée (stride 500ms)
+  4. Si wake word → enregistre l'utterance complète puis transcrit la commande
+  5. Callback asyncio déclenché avec le texte de la commande
 
 Dépendances :
   pip install faster-whisper sounddevice webrtcvad numpy
 """
 from __future__ import annotations
 import asyncio
+import concurrent.futures
 import logging
 import queue
 import threading
@@ -57,10 +58,20 @@ class VoiceEngine:
             try:
                 import webrtcvad
                 self._vad = webrtcvad.Vad(TITAN_VAD_AGGR)
-                logger.info("[VOICE] VAD initialisé (agressivité=%d)", TITAN_VAD_AGGR)
+                logger.info("[VOICE] VAD WebRTC initialisé (agressivité=%d)", TITAN_VAD_AGGR)
             except ImportError:
-                logger.error("[VOICE] webrtcvad non installé : pip install webrtcvad")
-                raise
+                self._vad = "amplitude"
+                logger.warning("[VOICE] webrtcvad non dispo → VAD amplitude (fallback)")
+
+    def _is_speech(self, frame: np.ndarray) -> bool:
+        """Détecte la parole : WebRTC VAD ou amplitude RMS en fallback."""
+        if self._vad == "amplitude":
+            rms = float(np.sqrt(np.mean(frame.astype(np.float32) ** 2)))
+            return rms > 350.0
+        try:
+            return self._vad.is_speech(frame.tobytes(), TITAN_SAMPLE_RATE)
+        except Exception:
+            return True
 
     def _load_whisper(self):
         if self._whisper is None:
@@ -82,6 +93,12 @@ class VoiceEngine:
     def transcribe(self, audio_np: np.ndarray, language: str = "fr") -> str:
         """Transcrit un tableau numpy float32 (16kHz mono) en texte."""
         self._load_whisper()
+
+        # Vérifier l'énergie minimale avant de transcrire
+        rms = float(np.sqrt(np.mean(audio_np ** 2)))
+        if rms < 0.005:
+            return ""   # silence — pas besoin de transcrire
+
         segments, _ = self._whisper.transcribe(
             audio_np,
             language=language,
@@ -89,7 +106,44 @@ class VoiceEngine:
             vad_filter=True,
             vad_parameters={"min_silence_duration_ms": 300},
         )
-        return " ".join(s.text.strip() for s in segments).strip()
+        text = " ".join(s.text.strip() for s in segments).strip()
+
+        # Filtrer les hallucinations connues de Whisper
+        if self._is_hallucination(text):
+            logger.debug("[VOICE] Hallucination filtrée: '%s'", text[:60])
+            return ""
+        return text
+
+    @staticmethod
+    def _is_hallucination(text: str) -> bool:
+        """Détecte les phrases générées par Whisper sur du silence/bruit ambiant."""
+        if not text:
+            return False
+        low = text.lower().strip()
+        # Phrases fantomes connues de Whisper (FR + EN)
+        _HALLUCINATION_PATTERNS = [
+            "sous-titres réalisés par",
+            "sous-titres",
+            "amara.org",
+            "merci d'avoir regardé",
+            "merci de votre attention",
+            "thank you for watching",
+            "please subscribe",
+            "like and subscribe",
+            "music",
+            "\u266a",
+            "...",
+        ]
+        for pat in _HALLUCINATION_PATTERNS:
+            if pat in low:
+                return True
+        # Texte très court et répétitif ("oui oui oui", "merci merci")
+        words = low.split()
+        if len(words) <= 2:
+            return True   # trop court pour être une commande
+        if len(set(words)) == 1 and len(words) > 2:
+            return True   # mot répété
+        return False
 
     # ── Enregistrement VAD ────────────────────────────────────────────────────
 
@@ -121,11 +175,7 @@ class VoiceEngine:
                     frame_bytes, _ = stream.read(_FRAME_SIZE)
                     pcm_bytes      = frame_bytes.tobytes()
 
-                    is_speech = False
-                    try:
-                        is_speech = self._vad.is_speech(pcm_bytes, TITAN_SAMPLE_RATE)
-                    except Exception:
-                        is_speech = True   # en cas d'erreur VAD, supposer parole
+                    is_speech = self._is_speech(frame_bytes)
 
                     audio_frames.append(frame_bytes.copy())
                     total_frames += 1
@@ -151,7 +201,12 @@ class VoiceEngine:
     # ── Détection wake word en boucle ─────────────────────────────────────────
 
     def _listen_loop(self) -> None:
-        """Boucle d'écoute continue dans un thread dédié."""
+        """Boucle d'écoute avec transcription Whisper non-bloquante.
+
+        Le thread audio lit les trames 30ms sans jamais s'arrêter.
+        Un executor séparé lance Whisper uniquement quand de la parole est
+        détectée, avec un stride minimum de 500ms entre deux appels.
+        """
         self._load_vad()
         self._load_whisper()
 
@@ -159,9 +214,19 @@ class VoiceEngine:
 
         logger.info("[VOICE] Écoute active — wake words: %s", TITAN_WAKE_WORDS)
 
-        # Fenêtre glissante de 2 secondes pour la détection du wake word
-        _wake_window_frames = int(2.0 * 1000 / TITAN_FRAME_MS)
+        _wake_window_frames = int(2.0 * 1000 / TITAN_FRAME_MS)   # 67 trames = 2s
+        _stride_frames      = int(500 / TITAN_FRAME_MS)           # 17 trames = 500ms
+        _min_rms            = 0.008                               # seuil parole float32 (rehaussé anti-hallucination)
+
         wake_buffer: list[np.ndarray] = []
+        frames_since_last  = 0
+        fut                = None
+        executor = concurrent.futures.ThreadPoolExecutor(
+            max_workers=1, thread_name_prefix="titan-whisper"
+        )
+
+        def _transcribe_bg(audio: np.ndarray) -> str:
+            return self.transcribe(audio).lower()
 
         try:
             with sd.InputStream(
@@ -173,45 +238,63 @@ class VoiceEngine:
                 while self._running:
                     frame_bytes, _ = stream.read(_FRAME_SIZE)
                     wake_buffer.append(frame_bytes.flatten())
+                    frames_since_last += 1
 
-                    if len(wake_buffer) < _wake_window_frames:
-                        continue
-
-                    # Garder seulement la fenêtre
                     if len(wake_buffer) > _wake_window_frames:
                         wake_buffer = wake_buffer[-_wake_window_frames:]
 
-                    # Transcription rapide pour le wake word
-                    audio_np = np.concatenate(wake_buffer).astype(np.float32) / 32768.0
-                    text = self.transcribe(audio_np).lower()
+                    # Récupérer le résultat Whisper si prêt
+                    if fut is not None and fut.done():
+                        try:
+                            text = fut.result()
+                        except Exception:
+                            text = ""
+                        fut = None
 
-                    if any(w in text for w in TITAN_WAKE_WORDS):
-                        logger.info("[VOICE] Wake word détecté! ('%s')", text.strip())
-                        wake_buffer.clear()
+                        if text:
+                            logger.info("[VOICE] Transcription: '%s'", text.strip())
 
-                        # Enregistrer la commande complète
-                        utterance = self._record_until_silence()
-                        if utterance is None or len(utterance) < TITAN_SAMPLE_RATE * 0.5:
-                            continue
+                        if any(w in text for w in TITAN_WAKE_WORDS):
+                            logger.info("[VOICE] Wake word détecté! ('%s')", text.strip())
+                            wake_buffer.clear()
+                            frames_since_last = 0
 
-                        command = self.transcribe(utterance).strip()
-                        if not command:
-                            continue
+                            utterance = self._record_until_silence()
+                            if utterance is None or len(utterance) < TITAN_SAMPLE_RATE * 0.5:
+                                continue
 
-                        # Retirer le wake word du texte de la commande
-                        for ww in TITAN_WAKE_WORDS:
-                            command = command.lower().replace(ww, "").strip()
-                        command = command.strip(" ,.!?")
+                            command = self.transcribe(utterance).strip()
+                            if not command:
+                                continue
 
-                        if command:
-                            logger.info("[VOICE] Commande: '%s'", command)
-                            if self._loop and self._callback:
-                                asyncio.run_coroutine_threadsafe(
-                                    self._callback(command), self._loop
-                                )
+                            for ww in TITAN_WAKE_WORDS:
+                                command = command.lower().replace(ww, "").strip()
+                            command = command.strip(" ,.!?")
+
+                            if command:
+                                logger.info("[VOICE] Commande: '%s'", command)
+                                if self._loop and self._callback:
+                                    asyncio.run_coroutine_threadsafe(
+                                        self._callback(command), self._loop
+                                    )
+
+                    # Lancer Whisper si : pas de tâche en cours + stride ok + buffer plein + parole
+                    if (fut is None
+                            and frames_since_last >= _stride_frames
+                            and len(wake_buffer) >= _wake_window_frames):
+
+                        audio_np = np.concatenate(wake_buffer).astype(np.float32) / 32768.0
+                        rms = float(np.sqrt(np.mean(audio_np ** 2)))
+
+                        if rms > _min_rms:
+                            frames_since_last = 0
+                            logger.info("[VOICE] Parole RMS=%.4f — Whisper lancé", rms)
+                            fut = executor.submit(_transcribe_bg, audio_np.copy())
 
         except Exception as e:
             logger.error("[VOICE] Erreur boucle écoute: %s", e)
+        finally:
+            executor.shutdown(wait=False)
 
     # ── API publique ──────────────────────────────────────────────────────────
 

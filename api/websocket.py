@@ -15,13 +15,29 @@ logger = get_logger(__name__)
 _clients: Dict[str, Set[WebSocket]] = {}
 _ws_lock = asyncio.Lock()
 
+# Limite max de clients WS par symbole — évite la fuite mémoire/CPU
+# quand le dashboard est ouvert dans plusieurs onglets
+MAX_CLIENTS_PER_SYMBOL = 10
+
 
 async def ws_connect(sym: str, ws: WebSocket) -> None:
-    """Enregistre un nouveau client WebSocket."""
+    """Enregistre un nouveau client WebSocket (avec limite anti-fuite)."""
     await ws.accept()
     async with _ws_lock:
         if sym not in _clients:
             _clients[sym] = set()
+
+        # Éjecter les clients les plus anciens si la limite est atteinte
+        if len(_clients[sym]) >= MAX_CLIENTS_PER_SYMBOL:
+            stale = list(_clients[sym])[:len(_clients[sym]) - MAX_CLIENTS_PER_SYMBOL + 1]
+            for old_ws in stale:
+                _clients[sym].discard(old_ws)
+                try:
+                    await old_ws.close(code=1008, reason="too many connections")
+                except Exception:
+                    pass
+            logger.warning("[WS] %s — %d clients éjectés (limite %d)", sym, len(stale), MAX_CLIENTS_PER_SYMBOL)
+
         _clients[sym].add(ws)
     logger.info("[WS] Client connecté %s (total: %d)", sym, len(_clients.get(sym, set())))
 

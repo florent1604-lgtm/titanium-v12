@@ -44,16 +44,18 @@ def test_velocity_factor_recent():
 
 def test_sigmoid_normalize_bounds():
     assert _sigmoid_normalize(0)   < 50
-    assert _sigmoid_normalize(30)  == pytest_approx(50, abs=5)
+    assert _sigmoid_normalize(30)  == pytest_approx(50, tolerance=5)
     assert _sigmoid_normalize(100) > 90
     assert 0 <= _sigmoid_normalize(-50) <= 100
     assert 0 <= _sigmoid_normalize(200) <= 100
 
 
-def pytest_approx(val, abs=1):
+_abs = abs  # Capturer le builtin avant tout shadowing
+
+def pytest_approx(val, tolerance=1):
     """Mini approx pour éviter la dépendance pytest."""
     class _Approx:
-        def __eq__(self, other): return abs(other - val) <= abs
+        def __eq__(self, other): return _abs(other - val) <= tolerance
     return _Approx()
 
 

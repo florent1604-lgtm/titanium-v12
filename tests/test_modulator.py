@@ -1,4 +1,11 @@
-"""tests/test_modulator.py — Tests unitaires du SignalModulator."""
+"""tests/test_modulator.py — Tests unitaires du SignalModulator.
+
+Les seuils de production sont :
+  FUNDAMENTALS_RISK_REDUCE = 50.0
+  FUNDAMENTALS_RISK_BLOCK  = 90.0
+
+Les tests utilisent ces valeurs réelles pour valider la logique.
+"""
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -25,8 +32,10 @@ def test_pass_through_low_risk():
 
 
 def test_reduce_medium_risk():
+    """risk_score > RISK_REDUCE (50) → score réduit avec factor < 1.0."""
     force_enable()
-    result = modulate(dict(_BASE_SIGNAL), risk_score=50.0)
+    # risk_score=60 est entre REDUCE(50) et BLOCK(90)
+    result = modulate(dict(_BASE_SIGNAL), risk_score=60.0)
     assert result is not None
     assert result["score"] < 8, f"Score devrait être réduit: {result['score']}"
     assert 0.5 <= result["risk_factor"] < 1.0
@@ -34,9 +43,10 @@ def test_reduce_medium_risk():
 
 
 def test_block_high_risk():
+    """risk_score >= RISK_BLOCK (90) → signal annulé."""
     force_enable()
-    result = modulate(dict(_BASE_SIGNAL), risk_score=75.0)
-    assert result is None, f"Signal devrait être annulé à risk=75: {result}"
+    result = modulate(dict(_BASE_SIGNAL), risk_score=90.0)
+    assert result is None, f"Signal devrait être annulé à risk=90: {result}"
 
 
 def test_block_extreme_risk():
@@ -54,15 +64,15 @@ def test_passthrough_when_disabled():
 
 
 def test_factor_boundary_at_block_threshold():
+    """Exactement à RISK_BLOCK (90) → bloqué."""
     force_enable()
-    # Exactement à la limite → bloqué
-    result = modulate(dict(_BASE_SIGNAL), risk_score=70.0)
+    result = modulate(dict(_BASE_SIGNAL), risk_score=90.0)
     assert result is None
 
 
 def test_factor_just_below_block():
     force_enable()
-    result = modulate(dict(_BASE_SIGNAL), risk_score=69.9)
+    result = modulate(dict(_BASE_SIGNAL), risk_score=89.9)
     assert result is not None
     assert result["risk_factor"] < 1.0
 

@@ -110,7 +110,11 @@ class TestOpenPosition:
 
     def test_position_sizing_risque(self):
         """La taille de position respecte la règle risk_pct / sl_distance."""
+        import utils.config as cfg
         eng = _make_engine()
+        # Isoler la formule de sizing : supprimer les plafonds APRÈS _make_engine
+        cfg.PAPER_MAX_EXPOSURE_PCT = 1.0      # pas de plafond exposition
+        cfg.PAPER_MAX_POSITIONS    = 1         # cap par position = equity * 1.0 / 1 = 10000
         price = 50_000.0
         sl    = 49_000.0          # sl_dist = 1000 = 2%
         sig   = _signal(price=price, sl=sl)
@@ -119,6 +123,9 @@ class TestOpenPosition:
         # risk_usdt = 10000 × 1% = 100
         # size = 100 / 0.02 = 5000 USDT
         assert pos.size_usdt == pytest.approx(5000.0, rel=1e-3)
+        # Restaurer
+        cfg.PAPER_MAX_EXPOSURE_PCT = 0.80
+        cfg.PAPER_MAX_POSITIONS    = 5
 
     def test_cash_diminue_a_louverture(self):
         eng = _make_engine()
@@ -128,8 +135,8 @@ class TestOpenPosition:
 
     def test_max_positions(self):
         import utils.config as cfg
-        cfg.PAPER_MAX_POSITIONS = 2
         eng = _make_engine()
+        cfg.PAPER_MAX_POSITIONS = 2  # Écraser APRÈS _make_engine
         run(eng.open_position(_signal(sym="BTC/USDT")))
         run(eng.open_position(_signal(sym="ETH/USDT", sl=3_900.0, price=4_000.0, tp1=4_100.0, tp2=4_200.0, tp3=4_300.0)))
         # 3ème position → refusée

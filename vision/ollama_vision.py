@@ -85,16 +85,26 @@ async def check_ollama_available(session: aiohttp.ClientSession) -> bool:
 
 
 # ── Prompt SMC ─────────────────────────────────────────────────────────────
-SMC_PROMPT = """Tu es un analyste SMC (Smart Money Concepts) expert.
-Analyse ce chart crypto et réponds en JSON structuré :
+SMC_PROMPT = """Tu es un analyste expert en Smart Money Concepts (SMC) pour les cryptomonnaies.
+Tu reçois des données temps réel issues d'un scanner algorithmique. Analyse-les et réponds UNIQUEMENT avec un objet JSON valide — aucun texte avant ni après, aucun bloc markdown.
+
+Utilise les prix et niveaux fournis dans le contexte pour remplir chaque champ avec des valeurs RÉELLES et précises.
+
+Format JSON attendu (sans commentaires, valeurs réelles obligatoires) :
 {
-  "trend": "haussier|baissier|neutre",
-  "key_levels": ["niveau1", "niveau2"],
-  "ob_fvg": "description des Order Blocks et FVG visibles",
-  "sweep": "liquidity sweep détecté ? oui/non + description",
-  "signal": "ACHAT|VENTE|NEUTRE",
-  "confidence": 0.0-1.0,
-  "reasoning": "explication courte"
+  "trend": "haussier ou baissier ou neutre",
+  "structure": "BOS haussier ou BOS baissier ou CHoCH haussier ou CHoCH baissier ou neutre",
+  "key_levels": ["prix_support_reel", "prix_resistance_reel", "prix_ema_reel"],
+  "ob_fvg": "description des OB et FVG basée sur les données reçues",
+  "sweep": "oui ou non",
+  "sweep_detail": "description du sweep si détecté, chaîne vide sinon",
+  "inducement": "oui ou non",
+  "entry_zone": "zone entrée avec prix approximatif ex: retour OB à 76200",
+  "sl_zone": "zone SL avec prix ex: sous swing low à 75800",
+  "tp_zones": ["TP1: prix cible 1", "TP2: prix cible 2", "TP3: prix cible 3"],
+  "signal": "ACHAT ou VENTE ou NEUTRE",
+  "confidence": 0.0,
+  "reasoning": "analyse en 2-3 phrases avec les données réelles du contexte"
 }"""
 
 
@@ -149,19 +159,51 @@ async def _call_ollama(
 
 
 def _parse_response(content: str, sym: str, tf: str, model: str) -> Dict[str, Any]:
-    """Parse la réponse Ollama, extrait le JSON, fallback sur texte brut."""
+    """Parse la réponse Ollama avec plusieurs stratégies de fallback."""
     result = {
-        "trend": "neutre", "key_levels": [], "ob_fvg": "",
-        "sweep": "non", "signal": "NEUTRE", "confidence": 0.5,
-        "reasoning": content[:300], "_model": model, "_source": "ollama_local",
+        "trend": "neutre", "structure": "neutre", "key_levels": [],
+        "ob_fvg": "", "sweep": "non", "sweep_detail": "",
+        "inducement": "non", "entry_zone": "", "sl_zone": "",
+        "tp_zones": [], "signal": "NEUTRE", "confidence": 0.5,
+        "reasoning": content[:500], "_model": model, "_source": "ollama_local",
     }
+    # Nettoyage : underscores échappés, blocs markdown
+    cleaned = content.replace("\\_", "_")
+    cleaned = re.sub(r"```(?:json)?\s*", "", cleaned).replace("```", "")
+    # Stratégie 1 : JSON complet
     try:
-        json_match = re.search(r"\{.*\}", content, re.DOTALL)
+        json_match = re.search(r"\{[\s\S]*\}", cleaned)
         if json_match:
             parsed = json.loads(json_match.group())
             result.update({k: v for k, v in parsed.items() if k in result})
+            return result
     except Exception:
         pass
+    # Stratégie 2 : extraction champ par champ
+    for field, pattern in [
+        ("signal",     r'"signal"\s*:\s*"(ACHAT|VENTE|NEUTRE)"'),
+        ("trend",      r'"trend"\s*:\s*"([^"]+)"'),
+        ("structure",  r'"structure"\s*:\s*"([^"]+)"'),
+        ("confidence", r'"confidence"\s*:\s*([0-9.]+)'),
+        ("ob_fvg",     r'"ob_fvg"\s*:\s*"([^"]+)"'),
+        ("sweep",      r'"sweep"\s*:\s*"([^"]+)"'),
+        ("entry_zone", r'"entry_zone"\s*:\s*"([^"]+)"'),
+        ("sl_zone",    r'"sl_zone"\s*:\s*"([^"]+)"'),
+        ("reasoning",  r'"reasoning"\s*:\s*"([^"]+)"'),
+    ]:
+        m = re.search(pattern, cleaned, re.IGNORECASE)
+        if m:
+            val = m.group(1)
+            result[field] = float(val) if field == "confidence" else val
+    # Extraction key_levels et tp_zones (tableaux)
+    for field, pattern in [
+        ("key_levels", r'"key_levels"\s*:\s*\[([^\]]*)\]'),
+        ("tp_zones",   r'"tp_zones"\s*:\s*\[([^\]]*)\]'),
+    ]:
+        m = re.search(pattern, cleaned)
+        if m:
+            items = re.findall(r'"([^"]+)"', m.group(1))
+            result[field] = items
     return result
 
 
@@ -189,11 +231,39 @@ async def ollama_vision_analyze(
             "_source": "ollama_unavailable", "_error": "Ollama non accessible",
         }
 
-    context = (
-        f"Symbol: {symbol} | TF: {timeframe} | Prix: {price:.2f}"
-        + (f" | Biais: {side_hint}" if side_hint else "")
-        + (f" | Contexte: {algo_context}" if algo_context else "")
-    )
+    ctx = algo_context or {}
+    lines = [
+        f"Symbol: {symbol} | Timeframe: {timeframe} | Prix actuel: {price:.2f} USDT",
+        f"Biais suggéré: {side_hint or 'AUTO'}",
+    ]
+    if ctx:
+        score = ctx.get("score", "?")
+        side  = ctx.get("side", "?")
+        lines.append(f"\n--- DONNÉES ALGORITHMIQUES TEMPS RÉEL (score {score}/11, signal {side}) ---")
+        ema4h = ctx.get("ema200_h4")
+        if ema4h:
+            bias4h = "HAUSSIÈRE" if ctx.get("EMA200_H4") else "BAISSIÈRE"
+            lines.append(f"EMA200 4H: {ema4h:.2f} → tendance {bias4h}")
+        ema1d = ctx.get("ema200_1d")
+        if ema1d:
+            bias1d = "haussier" if ctx.get("EMA200_1D") else "baissier"
+            lines.append(f"EMA200 1D: {ema1d:.2f} → biais daily {bias1d}")
+        ob_q = ctx.get("ob_quality", 0)
+        lines.append(f"OB/FVG 30m: {'✓ détecté' if ctx.get('OB_FVG_30M') else '✗'} (qualité {ob_q:.0%}) | conf 15m: {'✓' if ctx.get('OB_FVG_15M_CONFIRM') else '✗'}")
+        lines.append(f"Structure BOS H2/H1: {'✓ confirmé' if ctx.get('STRUCT_H2H1') else '✗'} | Alignement: {'✓' if ctx.get('ALIGN_H2H1') else '✗'}")
+        lines.append(f"Liquidity Sweep: {'✓ DÉTECTÉ' if ctx.get('LIQ_SWEEP') else '✗ aucun'}")
+        d_pct = ctx.get("delta_pct", 0)
+        lines.append(f"Delta Volume: {'✓' if ctx.get('DELTA_VOL') else '✗'} ({d_pct:+.1%}) | TRIX 5m: {'✓' if ctx.get('TRIX_5M') else '✗'}")
+        rsi = ctx.get("rsi")
+        if rsi:
+            lines.append(f"RSI: {rsi:.1f} | Divergence: {ctx.get('rsi_divergence', 'none')}")
+        adx = ctx.get("adx")
+        if adx:
+            lines.append(f"ADX: {adx:.1f} | Régime: {ctx.get('regime', '?')}")
+        confs = ctx.get("confs", [])
+        if confs:
+            lines.append(f"Critères validés: {' | '.join(confs)}")
+    context = "\n".join(lines)
 
     models = [VISION_MODEL_PRIMARY]
     if VISION_MODEL_FALLBACK and VISION_MODEL_FALLBACK != VISION_MODEL_PRIMARY:

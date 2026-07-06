@@ -36,6 +36,10 @@ from utils.config import (
     PAPER_STATE_FILE,
     PAPER_TRAILING_PCT,
     PAPER_TRAILING_STOP,
+    PAPER_MAX_HOLD_HOURS,
+    DD_REALTIME_ENABLED,
+    DD_CURVE_INTERVAL_SEC,
+    CIRCUIT_BREAKER_MAX_DD_PCT,
 )
 from utils.logger import get_logger
 
@@ -196,22 +200,30 @@ class PaperEngine:
         # Prix connus pour calcul unrealized PnL
         self._last_prices: Dict[str, float] = {}
 
+        # Drawdown temps réel
+        self._current_dd_pct: float = 0.0
+        self._last_curve_ts: float = time.monotonic()
+
         self._load_state()
 
     # ── Propriétés ──────────────────────────────────────────────────────────────
 
     @property
     def equity(self) -> float:
-        """Equity = cash + PnL réalisé (sans unrealized)."""
-        return self.cash + self.realized_pnl
+        """Equity = cash uniquement (le cash inclut déjà le capital retourné + PnL réalisé)."""
+        return self.cash
 
     def equity_with_unrealized(self) -> float:
-        """Equity incluant le PnL non réalisé sur les positions ouvertes."""
-        eq = self.cash + self.realized_pnl
+        """Equity incluant le capital verrouillé dans les positions + PnL non réalisé."""
+        eq = self.cash
         for sym, pos in self.positions.items():
             p = self._last_prices.get(sym, 0.0)
             if p > 0:
-                eq += pos.unrealized_pnl(p)
+                # Réintégrer le capital verrouillé ET le PnL latent
+                eq += pos.current_size_usdt() + pos.unrealized_pnl(p)
+            else:
+                # Prix inconnu : réintégrer uniquement le capital au coût d'entrée
+                eq += pos.current_size_usdt()
         return eq
 
     @property
@@ -220,11 +232,23 @@ class PaperEngine:
 
     # ── Utilitaires ─────────────────────────────────────────────────────────────
 
-    def _apply_slippage(self, price: float, side: str, is_exit: bool) -> float:
-        """Applique slippage + demi-spread au prix d'entrée ou de sortie."""
-        slip   = PAPER_SLIPPAGE_BPS / 10_000
-        spread = PAPER_SPREAD_BPS   / 10_000 / 2
-        bump   = slip + spread
+    def _apply_slippage(self, price: float, side: str, is_exit: bool,
+                         sym: str = "", size_usdt: float = 0) -> float:
+        """Applique slippage + spread RÉEL (ou statique en fallback)."""
+        slip = PAPER_SLIPPAGE_BPS / 10_000
+
+        # Spread temps réel depuis le carnet d'ordres L2
+        try:
+            from data.spread_tracker import spread_tracker
+            real_spread = spread_tracker.get_effective_spread(sym, size_usdt)
+            if real_spread > 0:
+                spread = real_spread / 10_000 / 2
+            else:
+                spread = PAPER_SPREAD_BPS / 10_000 / 2
+        except Exception:
+            spread = PAPER_SPREAD_BPS / 10_000 / 2
+
+        bump = slip + spread
         if side == "LONG":
             return price * (1 + bump) if not is_exit else price * (1 - bump)
         return price * (1 - bump) if not is_exit else price * (1 + bump)
@@ -248,7 +272,11 @@ class PaperEngine:
         else:
             size_usdt = risk_usdt / sl_pct
 
-        size_usdt = min(size_usdt, equity * PAPER_MAX_EXPOSURE_PCT)
+        # Plafond global (% exposition max) ET plafond par-position (1/max_positions)
+        # pour éviter qu'une seule position consomme toute la capacité d'exposition
+        from utils.config import PAPER_MAX_POSITIONS
+        per_position_cap = equity * PAPER_MAX_EXPOSURE_PCT / max(PAPER_MAX_POSITIONS, 1)
+        size_usdt = min(size_usdt, per_position_cap)
         size_base = size_usdt / entry_price if entry_price > 0 else 0.0
         return size_usdt, size_base
 
@@ -425,6 +453,26 @@ class PaperEngine:
                     if new_ts < pos.trail_sl:
                         pos.trail_sl = new_ts
 
+            # ── Time-based stop (positions stagnantes) ────────────────────
+            if PAPER_MAX_HOLD_HOURS > 0 and not pos.tp1_hit:
+                try:
+                    t_entry = datetime.fromisoformat(pos.entry_ts.replace("Z", "+00:00"))
+                    hold_hours = (datetime.now(timezone.utc) - t_entry).total_seconds() / 3600
+                    if hold_hours >= PAPER_MAX_HOLD_HOURS:
+                        logger.info(
+                            "[PAPER] %s time-stop — position ouverte depuis %.0fh (max=%dh)",
+                            sym, hold_hours, int(PAPER_MAX_HOLD_HOURS),
+                        )
+                        msg = self._close_partial_unsafe(pos, current_price, pos.remaining_pct, "time_stop")
+                        messages.append(msg)
+                        trade = self._finalize_position_unsafe(sym, pos)
+                        self._append_csv(trade)
+                        self._update_equity_curve()
+                        await self._save_state_unsafe()
+                        return messages
+                except Exception:
+                    pass
+
             eff_sl = pos.effective_sl()
 
             # ── Vérification SL ──────────────────────────────────────────────
@@ -454,10 +502,15 @@ class PaperEngine:
                     # Déplacer le SL au breakeven
                     if not pos.sl_at_be:
                         pos.sl = pos.entry_price
-                        pos.trail_sl = 0.0   # désactiver trailing si BE atteint
+                        # [FIX] Garder le trailing stop actif après TP1 pour protéger les gains
+                        # Le trailing suit le prix depuis le breakeven au lieu de se désactiver
+                        if PAPER_TRAILING_STOP and pos.trail_sl > 0:
+                            pos.trail_sl = max(pos.trail_sl, pos.entry_price)
                         pos.sl_at_be = True
                         logger.info(
-                            "[PAPER] %s SL → breakeven (%.4f)", sym, pos.entry_price
+                            "[PAPER] %s SL → breakeven (%.4f) trailing=%s",
+                            sym, pos.entry_price,
+                            "actif" if (PAPER_TRAILING_STOP and pos.trail_sl > 0) else "inactif",
                         )
 
             # ── TP2 ──────────────────────────────────────────────────────────
@@ -501,6 +554,10 @@ class PaperEngine:
                 self._update_equity_curve()
                 await self._save_state_unsafe()
 
+            # ── Drawdown temps réel (même sans événement) ──────────────────
+            if DD_REALTIME_ENABLED:
+                self._update_realtime_drawdown()
+
         return messages
 
     # ── Fermeture partielle (non thread-safe — appelée depuis update_price) ──────
@@ -532,9 +589,10 @@ class PaperEngine:
 
         pnl_net = raw_pnl - fee_exit
 
-        # Libérer le cash (capital + PnL net)
+        # Libérer le cash : capital retourné + PnL net (frais sortie déjà déduits)
+        # realized_pnl est uniquement un tracker statistique, pas ajouté à equity
         self.cash        += closed_usdt + pnl_net
-        self.realized_pnl += pnl_net
+        self.realized_pnl += pnl_net  # tracker cumulatif (pour stats/journal uniquement)
 
         pos.remaining_pct -= actual
         pos.remaining_pct  = max(0.0, pos.remaining_pct)
@@ -623,6 +681,11 @@ class PaperEngine:
             trade.symbol, trade.side, trade.pnl_usdt, trade.pnl_pct,
             trade.exit_reason, trade.duration_min,
         )
+        from utils.event_bus import emit as _emit_event
+        _emit_event("TRADE", {
+            "phase": "closed", "symbol": trade.symbol, "side": trade.side,
+            "pnl_usdt": trade.pnl_usdt, "pnl_pct": trade.pnl_pct, "reason": trade.exit_reason,
+        })
         return trade
 
     # ── Fermeture manuelle (publique) ─────────────────────────────────────────
@@ -737,6 +800,53 @@ class PaperEngine:
     def get_equity_curve(self, last_n: int = 200) -> List[Dict[str, Any]]:
         return self._equity_curve[-last_n:]
 
+    def _update_realtime_drawdown(self) -> None:
+        """Calcul continu du drawdown, appelé à chaque update_price (5s).
+
+        Différence avec _update_equity_curve :
+        - _update_equity_curve est appelée aux événements (open/close/TP/SL)
+        - _update_realtime_drawdown est appelée à CHAQUE tick prix
+        - Throttle l'equity curve à 1 point / DD_CURVE_INTERVAL_SEC
+        - Déclenche le circuit breaker DD si nécessaire
+        """
+        eq = self.equity_with_unrealized()
+        if eq > self._peak_equity:
+            self._peak_equity = eq
+
+        self._current_dd_pct = max(
+            0.0, (self._peak_equity - eq) / self._peak_equity * 100
+        ) if self._peak_equity > 0 else 0.0
+
+        # Throttle equity curve updates
+        now = time.monotonic()
+        if now - self._last_curve_ts >= DD_CURVE_INTERVAL_SEC:
+            self._equity_curve.append({
+                "ts": datetime.now(timezone.utc).isoformat(),
+                "equity": round(eq, 2),
+                "dd_pct": round(self._current_dd_pct, 2),
+            })
+            if len(self._equity_curve) > 5000:
+                self._equity_curve = self._equity_curve[-5000:]
+            self._last_curve_ts = now
+
+        # Circuit breaker temps réel si DD dépasse le seuil
+        if self._current_dd_pct > CIRCUIT_BREAKER_MAX_DD_PCT:
+            try:
+                from execution.signal_manager import set_circuit_breaker, is_circuit_breaker_active
+                from utils.config import SYMBOLS
+                for sym in SYMBOLS:
+                    if not is_circuit_breaker_active(sym):
+                        set_circuit_breaker(
+                            sym, True,
+                            f"DD temps réel {self._current_dd_pct:.1f}% > seuil {CIRCUIT_BREAKER_MAX_DD_PCT:.1f}%"
+                        )
+                        logger.warning(
+                            "[PAPER] 🛑 Circuit breaker DD activé — DD=%.1f%%",
+                            self._current_dd_pct,
+                        )
+            except Exception as e:
+                logger.debug("[PAPER] CB DD check: %s", e)
+
     # ── Persistance ──────────────────────────────────────────────────────────────
 
     async def _save_state_unsafe(self) -> None:
@@ -795,6 +905,9 @@ class PaperEngine:
                     pos.partial_exits  = partials
                     pos.last_funding_ts = time.monotonic()  # réinitialiser au démarrage
                     self.positions[sym] = pos
+                    # Initialiser _last_prices avec entry_price comme fallback
+                    # pour que equity_with_unrealized() soit correct avant le premier tick
+                    self._last_prices[sym] = pos.entry_price
                 except Exception as exc:
                     logger.warning("[PAPER] Reconstruction position %s: %s", sym, exc)
 

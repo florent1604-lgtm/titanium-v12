@@ -300,29 +300,37 @@ label.new(bar_index, high, "⬡ Aucune position paper ouverte",
 """
 
 
+def _pine_escape(s: str) -> str:
+    """Échappe les guillemets et caractères dangereux pour l'inclusion dans du code Pine Script."""
+    # Supprimer tout ce qui n'est pas alphanumérique, espace, +, -, ., $, %
+    import re
+    return re.sub(r'[^a-zA-Z0-9 \+\-\.\$\%\_\/]', '', str(s))[:40]
+
+
 def _pine_with_positions(positions: list) -> str:
     """Génère un script Pine v5 qui affiche les positions paper sur le graphique."""
     lines = ['//@version=5', 'indicator("Titanium Paper Positions", overlay=true)', '']
 
     for i, pos in enumerate(positions):
-        sym     = pos["symbol"].replace("/", "").replace("USDT", "")
-        side    = pos["side"] or "?"
-        entry   = pos["entry"] or 0
-        sl      = pos["sl"] or 0
-        tp1     = pos["tp1"] or 0
-        tp2     = pos["tp2"] or 0
-        tp3     = pos["tp3"] or 0
-        pnl     = pos.get("unrealized_pnl") or 0
-        color   = "color.green" if side == "LONG" else "color.red"
-        pnl_str = f"{pnl:+.2f}$" if pnl else ""
+        # Valeurs numériques uniquement — pas d'interpolation chaîne pour les prix
+        sym   = _pine_escape(pos["symbol"].replace("/", "").replace("USDT", ""))
+        side  = "LONG" if str(pos.get("side", "")).upper() in ("LONG", "ACHAT") else "SHORT"
+        entry = float(pos.get("entry") or 0)
+        sl    = float(pos.get("sl") or 0)
+        tp1   = float(pos.get("tp1") or 0)
+        tp2   = float(pos.get("tp2") or 0)
+        tp3   = float(pos.get("tp3") or 0)
+        pnl   = float(pos.get("unrealized_pnl") or 0)
+        color = "color.green" if side == "LONG" else "color.red"
+        pnl_str = _pine_escape(f"{pnl:+.2f}$") if pnl else ""
 
         lines += [
-            f"// ── Position {i+1}: {sym} {side} ──",
-            f"entry_{i} = {entry}",
-            f"sl_{i}    = {sl}",
-            f"tp1_{i}   = {tp1}",
-            f"tp2_{i}   = {tp2}",
-            f"tp3_{i}   = {tp3}",
+            f"// Position {i+1}: {sym} {side}",
+            f"entry_{i} = {entry:.4f}",
+            f"sl_{i}    = {sl:.4f}",
+            f"tp1_{i}   = {tp1:.4f}",
+            f"tp2_{i}   = {tp2:.4f}",
+            f"tp3_{i}   = {tp3:.4f}",
             f'label.new(bar_index, entry_{i}, "{sym} {side} {pnl_str}",',
             f'    color={color}, textcolor=color.white, size=size.small, style=label.style_label_right)',
             f"line.new(bar_index - 5, entry_{i}, bar_index, entry_{i}, color={color}, width=2)",
@@ -334,9 +342,9 @@ def _pine_with_positions(positions: list) -> str:
                 f'label.new(bar_index, sl_{i}, "SL {sl:.2f}", color=color.new(color.red, 70), '
                 f"textcolor=color.red, size=size.tiny)",
             ]
-        for j, (tp_var, tp_val, tp_label) in enumerate(
-            [(f"tp1_{i}", tp1, "TP1"), (f"tp2_{i}", tp2, "TP2"), (f"tp3_{i}", tp3, "TP3")]
-        ):
+        for tp_var, tp_val, tp_label in [
+            (f"tp1_{i}", tp1, "TP1"), (f"tp2_{i}", tp2, "TP2"), (f"tp3_{i}", tp3, "TP3")
+        ]:
             if tp_val > 0:
                 lines += [
                     f"line.new(bar_index - 5, {tp_var}, bar_index, {tp_var}, "

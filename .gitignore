@@ -33,3 +33,12 @@ Thumbs.db
 
 # ── GitNexus index ────────────────────────────────────────────────────────────
 .gitnexus/
+
+# ── Environnements & outils locaux (ne jamais committer) ──────────────────────
+venv/
+.venv/
+gitnexus/
+.pytest_cache/
+antigravity_config/
+data/events.jsonl
+data/trade_journal.jsonl

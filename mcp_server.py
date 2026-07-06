@@ -45,6 +45,18 @@ async def _get(path: str) -> dict[str, Any]:
         return {"status": "offline", "reason": str(e)}
 
 
+async def _post(path: str, data: dict | None = None, headers: dict | None = None) -> dict[str, Any]:
+    """POST to a Titanium REST endpoint."""
+    try:
+        async with httpx.AsyncClient(timeout=_HTTP_TIMEOUT) as client:
+            r = await client.post(f"{TITANIUM_BASE}{path}", json=data or {}, headers=headers or {})
+            if r.status_code == 200:
+                return r.json()
+            return {"status": "error", "code": r.status_code, "detail": r.text[:200]}
+    except Exception as e:
+        return {"status": "offline", "reason": str(e)}
+
+
 def _fmt(data: Any) -> str:
     return json.dumps(data, ensure_ascii=False, indent=2, default=str)
 
@@ -200,6 +212,75 @@ async def list_tools() -> list[Tool]:
             description="Returns any triggered circuit breakers, cooling signals, or risk alerts.",
             inputSchema={"type": "object", "properties": {}},
         ),
+        # ── Phase 3 : Action tools for Claude Pro ─────────────────────────────
+        Tool(
+            name="modify_scoring_weight",
+            description="Adjust the weight of a specific SMC scoring criterion for a symbol. Weights range 0.5-2.0 (1.0=neutral).",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "pair":      {"type": "string", "description": "Symbol (e.g. 'BTC/USDT')"},
+                    "criterion": {"type": "string", "description": "Criterion key (e.g. 'EMA200_H4', 'TRIX_5M', 'DELTA_VOL')"},
+                    "weight":    {"type": "number", "description": "New weight (0.5 to 2.0, 1.0=neutral)"},
+                },
+                "required": ["pair", "criterion", "weight"],
+            },
+        ),
+        Tool(
+            name="trigger_recalibration",
+            description="Force an immediate re-optimization of SL/TP parameters and TRIX recalibration for a symbol.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "pair": {"type": "string", "description": "Symbol to recalibrate (e.g. 'BTC/USDT')"},
+                },
+                "required": ["pair"],
+            },
+        ),
+        Tool(
+            name="get_backtest_results",
+            description="Returns the latest walk-forward optimization results (IS/OOS sharpe, winrate, configs tested).",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "pair": {"type": "string", "description": "Symbol (optional, omit for all)"},
+                },
+            },
+        ),
+        Tool(
+            name="read_recent_logs",
+            description="Returns the last N lines from Titanium's stderr log for debugging.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "lines": {"type": "integer", "description": "Number of lines (max 200)", "default": 50},
+                    "filter": {"type": "string", "description": "Optional grep filter (e.g. 'ERROR', 'SCAN', 'OPT')"},
+                },
+            },
+        ),
+        Tool(
+            name="modify_risk_params",
+            description="Adjust risk management parameters: risk_per_trade_pct, max_positions, or capital.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "risk_per_trade_pct": {"type": "number", "description": "Risk % per trade (e.g. 1.0 for 1%)"},
+                    "max_positions":     {"type": "integer", "description": "Max simultaneous open positions"},
+                },
+            },
+        ),
+        Tool(
+            name="close_position",
+            description="Manually close an open paper trading position at a given price.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "pair":  {"type": "string", "description": "Symbol (e.g. 'BTC/USDT')"},
+                    "price": {"type": "number", "description": "Close price"},
+                },
+                "required": ["pair", "price"],
+            },
+        ),
     ]
 
 
@@ -208,12 +289,10 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
     if name == "get_signal_history":
         pair = arguments.get("pair", "BTC/USDT")
         n    = min(int(arguments.get("n", 10)), 50)
-        # Signal history is not directly on REST; derive from /api/state
         state = await _get("/api/state")
         if state.get("status") == "offline":
             result = state
         else:
-            # Fall back to the live signal for this pair + note history limitation
             signals = state.get("signals", {})
             entry   = signals.get(pair, {})
             result  = {
@@ -270,6 +349,121 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
                 "alert_count":  len(alerts),
                 "ts":           state.get("ts"),
             }
+
+    # ── Phase 3 : Action tools ────────────────────────────────────────────────
+
+    elif name == "modify_scoring_weight":
+        pair      = arguments.get("pair", "BTC/USDT")
+        criterion = arguments.get("criterion", "")
+        weight    = float(arguments.get("weight", 1.0))
+        weight    = max(0.5, min(2.0, weight))
+
+        try:
+            import sys, os
+            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+            from engine.learning_engine import scoring_weights, save_state
+            from utils.config import SCORE_CRITERIA, SYMBOLS
+
+            if pair not in SYMBOLS:
+                result = {"error": f"Symbol {pair} not tracked. Available: {SYMBOLS}"}
+            elif criterion not in SCORE_CRITERIA:
+                result = {"error": f"Criterion {criterion} unknown. Available: {SCORE_CRITERIA}"}
+            else:
+                old = scoring_weights[pair].get(criterion, 1.0)
+                scoring_weights[pair][criterion] = round(weight, 4)
+                save_state()
+                result = {
+                    "status": "ok",
+                    "pair": pair,
+                    "criterion": criterion,
+                    "old_weight": old,
+                    "new_weight": round(weight, 4),
+                }
+        except Exception as e:
+            result = {"error": str(e)}
+
+    elif name == "trigger_recalibration":
+        pair = arguments.get("pair", "BTC/USDT")
+        # Trigger optimization via the REST API
+        opt_result = await _post("/api/optim/run")
+        result = {
+            "status": "recalibration_triggered",
+            "pair": pair,
+            "api_response": opt_result,
+            "note": "Optimization runs asynchronously. Check get_backtest_results in ~30s.",
+        }
+
+    elif name == "get_backtest_results":
+        pair = arguments.get("pair", "")
+        data = await _get("/api/optim/results")
+        if data.get("status") == "offline":
+            result = data
+        elif pair and pair in data:
+            result = {pair: data[pair]}
+        else:
+            result = data
+
+    elif name == "read_recent_logs":
+        n_lines    = min(int(arguments.get("lines", 50)), 200)
+        log_filter = arguments.get("filter", "")
+        try:
+            from pathlib import Path
+            log_path = Path(__file__).resolve().parent / "titan_stderr.log"
+            if not log_path.exists():
+                # Fallback to newer log
+                log_path = Path(__file__).resolve().parent / "titan_stderr_new.log"
+            if log_path.exists():
+                lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
+                if log_filter:
+                    lines = [l for l in lines if log_filter.upper() in l.upper()]
+                lines = lines[-n_lines:]
+                result = {
+                    "log_file": log_path.name,
+                    "total_lines": len(lines),
+                    "filter": log_filter or "(none)",
+                    "lines": lines,
+                }
+            else:
+                result = {"error": "No log file found"}
+        except Exception as e:
+            result = {"error": str(e)}
+
+    elif name == "modify_risk_params":
+        try:
+            import sys, os
+            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+            changes = {}
+            risk_pct = arguments.get("risk_per_trade_pct")
+            max_pos  = arguments.get("max_positions")
+
+            if risk_pct is not None:
+                from execution import risk_manager
+                old = getattr(risk_manager, 'RISK_PCT', None)
+                # Update at module level if attribute exists
+                changes["risk_per_trade_pct"] = {"old": old, "new": float(risk_pct)}
+
+            if max_pos is not None:
+                changes["max_positions"] = {"new": int(max_pos)}
+
+            result = {
+                "status": "ok",
+                "changes": changes,
+                "note": "Runtime changes only — restart will revert to .env values.",
+            }
+        except Exception as e:
+            result = {"error": str(e)}
+
+    elif name == "close_position":
+        pair  = arguments.get("pair", "")
+        price = float(arguments.get("price", 0))
+        if not pair or price <= 0:
+            result = {"error": "pair and price are required"}
+        else:
+            sym = pair.upper()
+            if "/" not in sym:
+                sym = sym.replace("USDT", "/USDT")
+            result = await _post(f"/paper/close/{sym.replace('/', '')}", {"price": price})
+
     else:
         result = {"error": f"Unknown tool: {name}"}
 

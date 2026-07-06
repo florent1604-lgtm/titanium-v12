@@ -50,11 +50,15 @@ async def ws_titan_disconnect(ws) -> None:
 
 async def ws_titan_broadcast(message: Dict[str, Any]) -> None:
     """Envoie un message JSON à tous les clients WS Titan connectés."""
-    if not _titan_ws_clients:
-        return
+    # Snapshot atomique sous lock pour éviter la modification du set pendant l'itération
+    async with _titan_ws_lock:
+        if not _titan_ws_clients:
+            return
+        clients = list(_titan_ws_clients)
+
     payload = json.dumps(message)
     dead = set()
-    for ws in list(_titan_ws_clients):
+    for ws in clients:
         try:
             await ws.send_text(payload)
         except Exception:

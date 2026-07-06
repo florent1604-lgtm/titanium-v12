@@ -22,6 +22,40 @@ from utils.logger import get_logger
 
 logger = get_logger(__name__)
 
+# ── Mapping SCORE_CRITERIA → préfixes de labels humains ──────────────────────
+# Les confs dans le journal paper utilisent des labels lisibles ("EMA200-H4 haussier")
+# tandis que SCORE_CRITERIA utilise des clés normalisées ("EMA200_H4").
+# Ce mapping permet le matching entre les deux.
+_CRITERIA_LABEL_PREFIXES: Dict[str, list] = {
+    "EMA200_H4":          ["EMA200-H4", "EMA200_H4"],
+    "STRUCT_H2H1":        ["BOS H2", "BOS H1", "CHoCH"],
+    "OB_FVG_30M":         ["OB/FVG 30m"],
+    "OB_FVG_15M_CONFIRM": ["OB/FVG double conf", "OB/FVG 15m"],
+    "REJET_15M":          ["Rejet 5m", "Rejet 15m"],
+    "TRIX_5M":            ["TRIX 5m", "TRIX"],
+    "ALIGN_H2H1":         ["H2+H1 align"],
+    "EMA200_1D":          ["EMA200-1D", "Biais D1"],
+    "DELTA_VOL":          ["Delta volume"],
+    "LIQ_SWEEP":          ["Liquidity sweep"],
+    "ADX_REGIME":         ["ADX r\u00e9gime", "ADX regime"],
+    "RSI_DIVERGENCE":     ["RSI divergence"],
+    "VOL_SPIKE":          ["Vol spike", "Volume spike"],
+    "DISPLACEMENT":       ["Displacement"],
+    "ORDERBOOK_IMBALANCE":["OB L2 imbalance"],
+    "ORDERBOOK_WALL":     ["OB wall"],
+}
+
+
+def _criterion_in_confs(criterion: str, confs: list) -> bool:
+    """Vérifie si un critère SCORE_CRITERIA est présent dans les confs humaines."""
+    prefixes = _CRITERIA_LABEL_PREFIXES.get(criterion, [criterion])
+    return any(
+        any(conf.startswith(prefix) or prefix.lower() in conf.lower()
+            for prefix in prefixes)
+        for conf in confs
+    )
+
+
 signal_history:  Dict[str, List[dict]]    = {s: [] for s in SYMBOLS}
 scoring_weights: Dict[str, Dict[str, float]] = {
     s: {c: 1.0 for c in SCORE_CRITERIA} for s in SYMBOLS
@@ -111,8 +145,9 @@ def _adapt_weights(sym: str) -> None:
     # ── Source 1 : signal_history ──────────────────────────────────────────────
     history = [s for s in signal_history[sym] if s.get("outcome") not in ("pending", "expired")]
     if len(history) >= LEARNING_MIN_SIGNALS:
+        adapted_count = 0
         for c in SCORE_CRITERIA:
-            with_criterion = [s for s in history if c in s.get("confs", [])]
+            with_criterion = [s for s in history if _criterion_in_confs(c, s.get("confs", []))]
             if not with_criterion:
                 continue
             wins     = sum(1 for s in with_criterion if "tp" in s.get("outcome", ""))
@@ -120,7 +155,9 @@ def _adapt_weights(sym: str) -> None:
             current  = scoring_weights[sym].get(c, 1.0)
             delta    = LEARNING_ADAPT_RATE * (win_rate - 0.6)
             scoring_weights[sym][c] = round(max(0.5, min(2.0, current + delta)), 4)
-        logger.info("[LEARNING] %s poids adaptés signal_history (%d résolus)", sym, len(history))
+            adapted_count += 1
+        logger.info("[LEARNING] %s poids adaptés signal_history (%d résolus, %d critères)",
+                    sym, len(history), adapted_count)
 
     # ── Source 2 : paper journal (source de vérité — PnL réel) ────────────────
     _adapt_from_paper_journal(sym)
@@ -145,8 +182,9 @@ def _adapt_from_paper_journal(sym: str) -> None:
     if len(sym_trades) < LEARNING_MIN_SIGNALS:
         return
 
+    adapted_count = 0
     for c in SCORE_CRITERIA:
-        crit_trades = [t for t in sym_trades if c in t.get("confs", [])]
+        crit_trades = [t for t in sym_trades if _criterion_in_confs(c, t.get("confs", []))]
         if len(crit_trades) < 3:  # pas assez de données pour ce critère
             continue
         wins     = sum(1 for t in crit_trades if float(t.get("pnl_usdt", 0)) > 0)
@@ -155,12 +193,11 @@ def _adapt_from_paper_journal(sym: str) -> None:
         # Poids moindre sur le journal paper (factor 0.5) pour ne pas trop surpondérer
         delta    = LEARNING_ADAPT_RATE * 0.5 * (win_rate - 0.6)
         scoring_weights[sym][c] = round(max(0.5, min(2.0, current + delta)), 4)
+        adapted_count += 1
 
     logger.info(
         "[LEARNING] %s poids adaptés journal paper (%d trades, critères: %d actifs)",
-        sym, len(sym_trades),
-        sum(1 for c in SCORE_CRITERIA
-            if sum(1 for t in sym_trades if c in t.get("confs", [])) >= 3),
+        sym, len(sym_trades), adapted_count,
     )
 
 
@@ -192,7 +229,7 @@ def _check_circuit_breaker(sym: str) -> None:
     else:
         if is_circuit_breaker_active(sym):
             set_circuit_breaker(sym, False)
-            logger.info("[LEARNING] %s winrate rétabli (%.0%%) — reprise des signaux", sym, winrate)
+            logger.info("[LEARNING] %s winrate rétabli (%.0f%%) — reprise des signaux", sym, winrate * 100)
 
 
 async def learning_report_loop() -> None:

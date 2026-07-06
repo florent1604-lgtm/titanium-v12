@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Optional
 
 import aiohttp
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
 logger = logging.getLogger(__name__)
@@ -251,3 +251,173 @@ async def gitnexus_stop():
         return JSONResponse({"status": "stopped", "message": "GitNexus arrete"})
     return JSONResponse({"status": "not_managed",
                          "message": "GitNexus non gere par ce dashboard"})
+
+
+# ── GitHub push ───────────────────────────────────────────────────────────────
+
+def _git(args: list[str], cwd: str = None) -> tuple[int, str]:
+    """Executes a git command and returns (returncode, output)."""
+    import shutil
+    git_bin = shutil.which("git") or "git"
+    result = subprocess.run(
+        [git_bin] + args,
+        capture_output=True,
+        text=True,
+        cwd=cwd or str(BASE_DIR),
+        encoding="utf-8",
+        errors="replace",
+    )
+    return result.returncode, (result.stdout + result.stderr).strip()
+
+
+@router.get("/github/status")
+async def github_status():
+    """Retourne l'état du dépôt Git local : branche, dernier commit, diff."""
+    import asyncio as _asyncio
+
+    def _fetch():
+        # Vérifier d'abord si c'est un repo git
+        code, _ = _git(["rev-parse", "--git-dir"])
+        if code != 0:
+            return None, None, None, None  # pas un repo git
+
+        _, branch = _git(["rev-parse", "--abbrev-ref", "HEAD"])
+        _, remote = _git(["remote", "get-url", "origin"])
+        _, last   = _git(["log", "-1", "--format=%h %s (%cr)", "--no-color"])
+        _, diff   = _git(["status", "--short"])
+        return branch, remote, last, diff
+
+    try:
+        loop = _asyncio.get_event_loop()
+        branch, remote, last, diff = await loop.run_in_executor(None, _fetch)
+
+        # Pas un repo git
+        if branch is None:
+            return JSONResponse({
+                "branch":  "—",
+                "remote":  "",
+                "last":    "Aucun dépôt Git initialisé",
+                "changes": 0,
+                "files":   [],
+            })
+
+        changes = [l for l in (diff or "").splitlines() if l.strip()]
+        return JSONResponse({
+            "branch":  branch or "master",
+            "remote":  remote or "",
+            "last":    last or "—",
+            "changes": len(changes),
+            "files":   changes[:12],
+        })
+    except Exception as e:
+        return JSONResponse({
+            "branch": "—", "remote": "", "last": f"Erreur: {e}",
+            "changes": 0, "files": [],
+        })
+
+
+_BRANCH_RE = __import__("re").compile(r"^[a-zA-Z0-9._\-/]{1,80}$")
+
+
+def _validate_branch(branch: str) -> str:
+    """Valide et nettoie le nom de branche — rejette tout caractère suspect."""
+    branch = branch.strip()
+    if not _BRANCH_RE.match(branch):
+        raise ValueError(f"Nom de branche invalide: {branch!r}")
+    # Bloquer les flags git déguisés en noms de branche
+    if branch.startswith("-"):
+        raise ValueError("La branche ne peut pas commencer par '-'")
+    return branch
+
+
+def _sanitize_commit_message(msg: str) -> str:
+    """Supprime les retours à la ligne et caractères de contrôle du message de commit."""
+    return msg.replace("\n", " ").replace("\r", " ").replace("\x00", "").strip()[:200]
+
+
+@router.post("/github/push")
+async def github_push(request: Request):
+    """git add . → git commit → git push origin <branche>.
+
+    Body JSON (optionnel) :
+      { "message": "feat: mon commit", "branch": "master" }
+    """
+    import asyncio as _asyncio
+
+    try:
+        body    = await request.json()
+        message = str(body.get("message", "")).strip()
+        branch  = str(body.get("branch", "master")).strip() or "master"
+    except Exception:
+        message = ""
+        branch  = "master"
+
+    # Valider la branche (protection injection)
+    try:
+        branch = _validate_branch(branch)
+    except ValueError as e:
+        return JSONResponse({"status": "error", "message": str(e)}, status_code=400)
+
+    # Nettoyer le message de commit
+    if not message:
+        from datetime import datetime
+        message = f"update: Titanium v12 — {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+    message = _sanitize_commit_message(message)
+
+    logs: list[str] = []
+    loop = _asyncio.get_event_loop()
+
+    # Toutes les opérations git dans run_in_executor — ne bloquent JAMAIS la boucle asyncio
+    def _do_push() -> tuple[list[str], str, int]:
+        _logs: list[str] = []
+
+        # 1. git add .
+        code, out = _git(["add", "."])
+        _logs.append(f"git add . → {'OK' if code == 0 else 'ERREUR'}")
+        if out:
+            _logs.append(out[:200])
+        if code != 0:
+            return _logs, "add", code
+
+        # 2. Vérifier s'il y a quelque chose à commiter
+        _, diff = _git(["diff", "--cached", "--name-only"])
+        if not diff.strip():
+            return _logs, "nothing", 0
+
+        # 3. git commit
+        code, out = _git(["commit", "-m", message])
+        _logs.append(f"git commit → {'OK' if code == 0 else 'ERREUR'}")
+        if out:
+            _logs.append(out[:300])
+        if code != 0:
+            return _logs, "commit", code
+
+        # 4. git push
+        code, out = _git(["push", "origin", branch])
+        _logs.append(f"git push origin {branch} → {'OK' if code == 0 else 'ERREUR'}")
+        if out:
+            _logs.append(out[:400])
+        return _logs, "push" if code != 0 else "ok", code
+
+    logs, step, ret = await loop.run_in_executor(None, _do_push)
+
+    if step == "nothing":
+        return JSONResponse({
+            "status":  "nothing_to_commit",
+            "message": "Rien à commiter — le dépôt est déjà à jour.",
+            "log":     logs,
+        })
+    if step != "ok":
+        return JSONResponse({
+            "status":  "error",
+            "step":    step,
+            "message": logs[-1] if logs else "Erreur inconnue",
+            "log":     logs,
+        }, status_code=500)
+
+    return JSONResponse({
+        "status":  "pushed",
+        "message": f"Push réussi → {branch}",
+        "commit":  message,
+        "log":     logs,
+    })

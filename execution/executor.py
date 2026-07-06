@@ -55,10 +55,64 @@ class PaperExecutor(BaseExecutor):
         )
 
     async def execute(self, signal: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        from execution.guards import run_guards
+        from execution.trade_journal import stage, commit, reject
+        from utils.config import JOURNAL_STAGING_ENABLED, JOURNAL_AUTO_APPROVE
+
+        sym = signal.get("symbol", "")
+        open_positions = {
+            s: p.current_size_usdt() for s, p in self.engine.positions.items()
+        }
+        capital = self.engine.equity_with_unrealized()
+
+        spectral_info = {k: v for k, v in signal.items() if k.startswith("spectral_")}
+        trade_hash = stage(signal, spectral_info or None)
+
+        guard_result = run_guards(signal, sym, open_positions, capital)
+        if not guard_result.passed:
+            logger.warning(
+                "[EXECUTOR] %s ordre refusé par guard %s — %s",
+                sym, guard_result.guard, guard_result.reason,
+            )
+            reject(trade_hash, f"{guard_result.guard}: {guard_result.reason}")
+            return None
+
+        if JOURNAL_STAGING_ENABLED and not JOURNAL_AUTO_APPROVE:
+            # Reste "staged" — attend une approbation manuelle (POST /journal/{hash}/approve).
+            # stage() a déjà enregistré le signal en attente (JOURNAL_STAGING_ENABLED=1).
+            return None
+
         pos = await self.engine.open_position(signal)
         if pos is not None:
+            commit(trade_hash, pos.to_dict())
+            self._emit_trade_opened(sym, pos)
             return pos.to_dict()
+        reject(trade_hash, "engine_rejected")
         return None
+
+    async def execute_approved(self, trade_hash: str) -> Optional[Dict[str, Any]]:
+        """Approuve manuellement un trade resté "staged" (JOURNAL_STAGING_ENABLED=1)."""
+        from execution.trade_journal import pop_pending, mark_approved, commit, reject
+
+        signal = pop_pending(trade_hash)
+        if signal is None:
+            return None
+        mark_approved(trade_hash)
+        pos = await self.engine.open_position(signal)
+        if pos is not None:
+            commit(trade_hash, pos.to_dict())
+            self._emit_trade_opened(signal.get("symbol", ""), pos)
+            return pos.to_dict()
+        reject(trade_hash, "engine_rejected")
+        return None
+
+    @staticmethod
+    def _emit_trade_opened(sym: str, pos: Any) -> None:
+        from utils.event_bus import emit as _emit_event
+        _emit_event("TRADE", {
+            "phase": "opened", "symbol": sym, "side": pos.side,
+            "score": pos.score, "size_usdt": round(pos.size_usdt, 2),
+        })
 
     async def update_price(self, symbol: str, price: float) -> List[str]:
         return await self.engine.update_price(symbol, price)
@@ -110,10 +164,11 @@ def _create_executor() -> BaseExecutor:
     if mode == "paper":
         return PaperExecutor()
     elif mode == "live":
-        logger.warning(
-            "[EXECUTOR] Mode LIVE non encore implémenté — fallback sur PAPER"
+        raise RuntimeError(
+            "[EXECUTOR] Mode LIVE non implémenté. "
+            "Utilisez TRADING_MODE=paper pour la simulation ou TRADING_MODE=disabled pour les signaux seuls. "
+            "Le mode live nécessite l'intégration de l'API Binance (non disponible dans cette version)."
         )
-        return PaperExecutor()
     else:
         return DisabledExecutor()
 

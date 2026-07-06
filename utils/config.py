@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Tuple
 
 try:
     from dotenv import load_dotenv
-    _env = Path(__file__).resolve().parent.parent.parent / ".env"
+    _env = Path(__file__).resolve().parent.parent / ".env"
     load_dotenv(_env if _env.exists() else None)
 except Exception:
     pass
@@ -19,10 +19,16 @@ def _bool(key: str, default: str = "0") -> bool:
     return os.getenv(key, default).strip().lower() in ("1", "true", "yes", "on")
 
 def _int(key: str, default: int) -> int:
-    return int(os.getenv(key, str(default)))
+    try:
+        return int(os.getenv(key, str(default)))
+    except (ValueError, TypeError):
+        return default
 
 def _float(key: str, default: float) -> float:
-    return float(os.getenv(key, str(default)))
+    try:
+        return float(os.getenv(key, str(default)))
+    except (ValueError, TypeError):
+        return default
 
 def _str(key: str, default: str = "") -> str:
     return os.getenv(key, default).strip()
@@ -127,28 +133,36 @@ SCORE_CRITERIA = [
     "EMA200_H4", "STRUCT_H2H1", "OB_FVG_30M", "OB_FVG_15M_CONFIRM",
     "REJET_15M", "TRIX_5M", "ALIGN_H2H1", "EMA200_1D",
     "DELTA_VOL", "LIQ_SWEEP", "ADX_REGIME",
+    "RSI_DIVERGENCE", "VOL_SPIKE", "DISPLACEMENT",
+    "ORDERBOOK_IMBALANCE", "ORDERBOOK_WALL",
 ]
-SCORE_MIN_REQUIRED = _int("SCORE_MIN_REQUIRED", 7)
+SCORE_MIN_REQUIRED = _int("SCORE_MIN_REQUIRED", 8)  # /16 maintenant
 
 # ── Overrides par symbole ────────────────────────────��────────────────────────
 SYM_OVERRIDES: Dict[str, Dict[str, Any]] = {
     "BTC/USDT": {
-        "atr_mult":      _float("BTC_ATR_MULT", 1.0),
-        "tp_ratios":     (_float("BTC_TP1", 1.5), _float("BTC_TP2", 2.1), _float("BTC_TP3", 2.6)),
+        "atr_mult":      _float("BTC_ATR_MULT", 0.8),
+        "tp_ratios":     (_float("BTC_TP1", 2.0), _float("BTC_TP2", 3.0), _float("BTC_TP3", 4.0)),
         "rsi_long":      _float("BTC_RSI_LONG", 28.0),
         "rsi_short":     _float("BTC_RSI_SHORT", 72.0),
-        "score_min":     _int("BTC_SCORE_MIN", 6),
+        "score_min":     _int("BTC_SCORE_MIN", 7),
         "adx_threshold": _float("BTC_ADX_THRESHOLD", 27.0),
         "sl_floor_pct":  _float("BTC_SL_FLOOR_PCT", 0.0010),
+        # Validé walk-forward 70/30 (1h/365j, scripts/backtest_cli.py) le 2026-07-01 :
+        # PF out-of-sample 0.80 -> 0.86, maxDD 23.6% -> 13.2%.
+        "spectral_regime_filter": _bool("BTC_SPECTRAL_REGIME_FILTER", "1"),
     },
     "PAXG/USDT": {
-        "atr_mult":      _float("PAXG_ATR_MULT", 1.2),
-        "tp_ratios":     (_float("PAXG_TP1", 1.0), _float("PAXG_TP2", 1.5), _float("PAXG_TP3", 2.0)),
+        "atr_mult":      _float("PAXG_ATR_MULT", 1.0),
+        "tp_ratios":     (_float("PAXG_TP1", 1.5), _float("PAXG_TP2", 2.5), _float("PAXG_TP3", 3.5)),
         "rsi_long":      _float("PAXG_RSI_LONG", 35.0),
         "rsi_short":     _float("PAXG_RSI_SHORT", 65.0),
-        "score_min":     _int("PAXG_SCORE_MIN", 5),
+        "score_min":     _int("PAXG_SCORE_MIN", 6),
         "adx_threshold": _float("PAXG_ADX_THRESHOLD", 25.0),
         "sl_floor_pct":  _float("PAXG_SL_FLOOR_PCT", 0.0025),
+        # Refusé walk-forward 70/30 (1h/365j, scripts/backtest_cli.py) le 2026-07-01 :
+        # PF out-of-sample dégradé 0.94 -> 0.59 — le filtre nuit sur cet actif.
+        "spectral_regime_filter": _bool("PAXG_SPECTRAL_REGIME_FILTER", "0"),
     },
 }
 
@@ -164,25 +178,31 @@ OPT_MIN_CANDLES    = _int("OPT_MIN_CANDLES", 200)
 OPT_FEE_BPS        = _float("OPT_FEE_BPS", 4.0)
 OPT_SCORE_CRITERIA = _str("OPT_SCORE_CRITERIA", "combined")
 OPT_CONFIGURATIONS = [
-    {"atr_mult": 0.6, "tp_ratios": (1.2, 1.8, 2.4), "trailing": False},
-    {"atr_mult": 0.8, "tp_ratios": (1.2, 1.8, 2.4), "trailing": False},
+    # Configs conservatrices
     {"atr_mult": 0.8, "tp_ratios": (1.5, 2.1, 2.6), "trailing": False},
-    {"atr_mult": 1.0, "tp_ratios": (1.2, 1.8, 2.4), "trailing": False},
     {"atr_mult": 1.0, "tp_ratios": (1.5, 2.1, 2.6), "trailing": False},
-    {"atr_mult": 1.2, "tp_ratios": (1.2, 1.8, 2.4), "trailing": False},
-    {"atr_mult": 1.2, "tp_ratios": (1.5, 2.1, 2.6), "trailing": False},
-    {"atr_mult": 1.3, "tp_ratios": (1.0, 1.5, 2.0), "trailing": False},
-    {"atr_mult": 1.3, "tp_ratios": (1.2, 1.8, 2.4), "trailing": False},
-    {"atr_mult": 1.5, "tp_ratios": (1.2, 1.8, 2.4), "trailing": False},
-    {"atr_mult": 1.5, "tp_ratios": (1.5, 2.1, 2.6), "trailing": False},
+    {"atr_mult": 1.0, "tp_ratios": (1.2, 1.8, 2.4), "trailing": False},
+    # Configs agressives (R/R optimisé)
+    {"atr_mult": 0.6, "tp_ratios": (2.0, 3.0, 4.0), "trailing": False},
+    {"atr_mult": 0.8, "tp_ratios": (2.0, 3.0, 4.0), "trailing": False},
+    {"atr_mult": 0.8, "tp_ratios": (2.5, 3.5, 5.0), "trailing": False},
+    {"atr_mult": 1.0, "tp_ratios": (2.0, 3.0, 4.0), "trailing": False},
+    {"atr_mult": 1.0, "tp_ratios": (2.5, 3.5, 5.0), "trailing": False},
+    # Configs avec trailing (exploite les murs détectés par L2)
+    {"atr_mult": 0.8, "tp_ratios": (2.0, 3.0, 4.0), "trailing": True},
+    {"atr_mult": 1.0, "tp_ratios": (2.0, 3.0, 4.0), "trailing": True},
 ]
 OPT_CONFIGURATIONS_PAXG = [
-    {"atr_mult": 0.8,  "tp_ratios": (0.8, 1.2, 1.6), "trailing": False},
-    {"atr_mult": 1.0,  "tp_ratios": (1.0, 1.5, 2.0), "trailing": False},
+    # Configs conservatrices
+    {"atr_mult": 0.8,  "tp_ratios": (1.0, 1.5, 2.0), "trailing": False},
     {"atr_mult": 1.0,  "tp_ratios": (1.2, 1.8, 2.4), "trailing": False},
-    {"atr_mult": 1.2,  "tp_ratios": (1.0, 1.5, 2.0), "trailing": False},
-    {"atr_mult": 1.3,  "tp_ratios": (1.2, 1.8, 2.4), "trailing": False},
-    {"atr_mult": 1.5,  "tp_ratios": (1.0, 1.5, 2.0), "trailing": False},
+    # Configs agressives PAXG
+    {"atr_mult": 0.8,  "tp_ratios": (1.5, 2.5, 3.5), "trailing": False},
+    {"atr_mult": 1.0,  "tp_ratios": (1.5, 2.5, 3.5), "trailing": False},
+    {"atr_mult": 1.0,  "tp_ratios": (2.0, 3.0, 4.0), "trailing": False},
+    {"atr_mult": 1.2,  "tp_ratios": (1.5, 2.5, 3.5), "trailing": False},
+    # Avec trailing
+    {"atr_mult": 1.0,  "tp_ratios": (1.5, 2.5, 3.5), "trailing": True},
 ]
 
 # ── STRICT TRIX ───────────────────────────────────────────────���──────────────
@@ -279,16 +299,74 @@ PAPER_MAX_POSITIONS    = _int("PAPER_MAX_POSITIONS", 3)              # positions
 PAPER_MAX_EXPOSURE_PCT = _float("PAPER_MAX_EXPOSURE_PCT", 0.60)      # % capital max exposé
 PAPER_TRAILING_STOP    = _bool("PAPER_TRAILING_STOP", "0")           # trailing stop activé
 PAPER_TRAILING_PCT     = _float("PAPER_TRAILING_PCT", 0.8)           # multiple ATR pour trailing
+PAPER_MAX_HOLD_HOURS   = _float("PAPER_MAX_HOLD_HOURS", 48.0)       # fermeture auto si aucun TP en N heures (0=désactivé)
 PAPER_JOURNAL_FILE     = Path(_str("PAPER_JOURNAL_FILE", "data/paper_journal.json"))
 PAPER_JOURNAL_CSV      = Path(_str("PAPER_JOURNAL_CSV", "data/paper_journal.csv"))
 PAPER_STATE_FILE       = Path(_str("PAPER_STATE_FILE", "data/paper_state.json"))
 
+# ── Trade journal "Trading-as-Git" (Phase J, défaut off) ─────────────────────
+JOURNAL_STAGING_ENABLED = _bool("JOURNAL_STAGING_ENABLED", "0")
+JOURNAL_AUTO_APPROVE    = _bool("JOURNAL_AUTO_APPROVE", "0")
+TRADE_JOURNAL_FILE      = Path(_str("TRADE_JOURNAL_FILE", "data/trade_journal.jsonl"))
+
+# ── Event bus typé (Phase E) — passif, sûr par défaut ────────────────────────
+EVENT_BUS_ENABLED     = _bool("EVENT_BUS_ENABLED", "1")
+EVENT_BUS_MAX_MEMORY  = _int("EVENT_BUS_MAX_MEMORY", 500)
+EVENTS_FILE           = Path(_str("EVENTS_FILE", "data/events.jsonl"))
+
+# ── Guard pipeline pré-exécution (Phase G, défaut off pour les guards additionnels) ──
+GUARD_CORRELATED_EXPOSURE_ENABLED  = _bool("GUARD_CORRELATED_EXPOSURE_ENABLED", "0")
+GUARD_CORRELATED_EXPOSURE_MAX_PCT  = _float("GUARD_CORRELATED_EXPOSURE_MAX_PCT", 0.60)
+GUARD_BLACKOUT_ENABLED             = _bool("GUARD_BLACKOUT_ENABLED", "0")
+BLACKOUT_EVENTS_FILE               = Path(_str("BLACKOUT_EVENTS_FILE", "config/blackout_events.json"))
+
+# Regroupement des symboles par cluster corrélé (exposition cumulée)
+SYM_CLUSTER: Dict[str, str] = {
+    "BTC/USDT":  "crypto",
+    "PAXG/USDT": "metals",
+}
+
 # ── Webhook TradingView ────────────────────────────────────────────────────────
 WEBHOOK_SECRET  = _str("WEBHOOK_SECRET", "")    # secret partagé (laisser vide = désactivé)
 WEBHOOK_ENABLED = _bool("WEBHOOK_ENABLED", "1")
+
+# ── Order Book L2 ─────────────────────────────────────────────────────────────
+ORDERBOOK_L2_ENABLED        = _bool("ORDERBOOK_L2_ENABLED", "1")
+ORDERBOOK_SPOT_DEPTH        = _int("ORDERBOOK_SPOT_DEPTH", 100)
+ORDERBOOK_FUTURES_DEPTH     = _int("ORDERBOOK_FUTURES_DEPTH", 1000)
+ORDERBOOK_WS_UPDATE_MS      = _int("ORDERBOOK_WS_UPDATE_MS", 100)
+ORDERBOOK_IMBALANCE_THRESHOLD = _float("ORDERBOOK_IMBALANCE_THRESHOLD", 1.5)
+ORDERBOOK_WALL_MULT         = _float("ORDERBOOK_WALL_MULT", 5.0)
+ORDERBOOK_HISTORY_SIZE      = _int("ORDERBOOK_HISTORY_SIZE", 30)
+ORDERBOOK_FUTURES_WEIGHT    = _float("ORDERBOOK_FUTURES_WEIGHT", 2.0)
+ORDERBOOK_CACHE_TTL         = _int("ORDERBOOK_CACHE_TTL", 5)
+
+# Map des symboles futures pour le carnet d'ordres
+ORDERBOOK_FUTURES_MAP: Dict[str, str] = {"BTC/USDT": "BTCUSDT"}
+
+# ── Spread tracker ────────────────────────────────────────────────────────────
+SPREAD_USE_REALTIME     = _bool("SPREAD_USE_REALTIME", "1")
+SPREAD_EMA_WINDOW       = _int("SPREAD_EMA_WINDOW", 30)
+
+# ── Drawdown temps réel ──────────────────────────────────────────────────────
+DD_REALTIME_ENABLED     = _bool("DD_REALTIME_ENABLED", "1")
+DD_CURVE_INTERVAL_SEC   = _int("DD_CURVE_INTERVAL_SEC", 10)
 
 # ── Serveur ─────────────────────────────────────────────────────────────────
 UVICORN_HOST      = _str("UVICORN_HOST", "0.0.0.0")
 UVICORN_PORT      = _int("UVICORN_PORT", 8080)
 UVICORN_LOG_LEVEL = _str("UVICORN_LOG_LEVEL", "info")
 LOG_LEVEL         = _str("LOG_LEVEL", "INFO").upper()
+
+# ── Spectral (analyse de cycles — Phase 0) ───────────────────────────────────
+SPECTRAL_ENABLED          = _bool("SPECTRAL_ENABLED", "1")
+SPECTRAL_TF               = _str("SPECTRAL_TF", "4h")   # timeframe de référence
+SPECTRAL_PMIN             = _int("SPECTRAL_PMIN", 8)
+SPECTRAL_PMAX             = _int("SPECTRAL_PMAX", 50)
+SPECTRAL_POWER_THRESHOLD  = _float("SPECTRAL_POWER_THRESHOLD", 0.30)
+SPECTRAL_MIN_BARS         = _int("SPECTRAL_MIN_BARS", 100)  # pmax * 2
+
+# ── Spectral — Phase 1 : filtre de régime dans le scoring (défaut off) ───────
+SPECTRAL_REGIME_FILTER       = _bool("SPECTRAL_REGIME_FILTER", "0")
+SPECTRAL_CYCLE_CRITERIA      = _list("SPECTRAL_CYCLE_CRITERIA", "TRIX_5M")
+SPECTRAL_DEPONDERATION_FACTOR = _float("SPECTRAL_DEPONDERATION_FACTOR", 0.5)

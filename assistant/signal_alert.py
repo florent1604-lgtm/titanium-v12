@@ -131,19 +131,51 @@ class SignalAlertEngine:
             self._queue_count = max(0, self._queue_count - 1)
 
     async def _send_to_jarvis(self, text: str) -> None:
-        """Envoie un message direct_speak au WebSocket JARVIS."""
-        try:
-            import websockets
-        except ImportError:
-            raise RuntimeError("websockets non installé")
+        """Envoie un message vocal — WS JARVIS avec fallback local TTS.
 
-        payload = json.dumps({"type": "direct_speak", "text": text})
-        async with websockets.connect(
-            _JARVIS_WS_URL,
-            open_timeout=_CONNECT_TIMEOUT,
-            close_timeout=2.0,
-        ) as ws:
-            await asyncio.wait_for(ws.send(payload), timeout=_SEND_TIMEOUT)
+        Stratégie :
+          1. Tente la connexion WS vers JARVIS (port 8765)
+          2. Si JARVIS indisponible → fallback Piper TTS local
+          3. Retry avec backoff exponentiel (max 3 tentatives WS)
+        """
+        # Tentative WS JARVIS avec retry
+        last_err = None
+        for attempt in range(3):
+            try:
+                import websockets
+                payload = json.dumps({"type": "direct_speak", "text": text})
+                async with websockets.connect(
+                    _JARVIS_WS_URL,
+                    open_timeout=_CONNECT_TIMEOUT,
+                    close_timeout=2.0,
+                ) as ws:
+                    await asyncio.wait_for(ws.send(payload), timeout=_SEND_TIMEOUT)
+                    logger.info("[ALERT] Message envoyé via WS JARVIS")
+                    return  # succès
+            except ImportError:
+                logger.debug("[ALERT] websockets non installé — fallback TTS local")
+                break
+            except Exception as e:
+                last_err = e
+                wait = min(2 ** attempt, 4)
+                logger.debug("[ALERT] WS JARVIS tentative %d échouée: %s — retry dans %ds",
+                             attempt + 1, e, wait)
+                await asyncio.sleep(wait)
+
+        # Fallback : TTS locale via Piper/ElevenLabs
+        logger.info("[ALERT] JARVIS WS indisponible (%s) — fallback TTS local", last_err)
+        try:
+            from assistant.tts_engine import speak
+            await speak(text)
+            logger.info("[ALERT] Alerte vocale jouée localement via TTS")
+        except Exception as tts_err:
+            logger.warning("[ALERT] Fallback TTS échoué: %s", tts_err)
+            # Dernier recours : popup texte si disponible
+            try:
+                from assistant.popup_manager import get_popup_manager
+                get_popup_manager().show(text, duration=8)
+            except Exception:
+                pass
 
     # ── Construction du message ───────────────────────────────────────────────
 

@@ -1,0 +1,81 @@
+============================================================
+  TITANIUM V12 — INSTALLATION NOUVEL ORDINATEUR
+============================================================
+
+
+------------------------------------------------------------
+ETAPE 1 : PYTHON 3.12
+------------------------------------------------------------
+Telecharger et installer Python 3.12 depuis :
+https://www.python.org/downloads/
+
+IMPORTANT : cocher "Add Python to PATH" pendant l'installation.
+
+
+------------------------------------------------------------
+ETAPE 2 : PACKAGES PYTHON (copier-coller dans le terminal)
+------------------------------------------------------------
+
+Packages principaux (obligatoires) :
+
+pip install fastapi "uvicorn[standard]" aiohttp numpy pandas pandas-ta python-dotenv pytest
+
+
+Packages assistant vocal (uniquement si TITAN_ENABLED=1 dans le .env) :
+
+pip install faster-whisper sounddevice pywebview keyboard pynput webrtcvad-wheels
+
+
+------------------------------------------------------------
+ETAPE 3 : OLLAMA (IA vision + assistant)
+------------------------------------------------------------
+Telecharger l'installeur Windows depuis : https://ollama.com
+
+Puis ouvrir un terminal et executer :
+
+ollama pull llava
+ollama pull phi3:mini
+
+
+------------------------------------------------------------
+ETAPE 4 : FICHIERS A COPIER DEPUIS L'ANCIEN PC
+------------------------------------------------------------
+
+Projet v12 complet :
+  C:\Users\flore\Desktop\TITANIUM\Titanium\v12\
+
+Fichier cles API (.env) :
+  C:\Users\flore\Desktop\TITANIUM\Titanium\.env
+
+Fichiers de donnees (dans le dossier v12) :
+  scoring_weights.json
+  signal_history.json
+  data\paper_journal.json
+  data\paper_journal.csv
+  data\paper_state.json
+  data\risk_history.json
+
+
+------------------------------------------------------------
+ETAPE 5 : CONTENU DU FICHIER .env (cles API)
+------------------------------------------------------------
+Creer un fichier .env dans C:\...\TITANIUM\Titanium\ avec :
+
+BINANCE_KEY=votre_cle_ici
+BINANCE_SECRET=votre_secret_ici
+TWELVEDATA_API_KEY=votre_cle_ici
+TELEGRAM_BOT_TOKEN=votre_token_ici
+TELEGRAM_CHAT_IDS=votre_chat_id_ici
+
+
+------------------------------------------------------------
+ETAPE 6 : LANCER TITANIUM V12
+------------------------------------------------------------
+
+cd "C:\Users\flore\Desktop\TITANIUM\Titanium\v12"
+python main.py
+
+Dashboard disponible sur : http://localhost:8080
+
+
+============================================================

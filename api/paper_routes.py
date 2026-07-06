@@ -93,8 +93,17 @@ async def paper_equity_curve(last_n: int = 200):
 # ── POST /paper/reset ─────────────────────────────────────────────────────────
 
 @router.post("/reset")
-async def paper_reset():
-    """Remet le compte paper à zéro — IRRÉVERSIBLE."""
+async def paper_reset(request: FARequest):
+    """Remet le compte paper à zéro — IRRÉVERSIBLE.
+
+    Requiert le header X-Reset-Confirm: yes pour éviter les resets accidentels.
+    """
+    confirm = request.headers.get("X-Reset-Confirm", "").strip().lower()
+    if confirm != "yes":
+        raise HTTPException(
+            400,
+            "Requiert le header X-Reset-Confirm: yes — opération irréversible"
+        )
     exc = _exec()
     if TRADING_MODE == "disabled":
         raise HTTPException(400, "Mode paper inactif (TRADING_MODE=disabled)")

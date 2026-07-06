@@ -71,12 +71,15 @@ async def _fetch_twelvedata(session: aiohttp.ClientSession, interval: str, outpu
 
 
 async def _fetch_yahoo(session: aiohttp.ClientSession, interval: str, count: int = 500) -> pd.DataFrame:
+    # Yahoo Finance ne supporte pas les intervalles > 1h directement.
+    # Pour 2h/4h, on fetch en 1h puis on resample.
     _yf_cfg = {
         "4h": ("1h", "60d"), "2h": ("1h", "60d"), "1h": ("1h", "60d"),
         "30m": ("30m", "30d"), "15m": ("15m", "10d"),
         "5m": ("5m", "5d"), "3m": ("5m", "5d"),
         "1m": ("1m", "7d"), "1d": ("1d", "730d"),
     }
+    _resample_map = {"4h": "4h", "2h": "2h"}  # TF à rééchantillonner après fetch
     yf_interval, period = _yf_cfg.get(interval, ("1h", "30d"))
     url = (
         f"https://query1.finance.yahoo.com/v8/finance/chart/GC=F"
@@ -113,6 +116,21 @@ async def _fetch_yahoo(session: aiohttp.ClientSession, interval: str, count: int
         df = pd.DataFrame(rows).set_index("ts").sort_index()
         df = df[(df["close"] > 0)]
         df = df[~df.index.duplicated(keep="last")]
+
+        # Rééchantillonner vers le TF cible si Yahoo Finance a retourné des bougies 1h
+        resample_tf = _resample_map.get(interval)
+        if resample_tf and yf_interval == "1h":
+            try:
+                df = pd.DataFrame({
+                    "open":  df["open"].resample(resample_tf).first(),
+                    "high":  df["high"].resample(resample_tf).max(),
+                    "low":   df["low"].resample(resample_tf).min(),
+                    "close": df["close"].resample(resample_tf).last(),
+                    "v":     df["v"].resample(resample_tf).sum(),
+                }).dropna(subset=["open", "close"])
+            except Exception as e_rs:
+                logger.warning("[GOLD/YF] resample %s→%s: %s", yf_interval, resample_tf, e_rs)
+
         logger.info("[GOLD/YF] GC=F/%s → %d bougies", interval, len(df))
         return df
     except Exception as e:
@@ -144,7 +162,7 @@ async def fetch_gold_candles(session: aiohttp.ClientSession, interval: str = "4h
 
 async def gold_refresh_loop(session: aiohttp.ClientSession) -> None:
     while True:
-        for tf in ["4h", "1h", "30m", "15m", "5m", "1d"]:
+        for tf in ["4h", "2h", "1h", "30m", "15m", "5m", "1m", "1d"]:
             try:
                 await fetch_gold_candles(session, tf)
             except Exception as e:

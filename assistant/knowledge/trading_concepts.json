@@ -1,23 +1,27 @@
-{
-  "smc": "SMC (Smart Money Concepts) : identifie les zones où les institutions placent leurs ordres. Concepts clés : BOS (Break of Structure), CHoCH (Change of Character), OB (Order Block), FVG (Fair Value Gap), Liquidity Sweep. Le prix tape la liquidité au-dessus des hauts / en-dessous des bas avant de se retourner.",
-
-  "ob_fvg": "Order Block (OB) : dernière bougie opposée avant un mouvement impulsif fort. Prix revient souvent dessus avant de continuer. Fair Value Gap (FVG) : déséquilibre créé quand le wick de la bougie 1 ne touche pas le wick de la bougie 3. Probabilité de remplissage du FVG élevée.",
-
-  "scoring": "Système de scoring 11 points de Titanium : EMA200_H4 (tendance 4H), STRUCT_H2H1 (BOS/CHoCH H2-H1), OB_FVG_30M (zone 30m), OB_FVG_15M_CONFIRM (confirmation 15m), REJET_15M (bougie de rejet 15m), TRIX_5M (momentum entrée), ALIGN_H2H1 (alignement multi-TF), EMA200_1D (biais journalier), DELTA_VOL (pression achat/vente), LIQ_SWEEP (liquidité balayée), ADX_REGIME (filtre tendance/range). Score ≥ 7 requis pour signal.",
-
-  "risk_management": "Gestion du risque Titanium : 2% du capital par trade (RISK_PCT=0.02). Stop basé sur l'ATR. TP1/TP2 configurables. Circuit breaker déclenché si drawdown live > 1.3× le drawdown backtest (MAX_DD_MULTIPLIER). Mode simulation (paper trading) disponible avant le live.",
-
-  "circuit_breaker": "Circuit breaker : mécanisme de protection automatique. Se déclenche quand le drawdown actuel dépasse MAX_DD_MULTIPLIER fois le drawdown max historique du backtest. Bloque tous les signaux. Réinitialiser via : POST /paper/reset-circuit-breaker ou depuis le dashboard Services.",
-
-  "paper_trading": "Paper trading = simulation avec capital virtuel (défaut 1000$). Enregistre tous les trades dans paper_journal.json et paper_journal.csv. Statistiques complètes via /paper/stats : winrate, sharpe, drawdown max, PnL. Réinitialiser : POST /paper/reset.",
-
-  "pnl": "PnL = Profit and Loss. Realized PnL = trades fermés (figé). Unrealized PnL = positions ouvertes (flottant). Equity = Cash + Unrealized PnL. Drawdown = perte maximale depuis le pic d'equity.",
-
-  "report_format": "Rapport quotidien Titan (20h par défaut) : résumé des signaux de la journée, PnL réalisé, trades gagnants/perdants, winrate, drawdown max, performance par symbole, note du risque macro.",
-
-  "optimization": "Optimisation automatique 24h : teste 7 configurations SL/TP différentes sur un backtest vectorisé (7 jours). Sélectionne la configuration avec le meilleur sharpe ratio par symbole. Résultats accessibles via /api/optim/results. Déclencher manuellement : POST /api/optim/run.",
-
-  "indicators": "Indicateurs utilisés : EMA200 (tendance long terme), TRIX (momentum, déclenche l'entrée), ADX (force de la tendance, filtre range), RSI (momentum complémentaire), ATR (volatilité, calcul du stop). Timeframes : 5m (signal principal), 15m 30m (confirmation SMC), 1H 2H (structure), 4H 1D (biais directeur).",
-
-  "symbols": "Actifs surveillés : BTC/USDT (Bitcoin), ETH/USDT (Ethereum), SOL/USDT (Solana), PAXG/USDT (proxy Or — données réelles XAU/USD via Twelve Data / Yahoo Finance). Chaque actif a ses propres poids adaptatifs appris par le moteur de machine learning."
+﻿{
+  "smc_overview": "Smart Money Concepts (SMC) est une methode basee sur le comportement des institutionnels. Order Blocks, Fair Value Gaps, liquidite sont les traces laissees par les grands acteurs. Titanium detecte ces structures automatiquement en temps reel.",
+  "order_block": "Order Block (OB) = derniere bougie opposee avant un mouvement impulsionnel fort. OB haussier = derniere bougie bearish avant montee forte. Le prix revient tester ces zones (reaction institutionnelle). Criteres OB_FVG_30M et OB_FVG_15M_CONFIRM dans le score.",
+  "fair_value_gap": "Fair Value Gap (FVG) = desequilibre de prix entre 3 bougies consecutives. Zone d'inefficacite que le marche tend a combler. FVG haussier = gap dans une montee = support. FVG baissier = gap dans une chute = resistance.",
+  "break_of_structure": "Break of Structure (BOS) = cassure d'un swing high/low dans la direction du trend. Confirme la continuation. BOS haussier = cassure d'un swing high precedent. Critere STRUCT_H2H1.",
+  "change_of_character": "Change of Character (CHoCH) = premier signe de retournement. Cassure d'un swing dans le sens OPPOSE au trend. Signal de retournement potentiel.",
+  "liquidity_sweep": "Liquidity Sweep = le prix depasse brievement un niveau de liquidite pour declencher les stop loss puis revient. Signe que les institutionnels collectent de la liquidite. Critere LIQ_SWEEP.",
+  "inducement": "Inducement = structure creee pour attirer les traders retail dans le mauvais sens avant un retournement violent. Faux BOS puis CHoCH.",
+  "scoring_system": "Score sur 11 criteres SMC : EMA200 4H (biais), BOS H2/H1, OB/FVG 30m, Double conf 15m, Rejet 15m, TRIX 5m (momentum), Alignement H2+H1, EMA200 1D (macro), Delta Volume, Liquidity Sweep, ADX (force trend). Minimum requis : 7/11.",
+  "paper_trading": "Paper trading simule des trades sans argent reel. Capital : 1000 USDT. Risque par trade : 2%. Frais : taker 0.04%, slippage 0.05%, spread 0.02%. Sorties partielles : TP1 33%, TP2 33%, TP3 34%. SL au breakeven apres TP1.",
+  "delta_volume": "Delta Volume = difference volume acheteur/vendeur en temps reel sur aggTrades Binance. Delta positif = pression acheteuse. Seuil confirmation : |delta_pct| > 60%. Critere DELTA_VOL.",
+  "trix_indicator": "TRIX = Triple EMA lissee mesurant le taux de changement. Croisement TRIX/Signal = signal directionnel. Optimise toutes les 48h par walk-forward sur 90 jours.",
+  "adx_regime": "ADX mesure la force du trend. ADX > 25 = trend fort. ADX < 20 = range. Regimes : TREND, RANGE, VOLATILE. Critere ADX_REGIME.",
+  "risk_management": "SL base sur ATR. Taille position = risque USDT / distance SL%. Max 3 positions. Circuit breaker si winrate < 40% ou drawdown > 20%. Cooldown 300s entre signaux.",
+  "fundamentals_module": "Score risque macro 0-100 (NewsAPI, GDELT, RSS). Score > 90 = signal annule. Score > 50 = score reduit proportionnellement. Sources : Reuters, BBC, CoinDesk.",
+  "paxg_gold": "PAXG/USDT = token adosse a l'or physique (1 oz). Analyse comme XAU/USD. Donnees Twelve Data + fallback Yahoo Finance. Correlation inverse au dollar.",
+  "walk_forward": "Walk-forward anti-overfitting : 80% in-sample + 20% out-of-sample. Optimise TRIX et SL/TP. Recalibration toutes les 24h.",
+  "hardware": "Ryzen 7 7730U 8c/16t, 15.4GB RAM, NVMe 477GB. Whisper small sur CPU (1-2s), phi3:medium (7.9GB) pour LLM, llava pour vision charts.",
+  "titan_commands": {
+    "signal": ["quel est le signal BTC", "montre les signaux", "setup du marche", "analyse BTC", "que dit le bot"],
+    "position": ["mes positions ouvertes", "positions en cours", "trades actifs", "que j ai comme trade"],
+    "risk": ["quel est mon risque", "drawdown actuel", "performance du bot", "winrate", "pnl"],
+    "report": ["rapport quotidien", "resume du jour", "bilan trading", "comment s est passe la journee"],
+    "optim": ["lance l optimisation", "recalibre le bot", "optimise les parametres", "relance l optimiseur"],
+    "vision": ["analyse le chart", "que voit ollama", "analyse visuelle", "regarde le graphique"]
+  }
 }

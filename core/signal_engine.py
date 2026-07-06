@@ -4,12 +4,18 @@ import asyncio
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 import aiohttp
-from utils.config import SYMBOLS, SCAN_INTERVAL, MIN_DF30_FOR_SCAN, ACTIVE_TF
+from utils.config import (
+    SYMBOLS, SCAN_INTERVAL, MIN_DF30_FOR_SCAN, ACTIVE_TF, ORDERBOOK_L2_ENABLED,
+    SPECTRAL_ENABLED, SPECTRAL_PMIN, SPECTRAL_PMAX, SPECTRAL_POWER_THRESHOLD, SPECTRAL_MIN_BARS,
+)
 from utils.logger import get_logger
 from data.binance_rest import fetch_klines
 from data.binance_ws import candle_store, delta_vol
 from data.gold_provider import gold_store, fetch_gold_candles
 from data.futures_data import futures_store, fetch_futures
+from data.orderbook_ws import orderbook_store, get_orderbook
+from data.spread_tracker import spread_tracker
+from indicators.orderbook import analyze_orderbook_l2
 from core.scoring_engine import score_setup, get_score_min
 from core.smc_engine import compute_atr
 from execution.risk_manager import compute_adaptive_levels
@@ -23,8 +29,21 @@ from execution.executor import executor
 
 logger = get_logger(__name__)
 
+try:
+    from indicators.spectral import compute_spectral_features as _spectral_compute
+except ImportError:
+    _spectral_compute = None  # scipy absent — spectral désactivé silencieusement
+
 # [FIX] asyncio.Lock() au lieu de flags booléens
 _scan_locks: Dict[str, asyncio.Lock] = {s: asyncio.Lock() for s in SYMBOLS}
+
+# État spectral courant par symbole (Phase 1) — consommé par le scoring et /spectral/state
+spectral_state: Dict[str, Any] = {}
+
+
+def get_spectral_state() -> Dict[str, Any]:
+    """Retourne l'état spectral courant de tous les symboles (dashboard, backtest)."""
+    return dict(spectral_state)
 
 # Broadcast callback — injecté par api/websocket.py
 _broadcast_fn = None
@@ -90,11 +109,61 @@ async def scan_symbol(sym: str, session: aiohttp.ClientSession) -> None:
                 logger.info("[SCAN] %s — H4 manquant (fetch échoué)", sym)
                 return
 
+            # ── Analyse spectrale (Phase 0 — calcul ; Phase 1 — dépondération au scoring) ──
+            if SPECTRAL_ENABLED and _spectral_compute is not None and len(df_h4) >= SPECTRAL_MIN_BARS:
+                try:
+                    feats = _spectral_compute(
+                        df_h4["close"].values,
+                        pmin=SPECTRAL_PMIN,
+                        pmax=SPECTRAL_PMAX,
+                        power_threshold=SPECTRAL_POWER_THRESHOLD,
+                    )
+                    spectral_state[sym] = feats
+                    logger.info(
+                        "[SPECTRAL] %s — cycle=%d H4, power=%.2f, zone=%s, has_cycle=%s",
+                        sym, feats.dominant_cycle, feats.cycle_power, feats.phase_zone, feats.has_cycle,
+                    )
+                    from utils.event_bus import emit as _emit_event
+                    _emit_event("SPECTRAL", {
+                        "symbol": sym, "dominant_cycle": feats.dominant_cycle,
+                        "cycle_power": feats.cycle_power, "phase_zone": feats.phase_zone,
+                        "has_cycle": feats.has_cycle,
+                    })
+                except Exception as _spec_err:
+                    logger.debug("[SPECTRAL] %s erreur: %s", sym, _spec_err)
+
             # ── Score ─────────────────────────────────────────────────────────
             strict_p  = get_strict_params(sym)
             weights   = get_weights(sym)
             dv_state  = delta_vol.get(sym, {})
             fut_state = futures_store.get(sym, {})
+
+            # ── Order Book L2 (institutional) ──────────────────────────────
+            ob_analysis = None
+            if ORDERBOOK_L2_ENABLED:
+                ob_state = get_orderbook(sym)
+                if ob_state is not None:
+                    # Mettre à jour le spread tracker avec le spread L2 temps réel
+                    if ob_state.spread_bps > 0:
+                        spread_tracker.update(sym, ob_state.spread_bps)
+                    # Déterminer le side préliminaire pour l'analyse OB
+                    # On utilise l'EMA200 H4 comme biais
+                    from core.smc_engine import compute_ema200
+                    import math
+                    preliminary_side = "NEUTRE"
+                    if df_h4 is not None and len(df_h4) >= 200:
+                        ema_h4 = compute_ema200(df_h4["close"])
+                        if not math.isnan(ema_h4):
+                            p = float(df30["close"].iloc[-1]) if df30 is not None and not df30.empty else 0
+                            if p > 0:
+                                preliminary_side = "ACHAT" if p > ema_h4 else "VENTE"
+                    if preliminary_side != "NEUTRE":
+                        ob_analysis = analyze_orderbook_l2(ob_state, preliminary_side)
+                        logger.debug("[SCAN] %s OB L2 imbalance=%.2f wall=%s spread=%.1fbps",
+                                     sym,
+                                     ob_analysis.weighted_imbalance if ob_analysis else 0,
+                                     ob_analysis.wall_side if ob_analysis else "n/a",
+                                     ob_state.spread_bps)
 
             score, side, confs, ctx = score_setup(
                 sym=sym,
@@ -111,6 +180,8 @@ async def scan_symbol(sym: str, session: aiohttp.ClientSession) -> None:
                 scoring_w=weights,
                 delta_vol_state=dv_state,
                 futures_data_state=fut_state,
+                orderbook_analysis=ob_analysis,
+                spectral_features=spectral_state.get(sym),
             )
 
             # ── SL/TP ─────────────────────────────────────────────────────────
@@ -119,21 +190,21 @@ async def scan_symbol(sym: str, session: aiohttp.ClientSession) -> None:
             levels  = compute_adaptive_levels(df_atr, sym, side, price) if price > 0 else {}
 
             # ── Modulation macro-économique ───────────────────────────────────
-            # Appliquée sur le score avant émission (filtre ou réduction)
+            # Utilise signal_modulator.modulate() comme source unique de vérité
             effective_score = score
             if macro_active() and score > 0 and side != "NEUTRE":
                 risk_score = get_macro_risk()
                 ctx["macro_risk"] = round(risk_score, 1)
-                # Pré-modulation du score (modulate() sera rappelé sur le signal complet)
-                from utils.config import FUNDAMENTALS_RISK_BLOCK, FUNDAMENTALS_RISK_REDUCE
-                if risk_score >= FUNDAMENTALS_RISK_BLOCK:
+                # Construire un signal temporaire pour la modulation
+                temp_signal = {"score": score, "side": side, "symbol": sym}
+                modulated = macro_modulate(temp_signal, risk_score)
+                if modulated is None:
                     logger.info("[SCAN] %s score bloqué par risque macro (%.1f)", sym, risk_score)
-                    effective_score = 0   # force le signal à inactif
-                elif risk_score > FUNDAMENTALS_RISK_REDUCE:
-                    spread  = FUNDAMENTALS_RISK_BLOCK - FUNDAMENTALS_RISK_REDUCE
-                    factor  = 1.0 - ((risk_score - FUNDAMENTALS_RISK_REDUCE) / spread) * 0.5
-                    effective_score = max(0, int(score * factor))
-                    ctx["risk_factor"] = round(factor, 3)
+                    effective_score = 0
+                else:
+                    effective_score = modulated.get("score", score)
+                    if "risk_factor" in modulated:
+                        ctx["risk_factor"] = modulated["risk_factor"]
 
             # ── Emit signal ───────────────────────────────────────────────────
             signal = emit_signal(sym, effective_score, side, confs, ctx, levels)

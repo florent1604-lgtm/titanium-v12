@@ -128,8 +128,12 @@ async def _handle_agg_trade(sym: str, msg: dict) -> None:
 
 
 async def ws_binance(sym: str) -> None:
+    """WebSocket aggTrade avec reconnexion robuste (backoff exponentiel)."""
     stream = f"{_BINANCE_SYM[sym]}@aggTrade"
-    ws_idx = 0
+    ws_idx    = 0
+    backoff   = 3       # delay initial en secondes
+    max_delay = 30      # cap du backoff
+    consecutive_ok = 0  # compteur de messages ok pour reset backoff
 
     while True:
         base = WS_BASES[ws_idx % len(WS_BASES)]
@@ -137,16 +141,31 @@ async def ws_binance(sym: str) -> None:
         try:
             connector = aiohttp.TCPConnector(limit=10)
             async with aiohttp.ClientSession(connector=connector) as session:
-                async with session.ws_connect(url, heartbeat=20, timeout=aiohttp.ClientWSTimeout(ws_receive=60)) as ws:
+                async with session.ws_connect(
+                    url,
+                    heartbeat=20,
+                    timeout=aiohttp.ClientWSTimeout(ws_receive=60),
+                ) as ws:
                     logger.info("[WS] Connecté %s @ %s", sym, base)
+                    backoff = 3              # reset backoff on connect
+                    consecutive_ok = 0
                     async for msg in ws:
                         if msg.type == aiohttp.WSMsgType.TEXT:
                             data = json.loads(msg.data)
                             await _handle_agg_trade(sym, data)
+                            consecutive_ok += 1
+                            # Log santé toutes les 10 000 messages
+                            if consecutive_ok % 10000 == 0:
+                                logger.info("[WS] %s santé OK — %d messages reçus", sym, consecutive_ok)
                         elif msg.type in (aiohttp.WSMsgType.ERROR, aiohttp.WSMsgType.CLOSED):
-                            logger.warning("[WS] %s déconnecté", sym)
+                            logger.warning("[WS] %s déconnecté (type=%s)", sym, msg.type)
                             break
+        except asyncio.CancelledError:
+            logger.info("[WS] %s arrêté (CancelledError)", sym)
+            return
         except Exception as e:
-            logger.warning("[WS] %s erreur (%s): %s — retry dans 3s", sym, base, e)
+            logger.warning("[WS] %s erreur (%s): %s — retry dans %ds", sym, base, e, backoff)
             ws_idx += 1
-            await asyncio.sleep(3)
+
+        await asyncio.sleep(backoff)
+        backoff = min(backoff * 2, max_delay)  # exponential backoff
