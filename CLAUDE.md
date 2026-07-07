@@ -4,22 +4,38 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
+## Environment (this machine)
+
+- **Canonical folder: `C:\Users\flore\Desktop\v12`** — the only live copy. A former
+  duplicate in `Downloads\files\titanium-v12` was merged here (07/2026) and archived;
+  never work there.
+- **Port: 8090** (`.env` overrides the 8080 default in `utils/config.py`). Port 8080 is
+  taken by JARVIS's mobile server — do not move Titanium back to 8080.
+- **Python: use the project venv** — `venv\Scripts\python.exe` (all deps installed there).
+- **JARVIS integration**: `C:\Program Files\JARVIS\titanium_connector.py` polls this API on
+  port 8090 every 10s (`/api/state`, `/paper/stats`, `/paper/positions`, `/fundamentals/score`).
+  Renaming/moving those endpoints breaks JARVIS voice commands.
+- The bot often runs 24/7. **Edits to API/engine code require a restart of `main.py`**
+  to take effect — say so explicitly after changing server code.
+
+---
+
 ## Quick Start & Essential Commands
 
 ### Launch Titanium
 ```bash
-cd /path/to/titanium-v12
-python main.py
-# Dashboard: http://localhost:8080
-# API docs: http://localhost:8080/docs
+cd C:\Users\flore\Desktop\v12
+venv\Scripts\python.exe main.py
+# Dashboard: http://localhost:8090   (v13 one-screen: http://localhost:8090/v13)
+# API docs: http://localhost:8090/docs
 ```
 
 ### Run Tests
 ```bash
-python -m pytest tests/ -v                      # All tests
-python -m pytest tests/test_paper_trading.py -v # Paper trading only
-python -m pytest tests/test_modulator.py -v     # Fundamentals only
-python -c "from api.api_server import app; print('OK')"  # Sanity check
+venv\Scripts\python.exe -m pytest tests/ -v                      # All tests
+venv\Scripts\python.exe -m pytest tests/test_paper_trading.py -v # Paper trading only
+venv\Scripts\python.exe -m pytest tests/test_modulator.py -v     # Fundamentals only
+venv\Scripts\python.exe -c "from api.api_server import app; print('OK')"  # Sanity check
 ```
 
 ### Verify Configuration
@@ -30,11 +46,11 @@ python -c "from utils.config import SYMBOLS, SCAN_INTERVAL; print(f'Symbols: {SY
 ### Key Files (don't miss)
 | File | Purpose |
 |------|---------|
-| `.env` | All config variables (Binance keys, FUNDAMENTALS settings, etc.) |
+| `.env` | All config variables (Binance keys, FUNDAMENTALS settings, port 8090, etc.) |
 | `main.py` | Entry point — spawns 9+ async loops |
 | `utils/config.py` | Single source of truth for all env vars (never call `os.getenv()` directly) |
 | `core/signal_engine.py` | 5s scan loop — orchestrates scoring, modulation, signal emission |
-| `ARCHITECTURE.md` | Full data flow diagram + module breakdown |
+| `docs/ARCHITECTURE.md` | Full data flow diagram + module breakdown |
 
 ---
 
@@ -67,7 +83,12 @@ broadcast() [WebSocket] + send_signal_alert() [Telegram]
 | **FUNDAMENTALS** | `fundamentals/` | Macro risk scoring (news + sentiment) — filters/scales signals | High |
 | **Paper Trading** | `execution/paper_trading.py` | Full realistic backtest (slippage, fees, funding, drawdown tracking) | High |
 | **Optimizer** | `engine/optimizer.py` | Walk-forward SL/TP tuning (24h loop) | Maintenance |
-| **Spectral** | `indicators/spectral.py` | Cycle detection (3D: dominant cycle + phase) — Phase 0 active, Phase 1 pending | Research |
+| **Spectral** | `indicators/spectral.py` | Cycle detection — two APIs: `compute_spectral_features` (scipy → scoring) + `analyze` (causal Ehlers → dashboard) | Research |
+| **Order Book L2** | `data/orderbook_ws.py` + `indicators/orderbook.py` | Depth streams, imbalance/wall analysis fed into `score_setup()` (`ORDERBOOK_L2_ENABLED`) | High |
+| **JARVIS alerts** | `assistant/signal_alert.py` | Voice alerts on score ≥ threshold (started in lifespan) | Medium |
+| **Event bus** | `utils/event_bus.py` | Typed events (`data/events.jsonl`) — passive | Low |
+| **Guards** | `execution/guards.py` | Pre-execution guard pipeline (correlated exposure, blackout) — default off | Medium |
+| **Services panel** | `api/services_routes.py` | Dashboard start/stop for Titan/Ollama/GitNexus + `/services/github/push` (git add/commit/push from the dashboard) | Medium |
 
 ### Active Async Loops (lifespan in `api/api_server.py`)
 | Loop | Interval | Purpose |
@@ -81,6 +102,11 @@ broadcast() [WebSocket] + send_signal_alert() [Telegram]
 | `circuit_breaker_loop` | 1h | Monitor winrate / drawdown thresholds |
 | `gold_refresh_loop` | Varies | PAXG/XAU data (Twelve Data + Yahoo fallback) |
 | `futures_refresh_loop` | 60s | Open interest, funding rate, mark price |
+| `external_feeds_loop` | Varies | Extra fundamentals feeds (`fundamentals/external_feeds.py`) |
+| Orderbook L2 streams | Continuous | Started via `start_orderbook_streams()` before the loops |
+
+Startup also runs `_seed_candle_store(session)` (REST 1m → resampled 30s bars) so the
+scan is operational in seconds instead of waiting ~5 min for WS accumulation.
 
 ---
 
@@ -121,14 +147,19 @@ Simulates real fills with:
 
 Position sizing: `% capital / ATR-based SL distance`. Exits: TP1 (33% → SL at breakeven), TP2 (33%), TP3 (34%).
 
-### Spectral Analysis (Phase 0)
-Module `indicators/spectral.py` detects:
-- **Dominant cycle** (period in bars)
-- **Cycle power** (0–1, strength of the dominant frequency)
-- **Phase** (0–360°, instantaneous phase within the cycle)
-- **Phase zone** ("trough"/"ascent"/"peak"/"descent")
+### Spectral Analysis (Phase 1 wired, regime filter off by default)
+Module `indicators/spectral.py` exposes **two complementary APIs** (kept from the 07/2026
+merge — do not delete either):
+- **`compute_spectral_features(close) → SpectralFeatures`** (scipy, non-causal filtfilt/hilbert).
+  Consumed by `core/signal_engine.py`: results stored in `spectral_state[sym]` and passed to
+  `score_setup(spectral_features=...)`. Gated by `SPECTRAL_REGIME_FILTER` (default **off** —
+  it must stay off until walk-forward validated).
+- **`analyze(close_series) → dict`** (pure numpy, 100% causal, Ehlers-style). Used only for
+  dashboard instrumentation (`ctx["spectral"]`), safe for live.
 
-**Causal warning**: Current implementation uses non-causal filters (lookahead). Phase 0 is research-only; Phase 1 (scoring integration) requires walk-forward validation first.
+Outputs: dominant cycle (bars), cycle power (0–1), phase (0–360°), phase zone.
+**Causal warning**: `compute_spectral_features` uses lookahead — backtest/visualisation only;
+`analyze` is the causal path.
 
 ---
 
@@ -161,7 +192,7 @@ All files are reloaded on startup; changes during runtime are saved atomically.
 1. **Implement the detector** in `core/smc_engine.py` or `indicators/`.
 2. **Add to `score_setup()`** in `core/scoring_engine.py`: call detector, return 0/1.
 3. **Add to config** in `utils/config.py`: default weight + override per symbol.
-4. **Document** in README.md (scoring table) + ARCHITECTURE.md.
+4. **Document** in README.md (scoring table) + docs/ARCHITECTURE.md.
 5. **Test** with `pytest tests/test_scoring.py` (if exists) or manual backtest.
 6. **Do NOT increment the /11 count** until walk-forward validated.
 
@@ -190,6 +221,10 @@ The macro risk filter affects **all signals**. Before changing:
 ## GitNexus Integration (Code Intelligence)
 
 This project is indexed by GitNexus (4500+ symbols, 7000+ relationships).
+
+> **Availability note**: the GitNexus MCP tools and `.claude/skills/gitnexus/` skill files
+> are not installed in every session. If `gitnexus_*` tools are unavailable, skip this
+> section entirely and use standard tools (Grep/Read) — do not block on it.
 
 ### Before Editing Any Symbol
 ```bash
@@ -221,6 +256,16 @@ Returns: direct callers, affected processes, risk level (LOW/MEDIUM/HIGH/CRITICA
 - **`tests/test_paper_trading.py`** — Entry/exit fills, partial exits, drawdown.
 - **`tests/test_modulator.py`** — Risk reduction thresholds, edge cases.
 - **`tests/test_risk_scorer.py`** — News parsing, risk EMA, velocity calculation.
+- **`tests/test_orderbook_l2.py`** — L2 imbalance/wall analysis.
+- **`tests/test_spectral_scoring.py`** — Spectral features → scoring integration.
+- **`tests/test_guards.py`** / **`test_trade_journal.py`** / **`test_signal_alert.py`** — Guards, journal, JARVIS alerts.
+- **`tests/test_mcp_server.py`** / **`test_antigravity_cli_bridge.py`** — MCP/bridge integrations.
+
+### Backtests
+- `scripts/backtest_cli.py` — CLI backtest runner.
+- `tools/backtest_ab_6m.py` — A/B 6-month backtest (validated the time-stop:
+  `PAPER_MAX_HOLD_HOURS` is the canonical variable; `PAPER_MAX_AGE_HOURS` is a legacy
+  duplicate still present in config).
 
 ### Before Committing
 ```bash
@@ -241,9 +286,9 @@ gitnexus_detect_changes()
 ## Common Workflows
 
 ### "Signals are low-quality — what's wrong?"
-1. Check circuit breaker status: `curl http://localhost:8080/paper/stats`
+1. Check circuit breaker status: `curl http://localhost:8090/paper/stats`
 2. Verify scoring weights: `cat scoring_weights.json`
-3. Check fundamentals risk: `curl http://localhost:8080/fundamentals/score`
+3. Check fundamentals risk: `curl http://localhost:8090/fundamentals/score`
 4. Run backtest: `python -m pytest tests/test_paper_trading.py -v`
 5. Review signal_history.json for pattern (learning engine may have de-weighted criteria).
 
@@ -252,7 +297,7 @@ gitnexus_detect_changes()
 2. **Phase 1** → Integrate into `/11` scoring:
    - Add `phase_zone` to `score_setup()`.
    - Validate walk-forward (70/30 split, Sharpe > 1).
-   - Update `ARCHITECTURE.md` + scoring table.
+   - Update `docs/ARCHITECTURE.md` + scoring table.
 
 ### "Paper trading P&L doesn't match manual calculation"
 1. Extract journal: `cat data/paper_journal.json | python -m json.tool`
@@ -279,7 +324,11 @@ gitnexus_detect_changes()
 ## Debugging Checklist
 
 - **No signals after 5 minutes**: Normal — waiting for MIN_DF30_FOR_SCAN bars to accumulate. Check logs: `[SCAN] {sym} — df30 insufficient (X bars, min=10)`.
-- **Circuit breaker active**: Run `curl -X POST http://localhost:8080/paper/reset-circuit-breaker`.
+- **Circuit breaker active**: Run `curl -X POST http://localhost:8090/paper/reset-circuit-breaker`.
+- **Dashboard GitHub push fails**: the route is `POST /services/github/push`
+  (`api/services_routes.py`). Historical bug: an untyped `request` param caused a
+  systematic 422 — the param must stay `request: Request`. A running bot serves the
+  code it was started with; restart after editing routes.
 - **WebSocket not broadcasting**: Check lifespan in `api/api_server.py` — is `_broadcast_fn` set?
 - **Fundamentals stuck at risk=100**: Restart news loop or POST `/fundamentals/reload`.
 - **Paper trading fills look wrong**: Verify `PAPER_SLIPPAGE_BPS`, `PAPER_SPREAD_BPS`, `PAPER_FEE_BPS` in `.env`.
