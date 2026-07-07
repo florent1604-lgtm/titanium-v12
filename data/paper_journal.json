@@ -327,5 +327,34 @@
     ],
     "regime": "VOLATILE",
     "macro_risk": 25.0
+  },
+  {
+    "symbol": "PAXG/USDT",
+    "side": "SHORT",
+    "entry_price": 4139.684698,
+    "avg_exit_price": 4155.421758,
+    "size_usdt": 197.0827,
+    "pnl_usdt": -0.828,
+    "pnl_pct": -0.42,
+    "fee_total": 0.1577,
+    "funding_paid": 0.0,
+    "entry_ts": "2026-07-06T06:02:37.207537+00:00",
+    "exit_ts": "2026-07-06T06:32:39.878228+00:00",
+    "duration_min": 30.0,
+    "score": 6,
+    "exit_reason": "sl",
+    "correlation_id": "6b3c956ba30d",
+    "source": "internal",
+    "confs": [
+      "EMA200-H4 baissier (dist=1.53%)",
+      "BOS H2/H1",
+      "H2+H1 align\u00e9s",
+      "TRIX 5m",
+      "EMA200-1D align\u00e9",
+      "Delta volume confirme",
+      "OB L2 imbalance 0.14"
+    ],
+    "regime": "VOLATILE",
+    "macro_risk": 28.2
   }
 ]

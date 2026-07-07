@@ -30,6 +30,7 @@ logger = get_logger(__name__)
 
 # Chemin du dashboard HTML v12
 _DASHBOARD_HTML = Path(__file__).resolve().parent.parent / "titanium_v12_dashboard.html"
+_DASHBOARD_V13  = Path(__file__).resolve().parent.parent / "titanium_v13_dashboard.html"
 
 
 async def _seed_candle_store(session: aiohttp.ClientSession) -> None:
@@ -86,7 +87,7 @@ async def _seed_candle_store(session: aiohttp.ClientSession) -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Gestion du cycle de vie FastAPI — démarre toutes les tâches asyncio."""
-    from data.binance_ws import ws_binance
+    from data.binance_ws import ws_binance, seed_candle_store
     from data.gold_provider import gold_refresh_loop
     from data.futures_data import futures_refresh_loop
     from core.signal_engine import scan_loop, set_broadcast_fn
@@ -215,6 +216,7 @@ _DASHBOARD_V13 = Path(__file__).resolve().parent.parent / "titanium_v13_dashboar
 _APP_START_TS = datetime.now(timezone.utc)
 
 
+
 @app.get("/v13", response_class=HTMLResponse)
 async def dashboard_v13():
     """Dashboard v13 — un écran : santé, capital, vision."""
@@ -224,7 +226,11 @@ async def dashboard_v13():
 
 
 def _health_snapshot() -> dict:
-    """Santé du système : feed de données, scan prêt, uptime."""
+    """Santé du système : feed de données, scan prêt, uptime.
+
+    Rendu en permanence dans le header du dashboard — le bot ne doit
+    plus jamais 'tourner à vide' sans que ce soit visible d'un coup d'œil.
+    """
     from data.binance_ws import candle_store
     from utils.config import MIN_DF30_FOR_SCAN
     candles = {}
@@ -243,6 +249,7 @@ def _health_snapshot() -> dict:
 async def api_state():
     """État complet : signaux, poids, historique, optimisation, paper trading."""
     from execution.executor import executor
+    from fundamentals.external_feeds import get_external_snapshot
     paper_state = executor.get_state() if TRADING_MODE != "disabled" else {}
     from data.spread_tracker import spread_tracker
     from fundamentals.external_feeds import get_external_snapshot

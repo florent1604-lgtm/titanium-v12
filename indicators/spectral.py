@@ -10,25 +10,39 @@ North Star 2D -> 3D -> 4D :
 Base : DSP publique (Wiener-Khinchin, Butterworth, signal analytique).
 Implementation clean-room, a valider en walk-forward avant tout signal reel.
 
+Deux APIs complementaires :
+    - compute_spectral_features(close) -> SpectralFeatures (scipy)
+      Consommee par core/signal_engine.py (Phase 1 : spectral_state -> scoring).
+    - analyze(close_series) -> dict (numpy pur, 100% causal, style Ehlers)
+      Consommee par l'instrumentation dashboard (ctx["spectral"]).
+
 /!\ CAUSALITE
     filtfilt() et hilbert() (via FFT) utilisent des donnees FUTURES.
     -> OK pour backtest / recherche / dashboard.
     -> INTERDIT en live tel quel. Pour le live : version causale (lfilter)
-       ou filtres recursifs causaux style Ehlers. Toggle `causal=True` fourni
-       pour le roofing ; la phase live exige une Hilbert bar-par-bar (TODO).
+      ou filtres recursifs causaux style Ehlers (cf. analyze() plus bas).
 
-Dependances : numpy, scipy
+Dependances : numpy, scipy (scipy requis pour compute_spectral_features
+uniquement — analyze() est en numpy pur).
 """
 
 from __future__ import annotations
+import math
 from dataclasses import dataclass, asdict
+from typing import Dict, Optional
+
 import numpy as np
-from scipy.signal import butter, filtfilt, lfilter, hilbert
+
+try:
+    from scipy.signal import butter, filtfilt, lfilter, hilbert
+    _SCIPY_OK = True
+except ImportError:
+    _SCIPY_OK = False
 
 
-# --------------------------------------------------------------------------- #
+# ------------------------------------------------------------------------- #
 # 1. Roofing filter (prétraitement obligatoire)
-# --------------------------------------------------------------------------- #
+# ------------------------------------------------------------------------- #
 def roofing_filter(
     price: np.ndarray,
     low_period: int = 10,
@@ -44,17 +58,17 @@ def roofing_filter(
     """
     price = np.asarray(price, dtype=float)
     nyq = 0.5 * fs
-    low = (1.0 / high_period) / nyq    # coupe les basses freq (trend / DC)
-    high = (1.0 / low_period) / nyq    # coupe les hautes freq (bruit)
+    low = (1.0 / high_period) / nyq     # coupe les basses freq (trend / DC)
+    high = (1.0 / low_period) / nyq     # coupe les hautes freq (bruit)
     b, a = butter(2, [low, high], btype="band")
     if causal:
         return lfilter(b, a, price)
     return filtfilt(b, a, price)
 
 
-# --------------------------------------------------------------------------- #
+# ------------------------------------------------------------------------- #
 # 2. Cycle dominant — Autocorrelation Periodogram (Ehlers / Wiener-Khinchin)
-# --------------------------------------------------------------------------- #
+# ------------------------------------------------------------------------- #
 def autocorr_periodogram(
     x: np.ndarray,
     pmin: int = 8,
@@ -75,7 +89,7 @@ def autocorr_periodogram(
         raise ValueError(f"Serie trop courte : n={n}, requis >= {pmax * 2}")
 
     ac = np.correlate(x, x, mode="full")[n - 1:]
-    ac = ac / (ac[0] + 1e-12)                         # autocorr normalisee [-1, 1]
+    ac = ac / (ac[0] + 1e-12)                          # autocorr normalisee [-1, 1]
 
     periods = np.arange(pmin, pmax + 1)
     power = np.zeros_like(periods, dtype=float)
@@ -95,9 +109,9 @@ def autocorr_periodogram(
     return dominant, cycle_power, periods, power
 
 
-# --------------------------------------------------------------------------- #
+# ------------------------------------------------------------------------- #
 # 3. Phase instantanee (brique 4D)
-# --------------------------------------------------------------------------- #
+# ------------------------------------------------------------------------- #
 def instantaneous_phase(x: np.ndarray) -> np.ndarray:
     r"""Phase instantanee (0..360) via signal analytique (Hilbert).
 
@@ -121,9 +135,9 @@ def phase_zone(phase_deg: float) -> str:
     return "creux"
 
 
-# --------------------------------------------------------------------------- #
+# ------------------------------------------------------------------------- #
 # 4. API publique — features pretes pour le scoring /11
-# --------------------------------------------------------------------------- #
+# ------------------------------------------------------------------------- #
 @dataclass
 class SpectralFeatures:
     dominant_cycle: int      # barres
@@ -148,10 +162,12 @@ def compute_spectral_features(
     """Pipeline complet : close -> features spectrales.
 
     Integration Titanium :
-      - has_cycle == False -> regime trend/range : depondere les criteres cycle,
-        laisse SMC piloter.
-      - has_cycle == True  -> phase_zone exploitable pour le timing d'entree.
+        - has_cycle == False -> regime trend/range : depondere les criteres cycle,
+          laisse SMC piloter.
+        - has_cycle == True  -> phase_zone exploitable pour le timing d'entree.
     """
+    if not _SCIPY_OK:
+        raise ImportError("scipy requis pour compute_spectral_features")
     roofed = roofing_filter(close, low_period, high_period, causal=causal)
     dominant, power, _, _ = autocorr_periodogram(roofed, pmin, pmax)
     phase = float(instantaneous_phase(roofed)[-1])
@@ -164,13 +180,121 @@ def compute_spectral_features(
     )
 
 
+# ------------------------------------------------------------------------- #
+# 5. API causale — analyze() (numpy pur, style Ehlers, utilisable en live)
+#    Consommee par l'instrumentation dashboard (ctx["spectral"]).
+# ------------------------------------------------------------------------- #
+
+def _roofing_causal(close: np.ndarray, hp_period: int = 48, ss_period: int = 10) -> np.ndarray:
+    """Passe-bande causal : highpass 2 poles + SuperSmoother d'Ehlers.
+
+    Isole les composantes cycliques entre ss_period et hp_period barres,
+    supprime la tendance (basse frequence) et le bruit (haute frequence).
+    IIR -> strictement causal, utilisable bar-par-bar en live.
+    """
+    n = len(close)
+    if n < 5:
+        return np.zeros(n)
+
+    # Highpass 2 poles
+    a = math.sqrt(0.5) * 2 * math.pi / hp_period
+    alpha1 = (math.cos(a) + math.sin(a) - 1) / math.cos(a)
+    hp = np.zeros(n)
+    c1 = (1 - alpha1 / 2) ** 2
+    for i in range(2, n):
+        hp[i] = (c1 * (close[i] - 2 * close[i - 1] + close[i - 2])
+                 + 2 * (1 - alpha1) * hp[i - 1]
+                 - (1 - alpha1) ** 2 * hp[i - 2])
+
+    # SuperSmoother 2 poles
+    a2 = math.sqrt(2.0) * math.pi / ss_period
+    b1 = 2 * math.exp(-a2 / math.sqrt(2.0)) * math.cos(a2)
+    c3 = -math.exp(-2 * a2 / math.sqrt(2.0))
+    c2 = b1
+    c1s = 1 - c2 - c3
+    out = np.zeros(n)
+    for i in range(2, n):
+        out[i] = c1s * (hp[i] + hp[i - 1]) / 2 + c2 * out[i - 1] + c3 * out[i - 2]
+    return out
+
+
+def _dft_power(sig: np.ndarray, period: int) -> float:
+    """Puissance du signal a une periode donnee (DFT a frequence unique)."""
+    n = len(sig)
+    w = 2 * math.pi / period
+    idx = np.arange(n)
+    re = float(np.dot(sig, np.cos(w * idx)))
+    im = float(np.dot(sig, np.sin(w * idx)))
+    return re * re + im * im
+
+
+def analyze(close_series) -> Optional[Dict[str, object]]:
+    """Analyse spectrale causale complete sur les dernieres barres.
+
+    Fenetre = 3*pmax barres (assez pour resoudre le cycle le plus lent
+    sans trainer des regimes morts). Retourne None si donnees insuffisantes.
+    """
+    from utils.config import SPECTRAL_PMIN, SPECTRAL_PMAX, SPECTRAL_POWER_THRESHOLD
+
+    if close_series is None or len(close_series) < SPECTRAL_PMAX * 2:
+        return None
+
+    window = int(SPECTRAL_PMAX * 3)
+    close = close_series.values.astype(float)[-window:]
+    filt = _roofing_causal(close, hp_period=SPECTRAL_PMAX, ss_period=max(SPECTRAL_PMIN, 8))
+
+    # Warm-up du filtre IIR : on jette le premier tiers
+    sig = filt[len(filt) // 3:]
+    if len(sig) < SPECTRAL_PMAX:
+        return None
+    sig = sig - sig.mean()
+    if float(np.abs(sig).max()) < 1e-12:
+        return None
+
+    # Periodogramme : puissance par periode candidate
+    periods = range(SPECTRAL_PMIN, SPECTRAL_PMAX + 1)
+    powers = {p: _dft_power(sig, p) for p in periods}
+    total = sum(powers.values()) or 1e-12
+    dom_p, dom_pow = max(powers.items(), key=lambda kv: kv[1])
+    # Puissance relative : part du cycle dominant et de ses voisins immediats
+    neighborhood = sum(powers.get(p, 0.0) for p in (dom_p - 1, dom_p, dom_p + 1))
+    cycle_power = round(neighborhood / total, 3)
+    has_cycle = cycle_power >= SPECTRAL_POWER_THRESHOLD
+
+    # Phase instantanee : correlation des dernieres `dom_p` barres avec
+    # sin/cos a la periode dominante (causal — fenetre passee uniquement)
+    tail = sig[-dom_p:]
+    idx = np.arange(dom_p)
+    w = 2 * math.pi / dom_p
+    re = float(np.dot(tail, np.cos(w * idx)))
+    im = float(np.dot(tail, np.sin(w * idx)))
+    phase = (math.degrees(math.atan2(im, re)) + 360.0) % 360.0
+
+    if phase < 90:
+        zone = "creux"        # bas de cycle — zone d'achat potentielle
+    elif phase < 180:
+        zone = "montee"
+    elif phase < 270:
+        zone = "sommet"       # haut de cycle — zone de vente potentielle
+    else:
+        zone = "descente"
+
+    return {
+        "dominant_cycle": int(dom_p) if has_cycle else 0,
+        "cycle_power":    cycle_power,
+        "has_cycle":      has_cycle,
+        "phase_deg":      round(phase, 1),
+        "phase_zone":     zone if has_cycle else "aucun",
+    }
+
+
 if __name__ == "__main__":
     # Test rapide sur un signal synthetique (cycle 20 barres + bruit + trend)
     t = np.arange(600)
     synth = (
-        np.sin(2 * np.pi * t / 20)        # cycle dominant = 20
-        + 0.3 * np.sin(2 * np.pi * t / 7)  # bruit HF
-        + 0.002 * t                        # trend lent
+        np.sin(2 * np.pi * t / 20)          # cycle dominant = 20
+        + 0.3 * np.sin(2 * np.pi * t / 7)   # bruit HF
+        + 0.002 * t                          # trend lent
         + 0.2 * np.random.randn(len(t))
     )
     feats = compute_spectral_features(synth)

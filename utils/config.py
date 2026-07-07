@@ -297,6 +297,7 @@ PAPER_FEE_BPS          = _float("PAPER_FEE_BPS", 4.0)               # 0.04% frai
 PAPER_FUNDING_RATE_8H  = _float("PAPER_FUNDING_RATE_8H", 0.01)      # 0.01% funding/8h (longs paient)
 PAPER_MAX_POSITIONS    = _int("PAPER_MAX_POSITIONS", 3)              # positions simultanées max
 PAPER_MAX_EXPOSURE_PCT = _float("PAPER_MAX_EXPOSURE_PCT", 0.60)      # % capital max exposé
+PAPER_MAX_AGE_HOURS    = _float("PAPER_MAX_AGE_HOURS", 72.0)         # time-stop: fermeture forcée après N heures (0=désactivé)
 PAPER_TRAILING_STOP    = _bool("PAPER_TRAILING_STOP", "0")           # trailing stop activé
 PAPER_TRAILING_PCT     = _float("PAPER_TRAILING_PCT", 0.8)           # multiple ATR pour trailing
 PAPER_MAX_HOLD_HOURS   = _float("PAPER_MAX_HOLD_HOURS", 48.0)       # fermeture auto si aucun TP en N heures (0=désactivé)
