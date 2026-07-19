@@ -1,0 +1,11 @@
+# Dépendances MINIMALES pour rejouer la suite ENTRY_DETECTION dans un venv neuf.
+# But : débloquer la vérification indépendante de Codex (son sandbox ne voit pas le
+# venv du projet — un venv n'est pas portable : il pointe en dur vers Python312).
+# Versions alignées sur le venv du projet (07/2026). pip résout les deps transitives.
+pandas==3.0.2
+numpy==2.2.6
+pandas_ta==0.4.71b0
+python-dotenv==1.2.2
+pytest==9.0.3
+pytest-asyncio==1.4.0
+jsonschema>=4.23.0,<5.0.0
