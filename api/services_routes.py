@@ -5,8 +5,8 @@
 # POST /services/titan/stop      Desactiver Titan
 # POST /services/ollama/start    Demarrer Ollama (subprocess)
 # POST /services/ollama/stop     Arreter Ollama
-# POST /services/gitnexus/start  Demarrer gitnexus server
-# POST /services/gitnexus/stop   Arreter gitnexus server
+# POST /services/gitnexus/start  Demarrer gitnexus serve
+# POST /services/gitnexus/stop   Arreter l'instance geree par ce routeur
 
 from __future__ import annotations
 import asyncio
@@ -17,11 +17,22 @@ from pathlib import Path
 from typing import Optional
 
 import aiohttp
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
+
+from api.auth import require_admin
+from tools.claude_gitnexus_identity import read_attestation as read_claude_attestation
+from tools.gitnexus_runtime import (
+    GITNEXUS_BASE_URL,
+    start_gitnexus_server,
+    stop_gitnexus_server,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/services", tags=["services"])
+
+# Toutes les mutations de ce routeur exigent le jeton admin (fail-closed).
+_ADMIN = [Depends(require_admin)]
 
 # Processus externes geres par cette route
 _procs: dict[str, Optional[subprocess.Popen]] = {
@@ -30,6 +41,7 @@ _procs: dict[str, Optional[subprocess.Popen]] = {
 }
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+GITNEXUS_PORT = 4747
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -51,17 +63,40 @@ async def _ollama_responding() -> bool:
 
 
 async def _gitnexus_responding() -> tuple[bool, int]:
-    """Verifie si gitnexus server repond (port 3000 par defaut)."""
-    for port in (3000, 3001, 4000):
-        try:
-            async with aiohttp.ClientSession() as s:
-                async with s.get(f"http://localhost:{port}/health",
-                                 timeout=aiohttp.ClientTimeout(total=2)) as r:
-                    if r.status < 500:
-                        return True, port
-        except Exception:
-            pass
-    return False, 0
+    """Verifie le contrat courant GitNexus, strictement sur localhost:4747."""
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                f"{GITNEXUS_BASE_URL}/api/health",
+                timeout=aiohttp.ClientTimeout(total=2),
+            ) as response:
+                return response.status == 200, GITNEXUS_PORT if response.status == 200 else 0
+    except Exception:
+        return False, 0
+
+
+async def _gitnexus_repositories() -> list[dict]:
+    """Retourne les depots indexes sans inventer de schema en cas d'erreur."""
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                f"{GITNEXUS_BASE_URL}/api/repos",
+                timeout=aiohttp.ClientTimeout(total=2),
+            ) as response:
+                if response.status != 200:
+                    return []
+                payload = await response.json()
+    except Exception:
+        return []
+    if isinstance(payload, list):
+        return [item for item in payload if isinstance(item, dict)]
+    if isinstance(payload, dict):
+        repos = payload.get(
+            "repos", payload.get("repositories", payload.get("value", []))
+        )
+        if isinstance(repos, list):
+            return [item for item in repos if isinstance(item, dict)]
+    return []
 
 
 # ── GET /services/status ──────────────────────────────────────────────────────
@@ -105,23 +140,22 @@ async def services_status():
 
     # ── GitNexus ──────────────────────────────────────────────────────────────
     gn_ok, gn_port = await _gitnexus_responding()
-    gn_symbols = "?"
-    if gn_ok:
-        try:
-            async with aiohttp.ClientSession() as s:
-                async with s.get(f"http://localhost:{gn_port}/api/graph/stats",
-                                 timeout=aiohttp.ClientTimeout(total=2)) as r:
-                    if r.status == 200:
-                        data = await r.json()
-                        gn_symbols = data.get("symbols", "?")
-        except Exception:
-            pass
+    gn_repos = await _gitnexus_repositories() if gn_ok else []
+    gn_symbols = 0
+    for repo in gn_repos:
+        stats = repo.get("stats", {}) if isinstance(repo.get("stats"), dict) else {}
+        value = stats.get("nodes", stats.get("symbols", repo.get("symbols", 0)))
+        if isinstance(value, (int, float)):
+            gn_symbols += int(value)
 
     gitnexus_info = {
         "running": gn_ok,
         "port":    gn_port,
         "symbols": gn_symbols,
+        "repos":    gn_repos,
+        "url":      "/nexus",
         "proc":    _proc_running("gitnexus"),
+        "clients": {"claude": read_claude_attestation()},
     }
 
     return JSONResponse({
@@ -133,7 +167,7 @@ async def services_status():
 
 # ── Titan start/stop ─────────────────────────────────────────────────────────
 
-@router.post("/titan/start")
+@router.post("/titan/start", dependencies=_ADMIN)
 async def titan_start():
     """Active Titan (necessite TITAN_ENABLED=1 dans .env et redemarrage complet).
     Sans redemarrage, active la parole et l'ecoute a chaud.
@@ -147,7 +181,7 @@ async def titan_start():
         return JSONResponse({"status": "error", "message": str(e)}, status_code=500)
 
 
-@router.post("/titan/stop")
+@router.post("/titan/stop", dependencies=_ADMIN)
 async def titan_stop():
     """Desactive Titan a chaud (ecoute + avatar)."""
     try:
@@ -160,7 +194,7 @@ async def titan_stop():
 
 # ── Ollama start/stop ─────────────────────────────────────────────────────────
 
-@router.post("/ollama/start")
+@router.post("/ollama/start", dependencies=_ADMIN)
 async def ollama_start():
     """Demarre le service Ollama en arriere-plan."""
     if await _ollama_responding():
@@ -190,7 +224,7 @@ async def ollama_start():
         return JSONResponse({"status": "error", "message": str(e)}, status_code=500)
 
 
-@router.post("/ollama/stop")
+@router.post("/ollama/stop", dependencies=_ADMIN)
 async def ollama_stop():
     """Arrete Ollama (seulement si lance par ce dashboard)."""
     p = _procs.get("ollama")
@@ -204,53 +238,41 @@ async def ollama_stop():
 
 # ── GitNexus start/stop ───────────────────────────────────────────────────────
 
-@router.post("/gitnexus/start")
+@router.post("/gitnexus/start", dependencies=_ADMIN)
 async def gitnexus_start():
-    """Demarre le serveur GitNexus (npx gitnexus server)."""
+    """Demarre l'instance GitNexus geree et authentifiable du projet."""
     if (await _gitnexus_responding())[0]:
         return JSONResponse({"status": "already_running", "message": "GitNexus deja actif"})
-
-    try:
-        import shutil
-        npx = shutil.which("npx") or "npx"
-        p = subprocess.Popen(
-            [npx, "gitnexus", "server"],
-            cwd=str(BASE_DIR),
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
-        )
-        _procs["gitnexus"] = p
-        # Attendre que le serveur soit pret (max 10s)
-        for _ in range(10):
-            await asyncio.sleep(1)
-            ok, port = await _gitnexus_responding()
-            if ok:
-                return JSONResponse({
-                    "status": "started",
-                    "message": f"GitNexus demarre sur port {port} (PID {p.pid})"
-                })
-        return JSONResponse({"status": "starting", "message": "GitNexus demarre, attendre quelques secondes..."})
-    except FileNotFoundError:
-        return JSONResponse({
-            "status": "error",
-            "message": "npx non trouve. Installer Node.js : https://nodejs.org"
-        }, status_code=500)
-    except Exception as e:
-        logger.error("[SVC] gitnexus start: %s", e)
-        return JSONResponse({"status": "error", "message": str(e)}, status_code=500)
+    process = await asyncio.to_thread(start_gitnexus_server)
+    for _ in range(20):
+        await asyncio.sleep(0.5)
+        ok, port = await _gitnexus_responding()
+        if ok:
+            if process is not None:
+                _procs["gitnexus"] = process
+            pid = getattr(process, "pid", None)
+            return JSONResponse({
+                "status": "started",
+                "message": f"GitNexus demarre sur port {port}",
+                "pid": pid,
+            })
+    return JSONResponse(
+        {"status": "error", "message": "GitNexus non sain apres demarrage"},
+        status_code=503,
+    )
 
 
-@router.post("/gitnexus/stop")
+@router.post("/gitnexus/stop", dependencies=_ADMIN)
 async def gitnexus_stop():
-    """Arrete GitNexus (seulement si lance par ce dashboard)."""
-    p = _procs.get("gitnexus")
-    if p and p.poll() is None:
-        p.terminate()
-        _procs["gitnexus"] = None
-        return JSONResponse({"status": "stopped", "message": "GitNexus arrete"})
-    return JSONResponse({"status": "not_managed",
-                         "message": "GitNexus non gere par ce dashboard"})
+    """Arrete uniquement l'instance enregistree, via shutdown authentifie."""
+    stopped = await asyncio.to_thread(stop_gitnexus_server)
+    if not stopped:
+        return JSONResponse(
+            {"status": "not_managed", "message": "Aucune instance geree arretee"},
+            status_code=409,
+        )
+    _procs["gitnexus"] = None
+    return JSONResponse({"status": "stopped", "message": "GitNexus arrete proprement"})
 
 
 # ── GitHub push ───────────────────────────────────────────────────────────────
@@ -335,7 +357,7 @@ def _sanitize_commit_message(msg: str) -> str:
     return msg.replace("\n", " ").replace("\r", " ").replace("\x00", "").strip()[:200]
 
 
-@router.post("/github/push")
+@router.post("/github/push", dependencies=_ADMIN)
 async def github_push(request: Request):
     """git add . → git commit → git push origin <branche>.
 

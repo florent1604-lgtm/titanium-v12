@@ -88,7 +88,10 @@ def test_services_routes_use_current_gitnexus_contract_and_admin_mutations() -> 
     content = (ROOT / "api/services_routes.py").read_text(encoding="utf-8")
     api_server = (ROOT / "api/api_server.py").read_text(encoding="utf-8")
     assert "4747" in content
-    assert "from tools.gitnexus_runtime import GITNEXUS_BASE_URL" in content
+    assert "from tools.gitnexus_runtime import (" in content
+    assert "GITNEXUS_BASE_URL," in content
+    assert "start_gitnexus_server," in content
+    assert "stop_gitnexus_server," in content
     assert 'GITNEXUS_HOST = "127.0.0.1"' in (
         ROOT / "tools/gitnexus_runtime.py"
     ).read_text(encoding="utf-8")
