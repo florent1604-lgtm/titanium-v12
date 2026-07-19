@@ -15,6 +15,8 @@ Cette spécification reprend les invariants du contrat
 
 - NATS JetStream est le transport principal ;
 - SQLite WAL est l'outbox transactionnelle et le secours local ;
+- SQLite est l'autorité canonique du journal et du replay ; JetStream est le
+  transport/fan-out principal et peut être reconstruit depuis SQLite ;
 - la supervision F0 fait partie du premier lot ;
 - aucun CommandGateway actif, aucune capacité d'ordre et aucune route de mutation ;
 - les modules déjà écrits `core/event_plane.py` et `core/event_mirror.py` sont des
@@ -39,6 +41,11 @@ Construire un plan de faits durable qui :
 5. reconstruit un Cortex versionné pour Hermes et le dashboard ;
 6. supervise les composants d'observation sans redémarrer automatiquement les
    composants capables d'émettre un ordre.
+
+Le choix NATS est maintenu pour isoler les processus Titanium, bridge Hermes,
+dashboard et futurs consommateurs, permettre leur redémarrage indépendant et
+éviter un accès direct de ces consommateurs au fichier SQLite. Il ne transforme
+pas NATS en seconde source d'autorité.
 
 ### Hors-périmètre
 
@@ -98,6 +105,11 @@ alloue les séquences, insère l'événement et le place `PENDING`. Réglages mi
 - permissions Windows minimales ;
 - aucun purge automatique des éléments pending, conflictuels ou en quarantaine.
 
+SQLite est l'unique autorité pour un replay complet, l'historique au-delà de la
+rétention JetStream et la résolution d'une divergence. Un événement présent dans
+NATS mais absent de SQLite n'est jamais importé automatiquement dans le journal
+canonique.
+
 ### 4.3 Relay JetStream
 
 Le relay sélectionne les événements `PENDING`, publie avec
@@ -110,6 +122,14 @@ end-to-end : après une panne plus longue que cette fenêtre, le stream peut con
 deux livraisons du même `event_id`. Chaque consommateur conserve donc un ledger
 durable des `event_id` appliqués. La correction repose sur ce ledger et sur
 l'idempotence de la projection, jamais uniquement sur la fenêtre NATS.
+
+Les headers NATS répètent `event_id`, `payload_sha256`, `event_hash`, `stream_id`
+et `stream_seq`. Le relay conserve la correspondance `event_id -> broker_seq`.
+Une tâche de réconciliation compare périodiquement les identifiants et digests par
+fenêtres bornées : événement SQLite manquant dans NATS = republication ; événement
+NATS absent de SQLite ou digest différent = quarantaine du consumer et santé
+`CRITICAL`. La chaîne de hash est vérifiée selon l'ordre canonique SQLite, pas
+selon l'ordre physique NATS.
 
 ### 4.4 Cortex
 
@@ -132,6 +152,12 @@ Hermes reçoit :
 
 Il ne reçoit pas de secret, tick brut ou primitive exécutable. Le dashboard expose
 les mêmes faits et la santé, sans endpoint de mutation dans ce lot.
+
+Hermes/LLM ne détient aucun credential NATS ou gateway. Un bridge local séparé,
+exécuté sous une identité Windows dédiée, détient les credentials read-only et
+transmet un contexte expurgé via un pipe nommé dont l'ACL est liée aux SID attendus.
+Tout futur canal efférent utilise un pipe distinct et une identité OS distincte ;
+tant que cette séparation n'est pas prouvée, Hermes reste strictement read-only.
 
 ## 5. Enveloppe immuable
 
@@ -182,17 +208,27 @@ Contraintes :
 - livraison au moins une fois, effets consommateurs idempotents ;
 - payload sans secret, approval, URL de commande, handler, code ou token.
 
+Avant tout commit, un gate déterministe applique l'allowlist du schéma, refuse les
+clés sensibles (`token`, `secret`, `password`, `api_key`, `authorization`,
+`cookie`, `private_key` et variantes) et les valeurs à forte signature de secret
+(Bearer/JWT/PEM/credentials connus). Le rejet `SECRET_DETECTED` est rapporté hors
+EventPlane sans recopier la valeur ni le payload fautif dans les logs.
+
 ## 6. Types initiaux fermés
 
-Le registre initial autorise uniquement :
+Le registre machine-readable figé est
+`docs/contracts/eventplane-v1-registry.json`. Son identité est verrouillée par
+`docs/contracts/eventplane-v1-registry.sha256` ; toute modification impose une
+nouvelle version de registre et une décision tracée. Toute divergence entre le code
+et ce fichier est un échec de test. Le registre initial autorise uniquement :
 
 - `runtime.task.heartbeat.v1` ;
 - `runtime.task.state_changed.v1` ;
 - `runtime.component.degraded.v1` ;
-- `analysis.confluence.evaluated.v1` ;
-- `analysis.consensus.updated.v1` ;
-- `analysis.emotion.updated.v1` ;
-- `analysis.leadlag.observed.v1` avec `m2_eligible=false` ;
+- `confluence.evaluation.completed.v1` ;
+- `consensus.observation.updated.v1` ;
+- `emotion.observation.updated.v1` ;
+- `leadlag.observation.updated.v1` avec `m2_eligible=false` ;
 - `trading.signal.observed.v1` ;
 - `trading.position.opened.v1` (PAPER/DEMO factuel) ;
 - `trading.position.closed.v1` (PAPER/DEMO factuel) ;
@@ -202,7 +238,8 @@ Le registre initial autorise uniquement :
 - `eventplane.transport.state_changed.v1`.
 
 Un type inconnu est refusé. Les événements de position constatent un effet déjà
-survenu ; ils ne peuvent pas le provoquer.
+survenu ; ils ne peuvent pas le provoquer. `runtime.mirror.heartbeat.v1` est donc
+hors registre et doit être remplacé par `runtime.task.heartbeat.v1` dans C0a.
 
 ## 7. Livraison, bascule et réconciliation
 
@@ -227,6 +264,7 @@ survenu ; ils ne peuvent pas le provoquer.
 | projecteur en erreur | ne pas avancer l'offset |
 | événement poison | quarantaine visible, source conservée |
 | gap/hash rompu | intégrité CRITICAL, replay automatique suspendu |
+| divergence NATS/SQLite | SQLite fait autorité ; consumer NATS quarantiné avant réparation |
 
 ### Bascule
 
@@ -234,6 +272,11 @@ Une bascule exige une indisponibilité confirmée, un lease et un numéro d'épo
 Un seul projecteur est actif. Le fallback reprend au dernier `global_offset`.
 Le lease, l'époque et le commit de projection sont contrôlés transactionnellement ;
 un ancien propriétaire ne peut pas avancer l'offset après perte du lease.
+
+`global_offset` est strictement croissant et unique, mais peut être sparse. Un
+consumer lit `global_offset > last_seen ORDER BY global_offset` sans exiger `+1`.
+La contiguïté et la corruption sont contrôlées par `stream_seq` et la chaîne de
+hash par stream ; un trou de `global_offset` seul n'est pas un incident.
 
 ### Retour vers JetStream
 
@@ -278,11 +321,20 @@ F0 maintient aussi une santé locale hors EventPlane (snapshot atomique + logs
 Windows/applicatifs), afin qu'une panne de l'EventPlane ne masque pas sa propre
 défaillance et n'engendre pas une boucle récursive d'événements de santé.
 
+Le chemin déterministe existant `confluence -> demo_bridge`, y compris la collecte
+agressive DEMO autorisée, reste autonome et hors du futur CommandGateway. Il
+conserve ses gardes locales compte/mode/risque. Seules les propositions issues de
+Hermes passeront par le gateway et ses approvals ; cette clarification ne constitue
+ni une promotion M2 ni un élargissement des permissions de trading.
+
 ## 9. Sécurité NATS
 
 - bind `127.0.0.1` uniquement ;
 - authentification obligatoire ;
-- secrets hors dépôt et bus, fichiers protégés par ACL Windows ;
+- secrets hors dépôt et bus, fichiers protégés par ACL Windows et détenus par le
+  bridge/service, jamais par le processus LLM ;
+- IPC Hermes par pipe nommé Windows avec ACL/SID et vérification de l'identité du
+  client ; aucun token partagé dans le prompt ou la mémoire ;
 - version et checksum figés dans le plan d'implémentation ;
 - monitoring/admin non exposé au réseau ;
 - stockage JetStream dédié ;
@@ -308,8 +360,11 @@ défaillance et n'engendre pas une boucle récursive d'événements de santé.
 - panne et redémarrage NATS ;
 - SQLite lock, corruption et disque plein simulé ;
 - doublons, désordre, gap et événement poison ;
-- failover puis retour avec digest de projection identique.
+- failover puis retour avec digest de projection identique ;
 - projecteur zombie refusé après changement de lease/époque.
+- scan de secret avant commit, sans fuite dans les logs d'échec ;
+- divergence NATS/SQLite : missing, extra et digest différent ;
+- `global_offset` sparse accepté, `stream_seq` manquant refusé.
 
 ### Non-régression/sécurité
 
@@ -324,7 +379,7 @@ défaillance et n'engendre pas une boucle récursive d'événements de santé.
 ## 11. Déploiement de production observabilité
 
 1. geler et auditer les prototypes existants ;
-2. corriger B0 par TDD sans câblage ;
+2. réaligner B0/C0a sur le registre figé et corriger par TDD sans câblage ;
 3. installer NATS isolé et vérifier version/checksum/ACL/persistance ;
 4. tester le relay uniquement avec événements synthétiques ;
 5. tester F0 et les pannes ;
@@ -347,6 +402,12 @@ résultat HIGH/CRITICAL est communiqué à Florent avant édition. Avant commit,
 - bus UI et moteurs restent inchangés ;
 - aucun replay vers une logique d'ordre ;
 - rapport d'incident avec dernier offset, époque et digest.
+
+En cas exceptionnel de secret déjà persisté : arrêter les publishers/relay,
+révoquer et faire tourner immédiatement le credential, isoler le store avec ACL,
+produire un manifeste d'incident signé, reconstruire un nouveau store expurgé avec
+une nouvelle époque/genesis, puis conserver l'original chiffré en preuve à accès
+restreint. Cette procédure break-glass n'est jamais automatique.
 
 ## 13. Gates d'acceptation
 
@@ -371,3 +432,5 @@ Le lot n'est « production observabilité » que si :
 - Section 4 supervision F0 : approuvée ;
 - Section 5 sécurité/tests/production/rollback : approuvée ;
 - choix final : NATS JetStream principal, SQLite WAL secours.
+- tri red-team R-1..R-5 : SQLite autoritaire, IPC Hermes par identité OS, gate
+  secret pré-persistence, offsets globaux sparse, démo déterministe hors gateway.

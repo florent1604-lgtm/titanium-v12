@@ -1,0 +1,317 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:titanium:eventplane:registry:v1",
+  "registry_version": "eventplane-registry/1.0.0",
+  "envelope_schema_version": 1,
+  "status": "FROZEN",
+  "compatibility": "CLOSED_EXACT",
+  "$defs": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 192,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/|\\-]*$"
+    },
+    "reason_code": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+    },
+    "reason_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/reason_code"
+      }
+    },
+    "side": {
+      "enum": ["long", "short", "neutral"]
+    },
+    "runtime_state": {
+      "enum": ["STARTING", "HEALTHY", "DEGRADED", "STALE", "FAILED", "STOPPED", "UNKNOWN"]
+    },
+    "instrument_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]*$"
+    },
+    "unit_interval": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    }
+  },
+  "types": {
+    "runtime.task.heartbeat.v1": {
+      "classification": "INTERNAL",
+      "payload_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["task_id", "owner", "observed_at", "state", "heartbeat_age_seconds", "criticality", "restart_capability"],
+        "properties": {
+          "task_id": {"$ref": "#/$defs/id"},
+          "owner": {"$ref": "#/$defs/id"},
+          "observed_at": {"$ref": "#/$defs/timestamp"},
+          "state": {"$ref": "#/$defs/runtime_state"},
+          "heartbeat_age_seconds": {"type": "number", "minimum": 0},
+          "criticality": {"enum": ["OBSERVATION", "TRADING", "EXECUTION", "RISK"]},
+          "restart_capability": {"type": "boolean"}
+        }
+      }
+    },
+    "runtime.task.state_changed.v1": {
+      "classification": "INTERNAL",
+      "payload_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["task_id", "observed_at", "previous_state", "current_state", "reason_codes", "restart_count", "restart_budget_remaining"],
+        "properties": {
+          "task_id": {"$ref": "#/$defs/id"},
+          "observed_at": {"$ref": "#/$defs/timestamp"},
+          "previous_state": {"$ref": "#/$defs/runtime_state"},
+          "current_state": {"$ref": "#/$defs/runtime_state"},
+          "reason_codes": {"$ref": "#/$defs/reason_codes"},
+          "restart_count": {"type": "integer", "minimum": 0},
+          "restart_budget_remaining": {"type": "integer", "minimum": 0}
+        }
+      }
+    },
+    "runtime.component.degraded.v1": {
+      "classification": "INTERNAL",
+      "payload_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["component_id", "observed_at", "since", "reason_codes", "last_error_class"],
+        "properties": {
+          "component_id": {"$ref": "#/$defs/id"},
+          "observed_at": {"$ref": "#/$defs/timestamp"},
+          "since": {"$ref": "#/$defs/timestamp"},
+          "reason_codes": {"$ref": "#/$defs/reason_codes"},
+          "last_error_class": {"type": ["string", "null"], "maxLength": 128}
+        }
+      }
+    },
+    "confluence.evaluation.completed.v1": {
+      "classification": "INTERNAL",
+      "payload_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["decision_id", "as_of", "state_version", "result", "side", "reason_codes", "data_valid", "setup_family", "rank", "n_pillars", "aggressive_eligible", "decision_capability", "orders_capability"],
+        "properties": {
+          "decision_id": {"$ref": "#/$defs/id"},
+          "as_of": {"$ref": "#/$defs/timestamp"},
+          "state_version": {"$ref": "#/$defs/id"},
+          "result": {"enum": ["ENTER", "WAIT", "BLOCK", "ERROR"]},
+          "side": {"$ref": "#/$defs/side"},
+          "reason_codes": {"$ref": "#/$defs/reason_codes"},
+          "data_valid": {"type": "boolean"},
+          "setup_family": {"type": ["string", "null"], "enum": ["continuation", "reversal", null]},
+          "rank": {"type": "number"},
+          "n_pillars": {"type": "integer", "minimum": 0, "maximum": 5},
+          "aggressive_eligible": {"type": "boolean"},
+          "decision_capability": {"const": false},
+          "orders_capability": {"const": false}
+        }
+      }
+    },
+    "consensus.observation.updated.v1": {
+      "classification": "INTERNAL",
+      "payload_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["observation_id", "as_of", "state_version", "status", "side", "consensus_score", "coverage", "agreement", "conflict", "missing_sources", "m2_required", "decision_capability", "orders_capability"],
+        "properties": {
+          "observation_id": {"$ref": "#/$defs/id"},
+          "as_of": {"$ref": "#/$defs/timestamp"},
+          "state_version": {"$ref": "#/$defs/id"},
+          "status": {"enum": ["INSUFFICIENT", "CONFLICT", "CONFIRMED", "UNCONFIRMED", "ERROR"]},
+          "side": {"$ref": "#/$defs/side"},
+          "consensus_score": {"type": "number", "minimum": -1, "maximum": 1},
+          "coverage": {"$ref": "#/$defs/unit_interval"},
+          "agreement": {"type": "boolean"},
+          "conflict": {"type": "boolean"},
+          "missing_sources": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+          "m2_required": {"const": true},
+          "decision_capability": {"const": false},
+          "orders_capability": {"const": false}
+        }
+      }
+    },
+    "emotion.observation.updated.v1": {
+      "classification": "INTERNAL",
+      "payload_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["observation_id", "as_of", "state_version", "available", "valence", "arousal", "momentum", "label", "confidence", "stale", "filter_block", "decision_capability"],
+        "properties": {
+          "observation_id": {"$ref": "#/$defs/id"},
+          "as_of": {"$ref": "#/$defs/timestamp"},
+          "state_version": {"$ref": "#/$defs/id"},
+          "available": {"type": "boolean"},
+          "valence": {"type": "number", "minimum": -100, "maximum": 100},
+          "arousal": {"type": "number", "minimum": 0, "maximum": 100},
+          "momentum": {"type": ["number", "null"], "minimum": -1, "maximum": 1},
+          "label": {"type": "string", "minLength": 1, "maxLength": 64},
+          "confidence": {"$ref": "#/$defs/unit_interval"},
+          "stale": {"type": "boolean"},
+          "filter_block": {"type": ["string", "null"], "enum": ["long", "short", null]},
+          "decision_capability": {"const": false}
+        }
+      }
+    },
+    "leadlag.observation.updated.v1": {
+      "classification": "INTERNAL",
+      "payload_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["observation_id", "as_of", "state_version", "timeframe", "leader", "follower", "lag", "corr", "hit_rate", "flip_rate", "n", "persistence_rate", "m2_eligible", "decision_capability"],
+        "properties": {
+          "observation_id": {"$ref": "#/$defs/id"},
+          "as_of": {"$ref": "#/$defs/timestamp"},
+          "state_version": {"$ref": "#/$defs/id"},
+          "timeframe": {"enum": ["M15", "H1", "H4"]},
+          "leader": {"$ref": "#/$defs/instrument_id"},
+          "follower": {"$ref": "#/$defs/instrument_id"},
+          "lag": {"type": "integer", "minimum": 1},
+          "corr": {"type": "number", "minimum": -1, "maximum": 1},
+          "hit_rate": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+          "flip_rate": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+          "n": {"type": "integer", "minimum": 0},
+          "persistence_rate": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+          "m2_eligible": {"const": false},
+          "decision_capability": {"const": false}
+        }
+      }
+    },
+    "trading.signal.observed.v1": {
+      "classification": "INTERNAL",
+      "payload_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["signal_id", "observed_at", "instrument_id", "strategy_id", "side", "score", "m2_eligible", "decision_capability"],
+        "properties": {
+          "signal_id": {"$ref": "#/$defs/id"},
+          "observed_at": {"$ref": "#/$defs/timestamp"},
+          "instrument_id": {"$ref": "#/$defs/instrument_id"},
+          "strategy_id": {"$ref": "#/$defs/id"},
+          "side": {"$ref": "#/$defs/side"},
+          "score": {"type": ["number", "null"]},
+          "m2_eligible": {"type": "boolean"},
+          "decision_capability": {"const": false}
+        }
+      }
+    },
+    "trading.position.opened.v1": {
+      "classification": "SENSITIVE_METADATA",
+      "payload_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["position_id", "observed_at", "account_ref", "instrument_id", "side", "quantity", "entry_price", "tag", "source_record_id"],
+        "properties": {
+          "position_id": {"$ref": "#/$defs/id"},
+          "observed_at": {"$ref": "#/$defs/timestamp"},
+          "account_ref": {"$ref": "#/$defs/id"},
+          "instrument_id": {"$ref": "#/$defs/instrument_id"},
+          "side": {"enum": ["long", "short"]},
+          "quantity": {"type": "number", "exclusiveMinimum": 0},
+          "entry_price": {"type": "number", "exclusiveMinimum": 0},
+          "tag": {"type": "string", "minLength": 1, "maxLength": 64},
+          "source_record_id": {"$ref": "#/$defs/id"}
+        }
+      }
+    },
+    "trading.position.closed.v1": {
+      "classification": "SENSITIVE_METADATA",
+      "payload_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["position_id", "observed_at", "account_ref", "instrument_id", "side", "quantity", "exit_price", "realized_pnl", "currency", "close_reason", "source_record_id"],
+        "properties": {
+          "position_id": {"$ref": "#/$defs/id"},
+          "observed_at": {"$ref": "#/$defs/timestamp"},
+          "account_ref": {"$ref": "#/$defs/id"},
+          "instrument_id": {"$ref": "#/$defs/instrument_id"},
+          "side": {"enum": ["long", "short"]},
+          "quantity": {"type": "number", "exclusiveMinimum": 0},
+          "exit_price": {"type": "number", "exclusiveMinimum": 0},
+          "realized_pnl": {"type": "number"},
+          "currency": {"type": "string", "pattern": "^[A-Z]{3,8}$"},
+          "close_reason": {"$ref": "#/$defs/reason_code"},
+          "source_record_id": {"$ref": "#/$defs/id"}
+        }
+      }
+    },
+    "risk.guard.refused.v1": {
+      "classification": "INTERNAL",
+      "payload_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["decision_id", "as_of", "guard_id", "result", "reason_codes", "instrument_id", "decision_capability"],
+        "properties": {
+          "decision_id": {"$ref": "#/$defs/id"},
+          "as_of": {"$ref": "#/$defs/timestamp"},
+          "guard_id": {"$ref": "#/$defs/id"},
+          "result": {"const": "REFUSED"},
+          "reason_codes": {"$ref": "#/$defs/reason_codes"},
+          "instrument_id": {"type": ["string", "null"], "maxLength": 64},
+          "decision_capability": {"const": false}
+        }
+      }
+    },
+    "risk.drawdown.threshold_crossed.v1": {
+      "classification": "SENSITIVE_METADATA",
+      "payload_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["account_ref", "observed_at", "equity", "peak_equity", "drawdown_pct", "threshold_pct", "currency"],
+        "properties": {
+          "account_ref": {"$ref": "#/$defs/id"},
+          "observed_at": {"$ref": "#/$defs/timestamp"},
+          "equity": {"type": "number"},
+          "peak_equity": {"type": "number"},
+          "drawdown_pct": {"type": "number", "minimum": 0},
+          "threshold_pct": {"type": "number", "minimum": 0},
+          "currency": {"type": "string", "pattern": "^[A-Z]{3,8}$"}
+        }
+      }
+    },
+    "eventplane.integrity.failed.v1": {
+      "classification": "INTERNAL",
+      "payload_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["observed_at", "store_epoch", "failure_code", "stream_id", "global_offset"],
+        "properties": {
+          "observed_at": {"$ref": "#/$defs/timestamp"},
+          "store_epoch": {"type": "integer", "minimum": 1},
+          "failure_code": {"enum": ["STREAM_SEQUENCE_GAP", "HASH_MISMATCH", "NATS_EXTRA_EVENT", "NATS_DIGEST_MISMATCH", "STORE_CORRUPT"]},
+          "stream_id": {"type": ["string", "null"], "maxLength": 192},
+          "global_offset": {"type": ["integer", "null"], "minimum": 1}
+        }
+      }
+    },
+    "eventplane.transport.state_changed.v1": {
+      "classification": "INTERNAL",
+      "payload_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["observed_at", "previous_transport", "current_transport", "previous_state", "current_state", "epoch", "reason_codes"],
+        "properties": {
+          "observed_at": {"$ref": "#/$defs/timestamp"},
+          "previous_transport": {"enum": ["JETSTREAM", "SQLITE_FALLBACK"]},
+          "current_transport": {"enum": ["JETSTREAM", "SQLITE_FALLBACK"]},
+          "previous_state": {"enum": ["HEALTHY", "DEGRADED", "FAILED", "RECOVERING"]},
+          "current_state": {"enum": ["HEALTHY", "DEGRADED", "FAILED", "RECOVERING"]},
+          "epoch": {"type": "integer", "minimum": 1},
+          "reason_codes": {"$ref": "#/$defs/reason_codes"}
+        }
+      }
+    }
+  }
+}
