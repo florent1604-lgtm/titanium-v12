@@ -12,9 +12,12 @@ def test_claude_project_scope_has_no_conflicting_gitnexus_transport():
     cfg = json.loads(Path(".mcp.json").read_text(encoding="utf-8"))["mcpServers"]
     assert "gitnexus" not in cfg
     assert cfg["gitnexus_write_gate"] == {
-        "command": str(Path.cwd() / "gitnexus/gate-venv/Scripts/python.exe"),
-        "args": [str(Path.cwd() / "mcp_gitnexus_gate.py")],
+        "command": "gitnexus\\gate-venv\\Scripts\\python.exe",
+        "args": ["mcp_gitnexus_gate.py"],
     }
+    serialized = json.dumps(cfg)
+    assert "C:\\\\Users\\\\" not in serialized
+    assert "C:\\Users\\" not in serialized
 
 
 def test_configurator_uses_claude_http_user_scope_without_credentials():
@@ -28,6 +31,11 @@ def test_configurator_uses_claude_http_user_scope_without_credentials():
     assert "ANTHROPIC_API_KEY" not in script
     assert "--header" not in script
     assert "--client-secret" not in script
+    identity_guard = script.split(
+        "& $ProjectPython $IdentityTool attest --claude-exe $Claude --mcp-verified",
+        1,
+    )[1].split("$CodexServers", 1)[0]
+    assert "mcp remove gitnexus --scope user" in identity_guard
 
 
 def test_configurator_keeps_codex_direct_and_gates_hermes():
@@ -50,6 +58,11 @@ def test_gitnexus_mcp_bootstrap_preloads_native_binding_before_cli():
 
 def test_detect_changes_runner_returns_structured_result_and_disposes_backend():
     runner = Path("tools/gitnexus_detect_changes.mjs").read_text(encoding="utf-8")
+    assert "process.env.APPDATA" in runner
+    assert '"npm", "node_modules", "gitnexus"' in runner
+    assert "../gitnexus/runtime/node_modules" not in runner
+    assert 'version !== "1.6.10-rc.50"' in runner
+    assert "node_modules/@ladybugdb/core/index.js" in runner
     assert "new LocalBackend()" in runner
     assert 'callTool("detect_changes"' in runner
     assert "JSON.stringify(result)" in runner

@@ -217,7 +217,7 @@ Vérifications disponibles dans le sandbox Codex :
 Point environnement exact : la commande imposée via
 `C:/Users/flore/Desktop/v12/venv/Scripts/python.exe` échoue avant collecte, y
 compris avec `-c`, par
-`No Python at '"C:\Users\flore\AppData\Local\Programs\Python\Python312\python.exe'`.
+`No Python at '"%LOCALAPPDATA%\Programs\Python\Python312\python.exe'`.
 Le runtime de secours est Python 3.11 et ne peut pas charger le numpy/pandas V12
 compilé pour 3.12 ; les deux tests `test_bar_dedup.py` n'ont donc pas été
 rejoués dans ce sandbox. Revue Claude demandée sur le bus R3 :
@@ -682,10 +682,30 @@ atteste `SUBSCRIPTION_OK` via l'abonnement first-party. L'attestation ne contien
 que dix champs publics et bascule sur Ollama pour toute cle/jeton API, fournisseur
 tiers, verification absente ou age superieur a 86 400 secondes.
 
-Le manifeste interdit les capacites natives `rename` et `group_sync` a Claude.
-Les 61 tests cibles passent. GitNexus est sain et frais (1 109 fichiers, 24 535
+La premiere version du manifeste interdisait declarativement les capacites natives
+`rename` et `group_sync` a Claude. Les 61 tests cibles passent. GitNexus est sain et frais (1 109 fichiers, 24 535
 symboles, 64 586 relations, 300 flux), Cypher et BM25 passent, et `claude mcp
 list` ne montre aucun conflit. L'API services possede le contrat teste et le
 cycle stop/start gracieux authentifie. L'instance Titanium active n'a pas ete
 coupee car le moteur DEMO est arme ; elle expose encore l'ancien module jusqu'au
 prochain redemarrage controle. Revue Claude/Hermes demandee. PAPER/DEMO ONLY.
+
+## 2026-07-19 - Re-revue Codex - frontiere Claude/GitNexus durcie
+
+**GO TECHNIQUE POUR LE CLIENT READ-ONLY ; AUCUNE ECRITURE CLAUDE.** Les trois
+defauts bloquants de la contre-revue sont corriges : (1) le serveur HTTP applique
+la politique native `GITNEXUS_MCP_READ_ONLY=1`, (2) les dependances GitNexus du
+lot sont versionnees au lieu de dependre seulement du worktree local, (3) les
+attestations et reponses API filtrent les champs prives et les chemins locaux.
+
+Preuve dynamique : 13 outils HTTP uniquement read-only ; aucun `rename`,
+`group_sync`, `cypher` ou `group_list`; tentative forcee de `rename` refusee.
+Le controle d'abonnement reste fail-closed et retire l'endpoint en cas d'echec.
+Le fichier d'attestation demeure dans le perimetre de confiance du compte Windows
+local : il protege contre la derive, les donnees vieillies et les contrats
+incoherents, pas contre un attaquant ayant deja le meme acces utilisateur.
+
+Les 96 tests cibles passent. Le repli Ollama est une politique fail-closed, pas
+une promesse de disponibilite : si Ollama est arrete, Claude reste retire au lieu
+d'autoriser une facturation API. Titanium 8090 n'est pas redemarre pendant que la
+DEMO est armee. PAPER/DEMO ONLY ; aucun chemin critique trading modifie.

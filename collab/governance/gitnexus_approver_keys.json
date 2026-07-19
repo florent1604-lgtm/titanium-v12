@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "keys": [
+    {
+      "key_id": "florent-perso",
+      "actor": "florent",
+      "algorithm": "Ed25519",
+      "public_key_b64": "EJNkkIt3YxYhzY/qZUakIWSCYND566AV/2n9ERvHs4E=",
+      "enabled": true
+    },
+    {
+      "key_id": "superviseur-perso",
+      "actor": "claude",
+      "algorithm": "Ed25519",
+      "public_key_b64": "zlGNHc92Or/wQaC4FnDCO5e7kHTNDXHtqX/E5Quf2E0=",
+      "enabled": true
+    }
+  ]
+}

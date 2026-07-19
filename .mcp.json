@@ -1,27 +1,27 @@
 {
   "mcpServers": {
     "base44": {
-      "command": "C:\\Users\\flore\\Desktop\\v12\\venv\\Scripts\\python.exe",
-      "args": ["C:\\Users\\flore\\Desktop\\v12\\mcp_base44.py"]
+      "command": "venv\\Scripts\\python.exe",
+      "args": ["mcp_base44.py"]
     },
     "titanium": {
-      "command": "C:\\Users\\flore\\Desktop\\v12\\venv\\Scripts\\python.exe",
-      "args": ["C:\\Users\\flore\\Desktop\\v12\\mcp_server.py"]
+      "command": "venv\\Scripts\\python.exe",
+      "args": ["mcp_server.py"]
     },
     "titanium_structural": {
-      "command": "C:\\Users\\flore\\Desktop\\v12\\.pyembed\\python.exe",
-      "args": ["C:\\Users\\flore\\Desktop\\v12\\tools\\structural_mcp.py"],
+      "command": ".pyembed\\python.exe",
+      "args": ["tools\\structural_mcp.py"],
       "env": {
-        "TITANIUM_STRUCTURE_ROOT": "C:\\Users\\flore\\Desktop\\v12"
+        "TITANIUM_STRUCTURE_ROOT": "."
       }
     },
     "hermes": {
-      "command": "C:\\Users\\flore\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\hermes.exe",
+      "command": "${LOCALAPPDATA}\\hermes\\hermes-agent\\venv\\Scripts\\hermes.exe",
       "args": ["mcp", "serve"]
     },
     "gitnexus_write_gate": {
-      "command": "C:\\Users\\flore\\Desktop\\v12\\gitnexus\\gate-venv\\Scripts\\python.exe",
-      "args": ["C:\\Users\\flore\\Desktop\\v12\\mcp_gitnexus_gate.py"]
+      "command": "gitnexus\\gate-venv\\Scripts\\python.exe",
+      "args": ["mcp_gitnexus_gate.py"]
     }
   }
 }

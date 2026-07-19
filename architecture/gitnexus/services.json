@@ -13,7 +13,7 @@
         "identity": "claude",
         "transport": "http",
         "endpoint": "http://127.0.0.1:4747/api/mcp",
-        "access": "advisory-read-only",
+        "access": "native-read-only",
         "billing_guard": "subscription-only",
         "fallback": "ollama:qwen2.5:7b"
       }
@@ -33,6 +33,6 @@
     {"from": "titanium", "to": "jarvis", "data": "snapshot", "mode": "read-only"},
     {"from": "hermes", "to": "titanium", "data": "closed-registry-tool-calls", "mode": "paper-only"},
     {"from": "gitnexus", "to": "hermes", "data": "code-map", "mode": "advisory-read-only"},
-    {"from": "gitnexus", "to": "claude", "data": "code-map", "mode": "advisory-read-only"}
+    {"from": "gitnexus", "to": "claude", "data": "code-map", "mode": "native-read-only"}
   ]
 }

@@ -99,6 +99,31 @@ async def _gitnexus_repositories() -> list[dict]:
     return []
 
 
+def _public_gitnexus_repositories(repositories: list[dict]) -> list[dict]:
+    """Retire les chemins locaux et tout champ non prevu de la reponse API."""
+    public: list[dict] = []
+    allowed_stats = (
+        "files",
+        "nodes",
+        "edges",
+        "communities",
+        "processes",
+        "embeddings",
+    )
+    for repository in repositories:
+        name = repository.get("name")
+        if not isinstance(name, str) or not name:
+            continue
+        stats = repository.get("stats", {})
+        safe_stats = {
+            key: int(stats[key])
+            for key in allowed_stats
+            if isinstance(stats, dict) and isinstance(stats.get(key), (int, float))
+        }
+        public.append({"name": name, "stats": safe_stats})
+    return public
+
+
 # ── GET /services/status ──────────────────────────────────────────────────────
 
 @router.get("/status")
@@ -152,7 +177,7 @@ async def services_status():
         "running": gn_ok,
         "port":    gn_port,
         "symbols": gn_symbols,
-        "repos":    gn_repos,
+        "repos":    _public_gitnexus_repositories(gn_repos),
         "url":      "/nexus",
         "proc":    _proc_running("gitnexus"),
         "clients": {"claude": read_claude_attestation()},

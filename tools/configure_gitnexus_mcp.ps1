@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 
 $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
-$Hermes = "C:\Users\flore\AppData\Local\hermes\hermes-agent\venv\Scripts\hermes.exe"
+$Hermes = Join-Path $env:LOCALAPPDATA "hermes\hermes-agent\venv\Scripts\hermes.exe"
 $GitNexusRuntime = Join-Path $ProjectRoot "tools\gitnexus_mcp_bootstrap.mjs"
 $ProjectPython = Join-Path $ProjectRoot "gitnexus\gate-venv\Scripts\python.exe"
 $GitNexusGate = Join-Path $ProjectRoot "mcp_gitnexus_gate.py"
@@ -56,6 +56,7 @@ if ($ClaudeAfter -notmatch "gitnexus:.*Connected") {
 
 & $ProjectPython $IdentityTool attest --claude-exe $Claude --mcp-verified
 if ($LASTEXITCODE -ne 0) {
+    & $Claude mcp remove gitnexus --scope user | Out-Null
     throw "Claude n'est pas en mode abonnement sur: repli Ollama requis"
 }
 
@@ -83,7 +84,7 @@ if ($HermesTest -notmatch "Connected") {
     throw "Handshake MCP GitNexus/Hermes en échec : $HermesTest"
 }
 
-Write-Output "Claude: GitNexus HTTP loopback configure en advisory-read-only."
+Write-Output "Claude: GitNexus HTTP loopback configure en native-read-only."
 Write-Output "Codex: GitNexus direct configure via runtime local epingle."
 Write-Output "Hermes: garde GitNexus supervise configure et connecte."
 Write-Output "Relancer les sessions Claude/Codex ouvertes pour charger le nouveau serveur."

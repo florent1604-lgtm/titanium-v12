@@ -24,6 +24,18 @@ RISK_ENV_KEYS = (
     "CLAUDE_CODE_USE_VERTEX",
     "CLAUDE_CODE_USE_FOUNDRY",
 )
+PUBLIC_ATTESTATION_FIELDS = (
+    "identity",
+    "configured",
+    "verified_at",
+    "verification_fresh",
+    "transport",
+    "endpoint_scope",
+    "access",
+    "billing_guard",
+    "selected_provider",
+    "fallback",
+)
 
 
 def _truthy(value: object) -> bool:
@@ -64,10 +76,10 @@ def build_public_attestation(
         "identity": "claude",
         "configured": bool(mcp_verified),
         "verified_at": verified_at.astimezone(timezone.utc).isoformat(),
-        "verification_fresh": True,
+        "verification_fresh": bool(mcp_verified),
         "transport": "http",
         "endpoint_scope": "loopback",
-        "access": "advisory-read-only",
+        "access": "native-read-only",
         "billing_guard": guard,
         "selected_provider": "claude" if guard == "SUBSCRIPTION_OK" else "ollama",
         "fallback": "ollama:qwen2.5:7b",
@@ -83,13 +95,62 @@ def _default_status() -> dict[str, object]:
     )
 
 
+def _public_attestation(payload: Mapping[str, object]) -> dict[str, object]:
+    return {
+        field: payload[field]
+        for field in PUBLIC_ATTESTATION_FIELDS
+        if field in payload
+    }
+
+
+def _attestation_contract_valid(payload: Mapping[str, object]) -> bool:
+    if set(payload) != set(PUBLIC_ATTESTATION_FIELDS):
+        return False
+    if payload.get("identity") != "claude":
+        return False
+    if payload.get("transport") != "http":
+        return False
+    if payload.get("endpoint_scope") != "loopback":
+        return False
+    if payload.get("access") != "native-read-only":
+        return False
+    if payload.get("fallback") != "ollama:qwen2.5:7b":
+        return False
+    if type(payload.get("configured")) is not bool:
+        return False
+    if type(payload.get("verification_fresh")) is not bool:
+        return False
+
+    guard = payload.get("billing_guard")
+    provider = payload.get("selected_provider")
+    if guard == "SUBSCRIPTION_OK":
+        return (
+            payload["configured"] is True
+            and payload["verification_fresh"] is True
+            and provider == "claude"
+        )
+    if guard == "API_BILLING_RISK":
+        return (
+            payload["configured"] is True
+            and payload["verification_fresh"] is True
+            and provider == "ollama"
+        )
+    if guard == "UNVERIFIED":
+        return (
+            payload["configured"] is False
+            and payload["verification_fresh"] is False
+            and provider == "ollama"
+        )
+    return False
+
+
 def write_attestation(
     payload: Mapping[str, object], path: Path = STATUS_PATH
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temp = path.with_suffix(".tmp")
     temp.write_text(
-        json.dumps(dict(payload), ensure_ascii=False, indent=2),
+        json.dumps(_public_attestation(payload), ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
     temp.replace(path)
@@ -100,7 +161,12 @@ def read_attestation(
 ) -> dict[str, object]:
     current = now or datetime.now(timezone.utc)
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
+        raw_payload = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(raw_payload, dict):
+            raise TypeError("attestation must be a JSON object")
+        payload = _public_attestation(raw_payload)
+        if not _attestation_contract_valid(payload):
+            raise ValueError("attestation contract invalid")
         verified_at = datetime.fromisoformat(str(payload["verified_at"]))
         if verified_at.tzinfo is None:
             raise ValueError("verified_at must be timezone-aware")

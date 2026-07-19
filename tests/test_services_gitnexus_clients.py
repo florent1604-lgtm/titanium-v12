@@ -13,7 +13,12 @@ async def test_services_status_exposes_public_claude_attestation(monkeypatch):
         return True, 4747
 
     async def repositories():
-        return [{"name": "titanium-v12", "stats": {"nodes": 24_354}}]
+        return [{
+            "name": "titanium-v12",
+            "path": r"C:\Users\private\project",
+            "repoPath": r"C:\Users\private\project",
+            "stats": {"nodes": 24_354},
+        }]
 
     async def ollama_off():
         return False
@@ -40,6 +45,10 @@ async def test_services_status_exposes_public_claude_attestation(monkeypatch):
     assert payload["gitnexus"]["clients"]["claude"] == attestation
     assert "connected" not in payload["gitnexus"]["clients"]["claude"]
     assert payload["gitnexus"]["symbols"] == 24_354
+    assert payload["gitnexus"]["repos"] == [
+        {"name": "titanium-v12", "stats": {"nodes": 24_354}}
+    ]
+    assert "private" not in json.dumps(payload["gitnexus"])
 
 
 @pytest.mark.asyncio

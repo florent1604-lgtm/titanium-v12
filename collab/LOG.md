@@ -971,7 +971,7 @@ Suite notée : P1.3 cap risque agrégé, vérif SL/TP post-fill.
 ## 2026-07-13 · Codex → Florent/Claude/Hermes · garde GitNexus natif en REVIEW
 
 Florent a autorisé uniquement `rename` et `group_sync` dans
-`C:\Users\flore\Desktop\v12`, après validation d'un seul superviseur disponible
+`%USERPROFILE%\Desktop\v12`, après validation d'un seul superviseur disponible
 (Claude ou Codex). Le garde local fail-closed est implémenté avec prévisualisation,
 impact upstream, hash exact, empreinte des fichiers, TTL 15 minutes, approbation
 à usage unique, double accord Florent pour portée sensible et vérification
@@ -1523,16 +1523,35 @@ aucun appel MT5/MetaTester, aucun ordre et aucun secret exposé.
   utilisateur, handshake `Connected`, sans conflit de scopes.
 - Garde publique : `SUBSCRIPTION_OK` sur authentification Claude first-party
   Pro ; aucune cle API Anthropic, adresse email, organisation ou jeton persiste.
-- Acces Claude : `advisory-read-only`; repli fail-closed
+- Acces Claude : `native-read-only`, impose par le serveur GitNexus HTTP ; repli fail-closed
   `ollama:qwen2.5:7b` si l'attestation manque, vieillit ou detecte un risque de
   facturation API.
 - Hermes reste derriere le garde d'ecriture signe ; Codex reste relie au runtime
   local epingle. Aucun `rename` ou `group_sync` n'est accorde directement a
   Claude.
-- Validation : 61 tests cibles verts ; GitNexus `health=ok`; Cypher = 1 109
+- Validation initiale : 61 tests cibles verts ; GitNexus `health=ok`; Cypher = 1 109
   fichiers ; BM25 retrouve l'identite Claude ; index Titanium frais a
   `d91f06a` avec 24 535 symboles, 64 586 relations et 300 flux.
 - Le processus Titanium 8090 en cours n'a pas ete redemarre : le moteur demo est
   arme et actif. Le nouveau champ `gitnexus.clients.claude` sera charge au
   prochain redemarrage controle ; aucun arret a chaud non coordonne.
 - PAPER/DEMO ONLY ; aucun chemin trading, ordre ou CommandGateway active.
+
+## 2026-07-19 - Codex - durcissement Claude/GitNexus apres contre-revue
+
+- Le serveur HTTP 4747 exporte maintenant `GITNEXUS_MCP_READ_ONLY=1` : la liste
+  MCP ne contient plus `rename`, `group_sync`, `cypher` ni `group_list`, et un
+  appel direct force a `rename` est refuse par la politique native read-only.
+- L'attestation publique est reduite a dix champs, valide un schema ferme et
+  rejette les contrats incoherents. Les chemins locaux sont retires de
+  `/services/status`; les configurations MCP ne contiennent plus le profil
+  Windows de Florent.
+- Si le garde d'abonnement Claude echoue, le configurateur retire immediatement
+  l'endpoint Claude avant de demander le repli Ollama. Aucun secret ni identite
+  de compte n'est persiste.
+- Le runtime 4747, le garde signe Hermes, sa politique, ses lanceurs epingles,
+  l'authentification de mutation et leurs tests deviennent des dependances
+  versionnees. Le lanceur `detect_changes` n'importe plus l'ancien runtime local
+  ignore ; il utilise le GitNexus global epingle `1.6.10-rc.50`.
+- Validation cible : 96 tests verts. PAPER/DEMO ONLY ; aucun moteur, flag,
+  ordre, compte ou CommandGateway modifie.
