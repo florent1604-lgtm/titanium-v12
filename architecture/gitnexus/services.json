@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "paper_only": true,
+  "gitnexus": {
+    "bind": "127.0.0.1",
+    "port": 4747,
+    "health": "/api/health",
+    "repositories": "/api/repos",
+    "graph": "/api/graph",
+    "authority": "code-map-only",
+    "clients": {
+      "claude": {
+        "identity": "claude",
+        "transport": "http",
+        "endpoint": "http://127.0.0.1:4747/api/mcp",
+        "access": "advisory-read-only",
+        "billing_guard": "subscription-only",
+        "fallback": "ollama:qwen2.5:7b"
+      }
+    }
+  },
+  "services": [
+    {"id": "titanium", "role": "trading-state-authority", "protocols": ["http:8090", "websocket"], "writes": ["paper-state"]},
+    {"id": "titan", "role": "voice-and-avatar", "protocols": ["in-process"], "writes": []},
+    {"id": "jarvis", "role": "voice-shell", "protocols": ["http:8080", "websocket:8765"], "writes": []},
+    {"id": "hermes", "role": "primary-orchestrator", "protocols": ["mcp-stdio", "collab-bus"], "writes": ["plans", "memory"]},
+    {"id": "claude", "role": "implementation-and-review-agent", "protocols": ["mcp-stdio", "collab-bus"], "writes": ["workspace-with-review"]},
+    {"id": "codex", "role": "audit-and-implementation-agent", "protocols": ["mcp-stdio", "collab-bus"], "writes": ["workspace-with-review"]},
+    {"id": "mt5", "role": "market-data-and-native-test-authority", "protocols": ["local-terminal"], "writes": ["native-test-reports"]}
+  ],
+  "boundaries": [
+    {"from": "mt5", "to": "titanium", "data": "market-data", "mode": "read-only"},
+    {"from": "titanium", "to": "jarvis", "data": "snapshot", "mode": "read-only"},
+    {"from": "hermes", "to": "titanium", "data": "closed-registry-tool-calls", "mode": "paper-only"},
+    {"from": "gitnexus", "to": "hermes", "data": "code-map", "mode": "advisory-read-only"},
+    {"from": "gitnexus", "to": "claude", "data": "code-map", "mode": "advisory-read-only"}
+  ]
+}
