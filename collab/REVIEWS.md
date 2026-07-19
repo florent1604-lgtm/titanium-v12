@@ -705,7 +705,12 @@ Le fichier d'attestation demeure dans le perimetre de confiance du compte Window
 local : il protege contre la derive, les donnees vieillies et les contrats
 incoherents, pas contre un attaquant ayant deja le meme acces utilisateur.
 
-Les 96 tests cibles passent. Le repli Ollama est une politique fail-closed, pas
+Le cycle Windows reel a aussi revele deux faux timeouts : 2 s ne suffisaient pas
+pour lire `/opportunities/status` et 8 s ne suffisaient pas pour la fermeture
+Node. Les seuils bornes sont maintenant 5 s et 30 s ; le timeout reste fail-closed.
+La reindexation post-correctif reussit en 73,5 s avec code 0.
+
+Les 97 tests cibles passent. Le repli Ollama est une politique fail-closed, pas
 une promesse de disponibilite : si Ollama est arrete, Claude reste retire au lieu
 d'autoriser une facturation API. Titanium 8090 n'est pas redemarre pendant que la
 DEMO est armee. PAPER/DEMO ONLY ; aucun chemin critique trading modifie.

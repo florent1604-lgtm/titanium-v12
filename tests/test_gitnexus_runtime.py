@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import inspect
 import os
 from pathlib import Path
 from pathlib import PurePath
@@ -155,11 +156,18 @@ def test_gitnexus_repositories_accepts_rc_value_envelope(monkeypatch):
 
 
 def test_opportunity_scan_pause_is_fail_safe(monkeypatch):
+    calls = []
+
+    def available(*_args, **kwargs):
+        calls.append(kwargs)
+        return _Response(b'{"running": false}')
+
     monkeypatch.setattr(
         runtime.request, "urlopen",
-        lambda *_args, **_kwargs: _Response(b'{"running": false}'),
+        available,
     )
     assert not runtime.opportunity_scan_running()
+    assert calls == [{"timeout": 5.0}]
 
     monkeypatch.setattr(
         runtime.request, "urlopen",
@@ -323,6 +331,11 @@ def test_stop_gitnexus_server_uses_authenticated_graceful_endpoint(monkeypatch, 
     assert captured["request"].full_url.endswith("/api/shutdown")
     assert captured["request"].get_header("X-gitnexus-shutdown-token") == "test-token"
     assert not pid_path.exists()
+
+
+def test_stop_gitnexus_server_allows_slow_windows_shutdown():
+    timeout = inspect.signature(runtime.stop_gitnexus_server).parameters["timeout"]
+    assert timeout.default == 30.0
 
 
 def test_stop_gitnexus_server_accepts_disconnect_only_after_pid_exits(monkeypatch, tmp_path):

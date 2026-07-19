@@ -1553,5 +1553,8 @@ aucun appel MT5/MetaTester, aucun ordre et aucun secret exposé.
   l'authentification de mutation et leurs tests deviennent des dependances
   versionnees. Le lanceur `detect_changes` n'importe plus l'ancien runtime local
   ignore ; il utilise le GitNexus global epingle `1.6.10-rc.50`.
-- Validation cible : 96 tests verts. PAPER/DEMO ONLY ; aucun moteur, flag,
+- Le garde attend jusqu'a 5 s la route d'opportunites chargee et jusqu'a 30 s
+  la fermeture authentifiee de Node. Le cycle reel post-correctif termine
+  l'analyse en 73,5 s avec code 0, sans report ni redemarrage premature.
+- Validation cible : 97 tests verts. PAPER/DEMO ONLY ; aucun moteur, flag,
   ordre, compte ou CommandGateway modifie.

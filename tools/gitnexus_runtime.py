@@ -125,7 +125,7 @@ def is_index_relevant(relative_path: PurePath) -> bool:
 
 def opportunity_scan_running(
     url: str = OPPORTUNITY_STATUS_URL,
-    timeout: float = 2.0,
+    timeout: float = 5.0,
 ) -> bool:
     """True si le scan lourd tourne ou si son état ne peut être vérifié."""
     try:
@@ -552,7 +552,7 @@ def quarantine_empty_orphan_wal(repo: Path) -> bool:
         return False
 
 
-def stop_gitnexus_server(timeout: float = 8.0) -> bool:
+def stop_gitnexus_server(timeout: float = 30.0) -> bool:
     """Stop only the port-4747 process previously recorded by this runtime."""
     try:
         pid = int(SERVER_PID_PATH.read_text(encoding="ascii").strip())
