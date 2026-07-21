@@ -1,0 +1,57 @@
+{
+  "registry_version": "command-registry/1.0.0",
+  "status": "FROZEN",
+  "compatibility": "CLOSED_EXACT",
+  "palier": "C1_SHADOW",
+  "note": "Registre FERME des capacites de commande. En C1 chaque capacite est SHADOW_ONLY : decrite pour evaluation par le PolicyKernel, jamais dispatchee. La table handler_id->callable est VIDE (aucune resolution possible). Aucune capacite de changement de policy/risque/compte/mode/registre/secret/kill-switch/circuit-breaker/approval n'est exposee ici.",
+  "capabilities": {
+    "paper.position.open_intent@1": {
+      "capability_id": "paper.position.open_intent",
+      "version": 1,
+      "effect_class": "PAPER_STATE",
+      "allowed_modes": ["PAPER"],
+      "requires_order": false,
+      "required_policy": "policy/1.0.0",
+      "ttl_seconds": 30,
+      "rate_limit_per_min": 6,
+      "m2_required": true,
+      "approval_required": true,
+      "executable_status": "SHADOW_ONLY",
+      "handler_id": "paper.position.open",
+      "param_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["instrument_id", "side", "notional_pct"],
+        "properties": {
+          "instrument_id": {"type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]*$"},
+          "side": {"enum": ["long", "short"]},
+          "notional_pct": {"type": "number", "exclusiveMinimum": 0, "maximum": 5}
+        }
+      }
+    },
+    "demo.order.place_intent@1": {
+      "capability_id": "demo.order.place_intent",
+      "version": 1,
+      "effect_class": "DEMO_ORDER",
+      "allowed_modes": ["DEMO"],
+      "requires_order": true,
+      "required_policy": "policy/1.0.0",
+      "ttl_seconds": 20,
+      "rate_limit_per_min": 3,
+      "m2_required": true,
+      "approval_required": true,
+      "executable_status": "SHADOW_ONLY",
+      "handler_id": "demo.order.place",
+      "param_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["instrument_id", "side", "volume"],
+        "properties": {
+          "instrument_id": {"type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]*$"},
+          "side": {"enum": ["long", "short"]},
+          "volume": {"type": "number", "exclusiveMinimum": 0, "maximum": 1}
+        }
+      }
+    }
+  }
+}
