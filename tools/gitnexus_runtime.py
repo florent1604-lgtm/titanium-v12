@@ -11,6 +11,7 @@ import json
 import os
 import re
 import secrets
+import signal
 import subprocess
 import sys
 import time
@@ -20,7 +21,7 @@ from datetime import datetime, timezone
 from pathlib import Path, PurePath
 from shutil import copy2
 from typing import Any, Sequence
-from urllib import request
+from urllib import error, request
 
 
 ALLOWED_SUFFIXES = {
@@ -532,6 +533,68 @@ def managed_gitnexus_server_running() -> bool:
     return _pid_is_running(pid)
 
 
+def _is_managed_gitnexus_serve_command(command_line: str) -> bool:
+    """Accept only the exact GitNexus CLI/port/host launched by this runtime."""
+    tokens = [quoted or bare for quoted, bare in re.findall(r'"([^"]*)"|(\S+)', command_line)]
+    if len(tokens) < 3 or Path(tokens[0]).name.lower() not in {"node", "node.exe"}:
+        return False
+    candidate = os.path.normcase(os.path.normpath(tokens[1]))
+    allowed_clis = {
+        os.path.normcase(os.path.normpath(str(GITNEXUS_GLOBAL_CLI))),
+        os.path.normcase(os.path.normpath(str(GITNEXUS_PROJECT_CLI))),
+    }
+    if candidate not in allowed_clis or tokens[2].lower() != "serve":
+        return False
+    lowered = [token.lower() for token in tokens[3:]]
+    return (
+        any(lowered[index:index + 2] == ["--port", str(GITNEXUS_PORT)] for index in range(len(lowered) - 1))
+        and any(lowered[index:index + 2] == ["--host", GITNEXUS_HOST] for index in range(len(lowered) - 1))
+    )
+
+
+def _managed_process_command_line(pid: int) -> str | None:
+    if os.name == "nt":
+        script = (
+            f"$p=Get-CimInstance Win32_Process -Filter 'ProcessId={int(pid)}'; "
+            "if($p){[Console]::Out.Write($p.CommandLine)}"
+        )
+        result = subprocess.run(
+            ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            timeout=10,
+            creationflags=CREATE_NO_WINDOW,
+            check=False,
+        )
+        return result.stdout.strip() if result.returncode == 0 and result.stdout.strip() else None
+    try:
+        return (Path("/proc") / str(pid) / "cmdline").read_bytes().replace(b"\0", b" ").decode().strip()
+    except (OSError, UnicodeDecodeError):
+        return None
+
+
+def _terminate_managed_gitnexus_server(pid: int) -> bool:
+    command_line = _managed_process_command_line(pid)
+    if not command_line or not _is_managed_gitnexus_serve_command(command_line):
+        return False
+    if os.name == "nt":
+        result = subprocess.run(
+            ["taskkill.exe", "/PID", str(pid), "/T", "/F"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=15,
+            creationflags=CREATE_NO_WINDOW,
+            check=False,
+        )
+        return result.returncode == 0
+    try:
+        os.kill(pid, signal.SIGTERM)
+        return True
+    except OSError:
+        return False
+
+
 def quarantine_empty_orphan_wal(repo: Path) -> bool:
     """Preserve and detach only LadybugDB's known 42-byte closed WAL state."""
     database_dir = repo / ".gitnexus"
@@ -570,15 +633,22 @@ def stop_gitnexus_server(timeout: float = 30.0) -> bool:
             "X-GitNexus-Shutdown-Token": gitnexus_shutdown_token(),
         },
     )
+    route_missing = False
     try:
         with request.urlopen(shutdown_request, timeout=3.0) as response:
             if response.status not in (200, 202):
                 return False
+    except error.HTTPError as exc:
+        route_missing = exc.code in (404, 405)
+        if not route_missing:
+            return False
     except OSError:
         # The Node process can close the loopback connection immediately after
         # accepting shutdown. Treat that transport race as provisional only:
         # success still requires the exact recorded PID to disappear below.
         pass
+    if route_missing and not _terminate_managed_gitnexus_server(pid):
+        return False
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline and _pid_is_running(pid):
         time.sleep(0.1)

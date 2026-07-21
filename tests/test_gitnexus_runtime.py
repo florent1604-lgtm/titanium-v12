@@ -5,6 +5,7 @@ import inspect
 import os
 from pathlib import Path
 from pathlib import PurePath
+from urllib.error import HTTPError
 
 import pytest
 
@@ -355,6 +356,52 @@ def test_stop_gitnexus_server_accepts_disconnect_only_after_pid_exits(monkeypatc
 
     assert runtime.stop_gitnexus_server(timeout=0.1)
     assert not pid_path.exists()
+
+
+def test_stop_gitnexus_server_falls_back_only_for_missing_shutdown_route(
+    monkeypatch, tmp_path,
+):
+    pid_path = tmp_path / "server.pid"
+    pid_path.write_text("4242", encoding="ascii")
+    running = iter((True, False, False))
+    terminated = []
+
+    monkeypatch.setattr(runtime, "SERVER_PID_PATH", pid_path)
+    monkeypatch.setattr(runtime, "_pid_is_running", lambda _pid: next(running))
+    monkeypatch.setattr(runtime, "gitnexus_shutdown_token", lambda: "test-token")
+    monkeypatch.setattr(runtime, "quarantine_empty_orphan_wal", lambda _repo: True)
+    monkeypatch.setattr(
+        runtime.request,
+        "urlopen",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            HTTPError("http://127.0.0.1:4747/api/shutdown", 404, "missing", {}, None)
+        ),
+    )
+    monkeypatch.setattr(
+        runtime,
+        "_terminate_managed_gitnexus_server",
+        lambda pid: terminated.append(pid) or True,
+        raising=False,
+    )
+
+    assert runtime.stop_gitnexus_server(timeout=0.0)
+    assert terminated == [4242]
+    assert not pid_path.exists()
+
+
+def test_managed_server_identity_rejects_unrelated_node_processes():
+    expected = (
+        'node "C:\\Users\\flore\\AppData\\Roaming\\npm\\node_modules\\gitnexus'
+        '\\dist\\cli\\index.js" serve --port 4747 --host 127.0.0.1'
+    )
+
+    assert runtime._is_managed_gitnexus_serve_command(expected)
+    assert not runtime._is_managed_gitnexus_serve_command(
+        'node C:\\apps\\dashboard.js serve --port 4747 --host 127.0.0.1'
+    )
+    assert not runtime._is_managed_gitnexus_serve_command(
+        'node C:\\gitnexus\\index.js serve --port 9999 --host 127.0.0.1'
+    )
 
 
 def test_analyze_repository_cycles_healthy_server_around_index(monkeypatch, tmp_path):
