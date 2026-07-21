@@ -12,8 +12,8 @@ def test_claude_project_scope_has_no_conflicting_gitnexus_transport():
     cfg = json.loads(Path(".mcp.json").read_text(encoding="utf-8"))["mcpServers"]
     assert "gitnexus" not in cfg
     assert cfg["gitnexus_write_gate"] == {
-        "command": "gitnexus\\gate-venv\\Scripts\\python.exe",
-        "args": ["mcp_gitnexus_gate.py"],
+        "type": "http",
+        "url": "http://127.0.0.1:4750/mcp",
     }
     serialized = json.dumps(cfg)
     assert "C:\\\\Users\\\\" not in serialized
@@ -40,8 +40,8 @@ def test_configurator_uses_claude_http_user_scope_without_credentials():
 
 def test_configurator_keeps_codex_direct_and_gates_hermes():
     script = Path("tools/configure_gitnexus_mcp.ps1").read_text(encoding="utf-8")
-    assert "codex mcp add gitnexus -- node $GitNexusRuntime mcp" in script
-    assert '"Y" | & $Hermes mcp add gitnexus --command $ProjectPython --args $GitNexusGate' in script
+    assert "codex mcp add gitnexus --url $ClaudeGitNexusEndpoint" in script
+    assert '"Y" | & $Hermes mcp add gitnexus --url $GitNexusGateEndpoint' in script
     assert "$HermesTest" in script
     assert 'notmatch "Connected"' in script
 
@@ -65,6 +65,9 @@ def test_detect_changes_runner_returns_structured_result_and_disposes_backend():
     assert "node_modules/@ladybugdb/core/index.js" in runner
     assert "new LocalBackend()" in runner
     assert 'callTool("detect_changes"' in runner
+    assert 'new Set(["all", "staged", "unstaged"])' in runner
+    assert 'process.argv[2] || "all"' in runner
+    assert "scope: requestedScope" in runner
     assert "JSON.stringify(result)" in runner
     assert "await backend.dispose()" in runner
 
@@ -82,6 +85,15 @@ def test_gate_uses_bootstrap_with_fixed_safe_directory():
         "GIT_CONFIG_KEY_0": "safe.directory",
         "GIT_CONFIG_VALUE_0": str(Path.cwd()),
     }
+
+
+def test_gate_exposes_one_loopback_http_listener():
+    import mcp_gitnexus_gate as module
+
+    assert module.GATE_HOST == "127.0.0.1"
+    assert module.GATE_PORT == 4750
+    assert module.GATE_PATH == "/mcp"
+    assert callable(module._serve_http)
 
 
 @pytest.mark.asyncio

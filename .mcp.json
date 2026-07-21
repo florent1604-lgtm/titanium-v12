@@ -1,27 +1,16 @@
 {
   "mcpServers": {
-    "base44": {
-      "command": "venv\\Scripts\\python.exe",
-      "args": ["mcp_base44.py"]
-    },
     "titanium": {
-      "command": "venv\\Scripts\\python.exe",
-      "args": ["mcp_server.py"]
-    },
-    "titanium_structural": {
-      "command": ".pyembed\\python.exe",
-      "args": ["tools\\structural_mcp.py"],
-      "env": {
-        "TITANIUM_STRUCTURE_ROOT": "."
-      }
+      "type": "http",
+      "url": "http://127.0.0.1:8091/mcp"
     },
     "hermes": {
-      "command": "${LOCALAPPDATA}\\hermes\\hermes-agent\\venv\\Scripts\\hermes.exe",
-      "args": ["mcp", "serve"]
+      "type": "http",
+      "url": "http://127.0.0.1:8766/mcp"
     },
     "gitnexus_write_gate": {
-      "command": "gitnexus\\gate-venv\\Scripts\\python.exe",
-      "args": ["mcp_gitnexus_gate.py"]
+      "type": "http",
+      "url": "http://127.0.0.1:4750/mcp"
     }
   }
 }

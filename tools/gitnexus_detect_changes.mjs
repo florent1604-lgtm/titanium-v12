@@ -28,11 +28,17 @@ const { LocalBackend } = await import(
   moduleUrl("dist/mcp/local/local-backend.js")
 );
 
+const allowedScopes = new Set(["all", "staged", "unstaged"]);
+const requestedScope = process.argv[2] || "all";
+if (!allowedScopes.has(requestedScope)) {
+  throw new Error(`Unsupported detect_changes scope: ${requestedScope}`);
+}
+
 const backend = new LocalBackend();
 try {
   await backend.init();
   const result = await backend.callTool("detect_changes", {
-    scope: "all",
+    scope: requestedScope,
     repo: "titanium-v12",
   });
   process.stdout.write(JSON.stringify(result));

@@ -20,7 +20,9 @@ __pycache__/
 .ruff_cache/
 
 # ── Outils IDE / OS ───────────────────────────────────────────────────────────
-.vscode/
+!.vscode/
+.vscode/*
+!.vscode/tasks.json
 .idea/
 .windsurf/
 .codeium/
@@ -42,3 +44,29 @@ gitnexus/
 antigravity_config/
 data/events.jsonl
 data/trade_journal.jsonl
+
+# venv de test reproductible (Codex)
+.venv_test/
+
+# python embeddable local pour la verif Codex (sandbox-accessible)
+.pyembed/
+
+# Repertoires temporaires de tests locaux (certains gardent une ACL pytest fermee)
+.pytest-tmp-*/
+pytest-tmp-*/
+codex_pytest_tmp_*/
+.test-tmp/
+.tmp_pytest_*/
+
+# Sauvegardes de configuration et caches locaux (peuvent contenir des secrets)
+.env.bak*
+.test-tmp-*/
+.obsidian/
+.vscode/
+
+# Artefacts de travail locaux, non livrables
+2026-07-10.md
+Sans titre.base
+DESIGN-IS-*/
+PATHFINDER-*/
+REVIEWS/

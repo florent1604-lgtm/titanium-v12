@@ -6,6 +6,7 @@ $GitNexusRuntime = Join-Path $ProjectRoot "tools\gitnexus_mcp_bootstrap.mjs"
 $ProjectPython = Join-Path $ProjectRoot "gitnexus\gate-venv\Scripts\python.exe"
 $GitNexusGate = Join-Path $ProjectRoot "mcp_gitnexus_gate.py"
 $ClaudeGitNexusEndpoint = "http://127.0.0.1:4747/api/mcp"
+$GitNexusGateEndpoint = "http://127.0.0.1:4750/mcp"
 $Claude = Get-ChildItem -Path (
     Join-Path $env:USERPROFILE ".vscode\extensions\anthropic.claude-code-*-win32-x64\resources\native-binary\claude.exe"
 ) -File -ErrorAction SilentlyContinue |
@@ -65,7 +66,7 @@ if ($CodexServers -match "(?m)^gitnexus\b") {
     & codex mcp remove gitnexus
     if ($LASTEXITCODE -ne 0) { throw "Échec remplacement MCP GitNexus dans Codex" }
 }
-& codex mcp add gitnexus -- node $GitNexusRuntime mcp
+& codex mcp add gitnexus --url $ClaudeGitNexusEndpoint
 if ($LASTEXITCODE -ne 0) { throw "Échec ajout MCP GitNexus à Codex" }
 
 $HermesServers = (& $Hermes mcp list 2>&1 | Out-String)
@@ -73,7 +74,7 @@ if ($HermesServers -match "(?m)^\s*gitnexus\b") {
     & $Hermes mcp remove gitnexus
     if ($LASTEXITCODE -ne 0) { throw "Échec remplacement MCP GitNexus dans Hermes" }
 }
-"Y" | & $Hermes mcp add gitnexus --command $ProjectPython --args $GitNexusGate
+"Y" | & $Hermes mcp add gitnexus --url $GitNexusGateEndpoint
 $HermesAfter = (& $Hermes mcp list 2>&1 | Out-String)
 if ($HermesAfter -notmatch "(?m)^\s*gitnexus\b") {
     throw "Échec ajout MCP GitNexus à Hermes : serveur absent de la configuration après confirmation"
@@ -85,6 +86,6 @@ if ($HermesTest -notmatch "Connected") {
 }
 
 Write-Output "Claude: GitNexus HTTP loopback configure en native-read-only."
-Write-Output "Codex: GitNexus direct configure via runtime local epingle."
-Write-Output "Hermes: garde GitNexus supervise configure et connecte."
+Write-Output "Codex: GitNexus HTTP loopback configure sans serveur enfant."
+Write-Output "Hermes: garde GitNexus HTTP singleton supervise configure et connecte."
 Write-Output "Relancer les sessions Claude/Codex ouvertes pour charger le nouveau serveur."

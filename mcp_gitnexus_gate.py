@@ -18,6 +18,11 @@ from mcp import ClientSession, StdioServerParameters, types
 from mcp.client.stdio import stdio_client
 from mcp.server.lowlevel import Server
 from mcp.server.stdio import stdio_server
+from mcp.server.streamable_http_manager import StreamableHTTPSessionManager
+from starlette.applications import Starlette
+from starlette.routing import Route
+from starlette.types import Receive, Scope, Send
+import uvicorn
 
 from tools.gitnexus_write_policy import (
     ALLOWED_REPO,
@@ -43,6 +48,9 @@ LEDGER_PATH = ROOT / "collab" / "messages" / "gitnexus_write_executions.ndjson"
 LOCK_PATH = ROOT / "collab" / "messages" / "gitnexus_write_gate.lock"
 APPROVAL_KEYS_PATH = ROOT / "collab" / "governance" / "gitnexus_approver_keys.json"
 CONTROLLED_TOOLS = frozenset({"rename", "group_sync"})
+GATE_HOST = "127.0.0.1"
+GATE_PORT = 4750
+GATE_PATH = "/mcp"
 
 
 def _json_from_text(text: str) -> dict[str, Any]:
@@ -509,8 +517,33 @@ async def _serve() -> None:
         await server.run(read, write, server.create_initialization_options())
 
 
+class _StreamableHTTPApp:
+    def __init__(self, manager: StreamableHTTPSessionManager) -> None:
+        self.manager = manager
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        await self.manager.handle_request(scope, receive, send)
+
+
+def _serve_http() -> None:
+    """Serve one supervised gate for every local client session."""
+    manager = StreamableHTTPSessionManager(
+        app=server,
+        json_response=True,
+        stateless=True,
+    )
+    application = Starlette(
+        routes=[Route(GATE_PATH, endpoint=_StreamableHTTPApp(manager))],
+        lifespan=lambda _app: manager.run(),
+    )
+    uvicorn.run(application, host=GATE_HOST, port=GATE_PORT, log_level="warning")
+
+
 if __name__ == "__main__":
     try:
-        asyncio.run(_serve())
+        if "--stdio" in sys.argv:
+            asyncio.run(_serve())
+        else:
+            _serve_http()
     except KeyboardInterrupt:
         sys.exit(0)

@@ -498,8 +498,14 @@ async def _run_test() -> None:
         print()
 
 
+async def _serve() -> None:
+    # stdio_server() est un context manager de flux — il ne prend pas l'app.
+    async with stdio_server() as (read, write):
+        await app.run(read, write, app.create_initialization_options())
+
+
 if __name__ == "__main__":
     if "--test" in sys.argv:
         asyncio.run(_run_test())
     else:
-        asyncio.run(stdio_server(app))
+        asyncio.run(_serve())
