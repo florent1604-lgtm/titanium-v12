@@ -22,24 +22,17 @@ test('keeps the permanent PAPER ONLY guard visible in the compact layout', () =>
   );
 });
 
+test('mounts the interactive shell through an ES module without stale controls', () => {
+  assert.match(html, /<main class="workspace" data-command-deck-root/);
+  assert.match(html, /<script type="module" src="\.\/app\.mjs"><\/script>/);
+  assert.doesNotMatch(html, /data-task-1-inert/);
+});
+
 test('lets operator status labels wrap instead of truncating them', () => {
   assert.match(
     css,
     /\.agent-row small\s*\{[^}]*white-space:\s*normal[^}]*text-overflow:\s*clip/,
   );
-});
-
-test('marks every Task 1 composer and action control as explicitly inert', () => {
-  const inertControls = [
-    ...html.matchAll(/<(?:button|textarea)\b[^>]*data-task-1-inert[^>]*>/g),
-  ].map((match) => match[0]);
-
-  assert.equal(inertControls.length, 8);
-  for (const control of inertControls) {
-    assert.match(control, /\sdisabled(?:\s|>)/);
-    assert.match(control, /aria-disabled="true"/);
-  }
-  assert.match(html, /Bientôt disponible/);
 });
 
 test('clamps the compact conversation to the viewport and wraps journal text', () => {

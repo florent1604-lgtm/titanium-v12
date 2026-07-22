@@ -37,8 +37,18 @@ test('createState preserves UNKNOWN as an explicit initial state', () => {
   assert.deepEqual(createState(), {
     messages: [],
     failures: [],
+    pendingIntents: [],
     loadState: { messages: 'UNKNOWN', failures: 'UNKNOWN' },
   });
+});
+
+test('loading failures never creates a pending intent', () => {
+  const state = reduce(createState(), {
+    type: 'failures.loaded',
+    failures: [failure('task-1')],
+  });
+
+  assert.deepEqual(state.pendingIntents, []);
 });
 
 test('filters by agent and keeps global offset order', () => {

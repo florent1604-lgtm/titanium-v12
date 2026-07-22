@@ -281,7 +281,7 @@ h2 {
 .conversation {
   min-width: 0;
   display: grid;
-  grid-template-rows: auto auto auto minmax(220px, 1fr) auto;
+  grid-template-rows: auto auto minmax(220px, 1fr);
   background: var(--ink);
 }
 
@@ -331,6 +331,55 @@ h2 {
 
 .offset {
   color: var(--cyan);
+}
+
+.connection-status {
+  color: var(--mute);
+}
+
+.connection-status[data-connection-state="CONNECTED"] {
+  color: var(--green);
+}
+
+.connection-status[data-connection-state="ERROR"],
+.connection-status[data-connection-state="STOPPED"] {
+  color: var(--red);
+}
+
+.view-tabs {
+  display: flex;
+  gap: 1px;
+  padding: 1px 16px 0;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel-deep);
+}
+
+.view-tab {
+  min-height: 42px;
+  padding: 0 13px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--mute);
+  font: 0.68rem/1 var(--utility);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.view-tab.is-selected {
+  border-bottom-color: var(--violet);
+  color: var(--paper);
+}
+
+.view-panel {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto auto minmax(180px, 1fr) auto;
+}
+
+.view-panel > .failure-title-row {
+  padding: 17px 18px 14px;
 }
 
 .journal-header {
@@ -388,6 +437,28 @@ h2 {
 .composer textarea::placeholder {
   color: #6f858f;
   opacity: 1;
+}
+
+.history-control {
+  display: flex;
+  justify-content: center;
+  padding: 8px 16px 0;
+}
+
+.load-older {
+  padding: 6px 11px;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--mute);
+  font: 0.62rem/1.2 var(--utility);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.load-older:not(:disabled):hover {
+  border-color: var(--cyan);
+  color: var(--paper);
 }
 
 .message-log {
@@ -516,6 +587,10 @@ h2 {
   border-left: 1px solid var(--line);
 }
 
+.action-dock > .dock-action {
+  margin-top: 9px;
+}
+
 .dock-heading {
   padding: 0 3px 13px;
   border-bottom: 1px solid var(--line);
@@ -581,10 +656,48 @@ h2 {
   color: var(--red);
 }
 
+.capability-available {
+  border-color: #356d5a;
+}
+
+.capability-available small {
+  color: var(--green);
+}
+
+.capability-validation_required,
+.capability-double_signature {
+  border-color: #6f582f;
+}
+
+.capability-validation_required small,
+.capability-double_signature small {
+  color: var(--amber);
+}
+
+.capability-blocked {
+  border-color: #61343b;
+}
+
+.capability-blocked small {
+  color: var(--red);
+}
+
+.capability-unknown small {
+  color: var(--mute);
+}
+
 .failure-ledger {
   margin-top: 24px;
   padding-top: 14px;
   border-top: 1px solid var(--line);
+}
+
+.view-panel > .failure-ledger {
+  min-height: 0;
+  overflow: auto;
+  margin-top: 0;
+  padding: 12px 16px 18px;
+  border-top: 0;
 }
 
 .failure-title-row {
@@ -606,6 +719,54 @@ h2 {
 
 .failure-title-row span {
   color: var(--red);
+}
+
+.failure-row header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.failure-row p {
+  margin: 5px 0;
+  color: var(--paper);
+  font: 0.7rem/1.35 var(--utility);
+}
+
+.failure-status,
+.failure-row small {
+  color: var(--mute);
+  font: 0.59rem/1.25 var(--utility);
+  text-transform: uppercase;
+}
+
+.status-unknown {
+  color: var(--mute);
+}
+
+.retry-action {
+  justify-self: start;
+  margin-top: 9px;
+  padding: 6px 9px;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--panel-deep);
+  color: var(--paper);
+  font: 0.61rem/1.2 var(--utility);
+}
+
+.retry-action:not(:disabled):hover {
+  border-color: var(--violet);
+}
+
+.empty-state,
+.boot-state {
+  margin: auto;
+  padding: 20px;
+  color: var(--mute);
+  font: 0.68rem/1.5 var(--utility);
+  text-align: center;
 }
 
 .dock-note {
@@ -648,6 +809,10 @@ h2 {
     gap: 14px;
     border-top: 1px solid var(--line);
     border-left: 0;
+  }
+
+  .action-dock > .dock-action {
+    margin-top: 0;
   }
 
   .dock-heading,

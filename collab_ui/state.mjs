@@ -5,6 +5,7 @@ export function createState() {
   return {
     messages: [],
     failures: [],
+    pendingIntents: [],
     loadState: {
       messages: UNKNOWN,
       failures: UNKNOWN,
