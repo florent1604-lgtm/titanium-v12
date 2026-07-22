@@ -21,6 +21,7 @@ from .contracts import (
     PublishReceipt,
     StoredMessage,
 )
+from .task_store import TaskStore
 
 
 DEFAULT_DB = Path(__file__).resolve().parents[1] / "data" / "collab_hub" / "collab-v1.sqlite3"
@@ -145,6 +146,7 @@ class CollabStore:
         self._cx.execute("PRAGMA foreign_keys=ON")
         self._cx.execute("PRAGMA busy_timeout=5000")
         self._cx.executescript(_DDL)
+        self.tasks = TaskStore(self._cx, self._lock)
 
     def publish(self, draft: MessageDraft) -> PublishReceipt:
         _validate_draft(draft)
@@ -216,6 +218,40 @@ class CollabStore:
                 "WHERE global_offset>? ORDER BY global_offset ASC LIMIT ?",
                 (max(0, int(after_offset)), bounded),
             ).fetchall()
+        return tuple(
+            StoredMessage(
+                global_offset=int(row[0]),
+                message_id=row[1],
+                schema_version=int(row[2]),
+                created_at=row[3],
+                principal=row[4],
+                target=row[5],
+                kind=row[6],
+                content=row[7],
+                idempotency_key=row[8],
+                task_id=row[9],
+                correlation_id=row[10],
+                in_reply_to=row[11],
+                evidence_refs=tuple(json.loads(row[12])),
+                classification=row[13],
+                content_sha256=row[14],
+            )
+            for row in rows
+        )
+
+    def read_before(
+        self, *, before_offset: int, limit: int = 100
+    ) -> tuple[StoredMessage, ...]:
+        bounded = max(1, min(int(limit), 1000))
+        with self._lock:
+            rows = self._cx.execute(
+                "SELECT global_offset,message_id,schema_version,created_at,principal,target,"
+                "kind,content,idempotency_key,task_id,correlation_id,in_reply_to,"
+                "evidence_refs_json,classification,content_sha256 FROM messages "
+                "WHERE global_offset < ? ORDER BY global_offset DESC LIMIT ?",
+                (int(before_offset), bounded),
+            ).fetchall()
+        rows.reverse()
         return tuple(
             StoredMessage(
                 global_offset=int(row[0]),
