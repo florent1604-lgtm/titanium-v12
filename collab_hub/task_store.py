@@ -8,6 +8,7 @@ import re
 import sqlite3
 import threading
 import uuid
+from collections.abc import Callable
 from datetime import datetime, timezone
 from typing import Any
 
@@ -103,8 +104,8 @@ def _sha256(payload_json: str) -> str:
     return hashlib.sha256(payload_json.encode("utf-8")).hexdigest()
 
 
-def _now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
 
 
 def _validate_text(name: str, value: str, *, maximum: int) -> str:
@@ -143,11 +144,24 @@ def _task_payload(
 class TaskStore:
     """Task projection sharing its parent's SQLite connection and lock."""
 
-    def __init__(self, connection: sqlite3.Connection, lock: threading.RLock):
+    def __init__(
+        self,
+        connection: sqlite3.Connection,
+        lock: threading.RLock,
+        *,
+        clock: Callable[[], datetime] | None = None,
+    ):
         self._cx = connection
         self._lock = lock
+        self._clock = clock or _utc_now
         with self._lock:
             self._cx.executescript(TASK_DDL)
+
+    def _timestamp(self) -> str:
+        value = self._clock()
+        if not isinstance(value, datetime) or value.tzinfo is None:
+            raise ValueError("task clock must return a timezone-aware datetime")
+        return value.astimezone(timezone.utc).isoformat()
 
     def _append_event(
         self,
@@ -198,7 +212,7 @@ class TaskStore:
 
         task_id = str(uuid.uuid4())
         attempt_id = str(uuid.uuid4())
-        created_at = _now()
+        created_at = self._timestamp()
         requested_by = draft.owner
         event_payload = {
             "task_id": task_id,
@@ -354,7 +368,7 @@ class TaskStore:
                 expected = _NEXT_STATE.get(row[3])
                 if new_status != expected:
                     raise ValueError(f"transition interdite: {row[3]} -> {new_status}")
-                changed_at = _now()
+                changed_at = self._timestamp()
                 event_id, _ = self._append_event(
                     event_type="task.state_changed.v1",
                     task_id=task_id,
@@ -407,7 +421,7 @@ class TaskStore:
                     raise KeyError(f"task inconnue: {task_id}")
                 if row[6] != "ACTIVE":
                     raise ValueError("current attempt is already failed")
-                failed_at = _now()
+                failed_at = self._timestamp()
                 event_payload = {
                     "task_id": task_id,
                     "attempt_id": row[0],
@@ -492,7 +506,7 @@ class TaskStore:
                 if row[5] != "FAILED":
                     raise ValueError("current attempt is not failed")
                 attempt_id = str(uuid.uuid4())
-                created_at = _now()
+                created_at = self._timestamp()
                 event_id, _ = self._append_event(
                     event_type="task.retry_requested.v1",
                     task_id=task_id,

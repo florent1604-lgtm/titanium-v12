@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import asdict
+import hmac
 import json
 
 from pydantic import BaseModel, ValidationError
@@ -40,14 +41,16 @@ def _status_filter(request: Request) -> tuple[str, ...]:
 
 
 async def _authorized(
-    request: Request, session_authority: SessionAuthority
+    request: Request,
+    session_authority: SessionAuthority,
+    expected_windows_sid: str,
 ) -> bool:
     token = request.headers.get("X-Collab-Session", "")
     try:
-        await asyncio.to_thread(session_authority.verify, token)
+        session = await asyncio.to_thread(session_authority.verify, token)
     except SessionError:
         return False
-    return True
+    return hmac.compare_digest(session.windows_sid, expected_windows_sid)
 
 
 def _session_required() -> JSONResponse:
@@ -66,11 +69,15 @@ def _task_error(exc: Exception, *, conflict: bool = False) -> JSONResponse:
 
 
 def create_task_routes(
-    store: CollabStore, session_authority: SessionAuthority
+    store: CollabStore,
+    session_authority: SessionAuthority,
+    expected_windows_sid: str,
 ) -> list[Route]:
     """Build task routes without adding any automatic execution mechanism."""
 
     async def list_tasks(request: Request) -> JSONResponse:
+        if not await _authorized(request, session_authority, expected_windows_sid):
+            return _session_required()
         try:
             rows = await asyncio.to_thread(
                 store.tasks.list_tasks, statuses=_status_filter(request)
@@ -80,7 +87,7 @@ def create_task_routes(
         return JSONResponse({"tasks": [asdict(row) for row in rows]})
 
     async def create_task(request: Request) -> JSONResponse:
-        if not await _authorized(request, session_authority):
+        if not await _authorized(request, session_authority, expected_windows_sid):
             return _session_required()
         try:
             body = TaskInput.model_validate(await request.json())
@@ -98,7 +105,7 @@ def create_task_routes(
         return JSONResponse(asdict(row), status_code=201)
 
     async def transition(request: Request) -> JSONResponse:
-        if not await _authorized(request, session_authority):
+        if not await _authorized(request, session_authority, expected_windows_sid):
             return _session_required()
         try:
             body = TransitionInput.model_validate(await request.json())
@@ -113,7 +120,7 @@ def create_task_routes(
         return JSONResponse(asdict(row))
 
     async def retry(request: Request) -> JSONResponse:
-        if not await _authorized(request, session_authority):
+        if not await _authorized(request, session_authority, expected_windows_sid):
             return _session_required()
         try:
             row = await asyncio.to_thread(
@@ -126,6 +133,8 @@ def create_task_routes(
         return JSONResponse(asdict(row), status_code=201)
 
     async def list_failures(request: Request) -> JSONResponse:
+        if not await _authorized(request, session_authority, expected_windows_sid):
+            return _session_required()
         try:
             rows = await asyncio.to_thread(
                 store.tasks.list_failed, statuses=_status_filter(request)

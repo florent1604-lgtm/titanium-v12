@@ -8,6 +8,7 @@ import re
 import sqlite3
 import threading
 import uuid
+from collections.abc import Callable
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -134,7 +135,12 @@ def _validate_draft(draft: MessageDraft) -> None:
 class CollabStore:
     """Thread-safe durable message store; it has no dispatch or trading dependency."""
 
-    def __init__(self, db_path: Path = DEFAULT_DB):
+    def __init__(
+        self,
+        db_path: Path = DEFAULT_DB,
+        *,
+        task_clock: Callable[[], datetime] | None = None,
+    ):
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._lock = threading.RLock()
@@ -146,7 +152,7 @@ class CollabStore:
         self._cx.execute("PRAGMA foreign_keys=ON")
         self._cx.execute("PRAGMA busy_timeout=5000")
         self._cx.executescript(_DDL)
-        self.tasks = TaskStore(self._cx, self._lock)
+        self.tasks = TaskStore(self._cx, self._lock, clock=task_clock)
 
     def publish(self, draft: MessageDraft) -> PublishReceipt:
         _validate_draft(draft)

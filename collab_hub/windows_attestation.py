@@ -241,6 +241,12 @@ def _restrict_acl_to_current_user_and_system(path: Path) -> None:
         kernel32.LocalFree(descriptor)
 
 
+def current_user_sid() -> str:
+    """Return the effective Windows account SID or fail closed."""
+
+    return _current_user_sid()
+
+
 def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
 

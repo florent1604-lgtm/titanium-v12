@@ -22,7 +22,11 @@ from .session import SessionAuthority
 from .session_routes import create_session_routes
 from .store import CollabStore, IdempotencyConflict
 from .task_routes import create_task_routes
-from .windows_attestation import WindowsAttestation
+from .windows_attestation import (
+    KeyProtectionError,
+    WindowsAttestation,
+    current_user_sid,
+)
 
 
 class MessageInput(BaseModel):
@@ -126,12 +130,18 @@ def create_app(
     *,
     attestation: WindowsAttestation | None = None,
     session_authority: SessionAuthority | None = None,
+    expected_windows_sid: str | None = None,
 ) -> Starlette:
     broker = RealtimeBroker()
     collab_mcp = create_collab_mcp(store, broker)
     mcp_app = collab_mcp.streamable_http_app()
     active_attestation = attestation or WindowsAttestation()
     active_sessions = session_authority or SessionAuthority()
+    active_windows_sid = (
+        current_user_sid() if expected_windows_sid is None else expected_windows_sid
+    )
+    if not isinstance(active_windows_sid, str) or not active_windows_sid.strip():
+        raise KeyProtectionError("CURRENT_USER_SID_UNAVAILABLE")
 
     @asynccontextmanager
     async def lifespan(_app: Starlette):
@@ -317,13 +327,16 @@ def create_app(
         Route("/v1/stream", stream_messages, methods=["GET"]),
         WebSocketRoute("/v1/ws", websocket_messages),
     ]
-    routes.extend(create_session_routes(active_attestation, active_sessions))
-    routes.extend(create_task_routes(store, active_sessions))
+    routes.extend(
+        create_session_routes(active_attestation, active_sessions, active_windows_sid)
+    )
+    routes.extend(create_task_routes(store, active_sessions, active_windows_sid))
     app = Starlette(routes=routes, lifespan=lifespan)
     app.state.collab_store = store
     app.state.collab_broker = broker
     app.state.collab_mcp = collab_mcp
     app.state.collab_attestation = active_attestation
     app.state.collab_sessions = active_sessions
+    app.state.collab_windows_sid = active_windows_sid
     app.router.routes.extend(mcp_app.routes)
     return app

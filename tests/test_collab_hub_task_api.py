@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import pytest
 from fastapi.testclient import TestClient
 
 from collab_hub.app import create_app
@@ -11,6 +12,9 @@ from collab_hub.session import SessionAuthority
 from collab_hub.store import CollabStore
 from collab_hub.task_contracts import TaskDraft
 from collab_hub.windows_attestation import WindowsAttestation
+
+
+EXPECTED_SID = "S-1-5-21-florent"
 
 
 class FakeClock:
@@ -51,15 +55,20 @@ def _client(
 ) -> tuple[TestClient, CollabStore, WindowsAttestation, SessionAuthority]:
     effective_clock = clock or FakeClock()
     attestation, sessions = _session_dependencies(tmp_path, effective_clock)
-    store = CollabStore(tmp_path / "collab.sqlite3")
-    app = create_app(store, attestation=attestation, session_authority=sessions)
+    store = CollabStore(tmp_path / "collab.sqlite3", task_clock=effective_clock)
+    app = create_app(
+        store,
+        attestation=attestation,
+        session_authority=sessions,
+        expected_windows_sid=EXPECTED_SID,
+    )
     return TestClient(app), store, attestation, sessions
 
 
 def _session_token(
     client: TestClient,
     attestation: WindowsAttestation,
-    sid: str = "S-1-5-21-florent",
+    sid: str = EXPECTED_SID,
 ) -> str:
     nonce = client.post("/v1/session/challenge").json()["nonce"]
     proof = attestation.test_proof(sid, nonce)
@@ -88,6 +97,8 @@ def test_session_challenge_is_exposed_over_http(tmp_path: Path) -> None:
 
     assert response.status_code == 201
     assert isinstance(response.json()["nonce"], str)
+    assert response.headers["cache-control"] == "no-store"
+    assert response.headers["pragma"] == "no-cache"
     store.close()
 
 
@@ -102,6 +113,8 @@ def test_windows_proof_issues_memory_only_session_token(tmp_path: Path) -> None:
     )
 
     assert response.status_code == 201
+    assert response.headers["cache-control"] == "no-store"
+    assert response.headers["pragma"] == "no-cache"
     token = response.json()["token"]
     assert sessions.verify(token).windows_sid == "S-1-5-21-florent"
     assert token not in repr(vars(sessions))
@@ -120,6 +133,36 @@ def test_blank_sid_is_rejected_even_with_matching_proof(tmp_path: Path) -> None:
 
     assert response.status_code == 401
     assert response.json() == {"reason_code": "WINDOWS_ATTESTATION_REJECTED"}
+    store.close()
+
+
+def test_valid_proof_for_another_sid_cannot_issue_a_session(tmp_path: Path) -> None:
+    client, store, attestation, sessions = _client(tmp_path)
+    other_sid = "S-1-5-21-other-user"
+    nonce = client.post("/v1/session/challenge").json()["nonce"]
+    proof = attestation.test_proof(other_sid, nonce)
+
+    response = client.post(
+        "/v1/session/windows",
+        json={"sid": other_sid, "nonce": nonce, "proof": proof},
+    )
+
+    assert response.status_code == 401
+    assert response.json() == {"reason_code": "WINDOWS_ATTESTATION_REJECTED"}
+    assert sessions._sessions == {}
+    store.close()
+
+
+def test_task_authorization_rejects_session_for_another_sid(tmp_path: Path) -> None:
+    client, store, _attestation, sessions = _client(tmp_path)
+    other_session = sessions.issue("S-1-5-21-other-user")
+
+    response = client.get(
+        "/v1/tasks", headers={"X-Collab-Session": other_session.token}
+    )
+
+    assert response.status_code == 401
+    assert response.json() == {"reason_code": "FLORENT_SESSION_REQUIRED"}
     store.close()
 
 
@@ -168,6 +211,11 @@ def test_windows_attestation_failures_share_one_public_reason_code(
         (401, {"reason_code": "WINDOWS_ATTESTATION_REJECTED"}),
         (401, {"reason_code": "WINDOWS_ATTESTATION_REJECTED"}),
     ]
+    assert all(
+        response.headers["cache-control"] == "no-store"
+        and response.headers["pragma"] == "no-cache"
+        for response in responses
+    )
     store.close()
 
 
@@ -191,10 +239,36 @@ def test_task_create_and_transition_require_a_florent_session(tmp_path: Path) ->
     assert created.status_code == 201
     assert transitioned.status_code == 200
     assert transitioned.json()["status"] == "A_ANALYSER"
-    listed = client.get("/v1/tasks")
+    listed = client.get("/v1/tasks", headers={"X-Collab-Session": token})
     assert [task["task_id"] for task in listed.json()["tasks"]] == [
         created.json()["task_id"]
     ]
+    store.close()
+
+
+@pytest.mark.parametrize("endpoint", ("/v1/tasks", "/v1/failures"))
+def test_task_reads_require_a_live_florent_session(
+    tmp_path: Path, endpoint: str
+) -> None:
+    clock = FakeClock()
+    client, store, attestation, _sessions = _client(tmp_path, clock)
+
+    missing = client.get(endpoint)
+    invalid = client.get(endpoint, headers={"X-Collab-Session": "invalid-token"})
+    expired_token = _session_token(client, attestation)
+    clock.advance(901)
+    expired = client.get(
+        endpoint, headers={"X-Collab-Session": expired_token}
+    )
+    live_token = _session_token(client, attestation)
+    accepted = client.get(endpoint, headers={"X-Collab-Session": live_token})
+
+    assert [missing.status_code, invalid.status_code, expired.status_code] == [
+        401,
+        401,
+        401,
+    ]
+    assert accepted.status_code == 200
     store.close()
 
 
@@ -242,7 +316,7 @@ def test_retry_requires_florent_session_and_is_manual(tmp_path: Path) -> None:
 
 
 def test_failures_are_readable_without_mutating_attempts(tmp_path: Path) -> None:
-    client, store, _attestation, _sessions = _client(tmp_path)
+    client, store, attestation, _sessions = _client(tmp_path)
     task = store.tasks.create_task(
         TaskDraft(title="Diagnostiquer", owner="claude", priority="P2")
     )
@@ -250,7 +324,10 @@ def test_failures_are_readable_without_mutating_attempts(tmp_path: Path) -> None
         task.task_id, "SERVICE_UNAVAILABLE", "health:degraded"
     )
 
-    response = client.get("/v1/failures")
+    token = _session_token(client, attestation)
+    response = client.get(
+        "/v1/failures", headers={"X-Collab-Session": token}
+    )
 
     assert response.status_code == 200
     assert response.json()["failures"][0]["attempt_id"] == failure.attempt_id
@@ -260,18 +337,32 @@ def test_failures_are_readable_without_mutating_attempts(tmp_path: Path) -> None
 
 def test_failed_attempt_is_not_retried_after_twenty_four_hours(tmp_path: Path) -> None:
     clock = FakeClock()
-    client, store, _attestation, _sessions = _client(tmp_path, clock)
+    client, store, attestation, _sessions = _client(tmp_path, clock)
+    initial_timestamp = clock.current.isoformat()
     task = store.tasks.create_task(
         TaskDraft(title="Attendre Florent", owner="hermes", priority="P3")
     )
-    store.tasks.record_failure(task.task_id, "TIMEOUT", "worker:timeout")
+    failure = store.tasks.record_failure(task.task_id, "TIMEOUT", "worker:timeout")
+
+    assert task.created_at == initial_timestamp
+    assert failure.created_at == initial_timestamp
 
     clock.advance(24 * 60 * 60)
-    response = client.get("/v1/failures")
+    advanced_timestamp = clock.current.isoformat()
+    later_task = store.tasks.create_task(
+        TaskDraft(title="Horloge témoin", owner="codex", priority="P3")
+    )
+    assert later_task.created_at == advanced_timestamp
+
+    token = _session_token(client, attestation)
+    response = client.get(
+        "/v1/failures", headers={"X-Collab-Session": token}
+    )
 
     assert response.status_code == 200
     assert len(response.json()["failures"]) == 1
     assert store.tasks.attempt_count(task.task_id) == 1
+    assert store.tasks.get_task(task.task_id).updated_at == initial_timestamp
     store.close()
 
 

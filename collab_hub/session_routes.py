@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import hmac
 import json
 
 from pydantic import BaseModel, Field, ValidationError
@@ -15,6 +16,7 @@ from .windows_attestation import AttestationError, WindowsAttestation
 
 
 _ATTESTATION_REJECTED = "WINDOWS_ATTESTATION_REJECTED"
+_NO_STORE_HEADERS = {"Cache-Control": "no-store", "Pragma": "no-cache"}
 
 
 class WindowsProofInput(BaseModel):
@@ -24,7 +26,9 @@ class WindowsProofInput(BaseModel):
 
 
 def create_session_routes(
-    attestation: WindowsAttestation, session_authority: SessionAuthority
+    attestation: WindowsAttestation,
+    session_authority: SessionAuthority,
+    expected_windows_sid: str,
 ) -> list[Route]:
     """Build session routes around process-local, injectable authorities."""
 
@@ -33,9 +37,13 @@ def create_session_routes(
             nonce = await asyncio.to_thread(attestation.challenge)
         except AttestationError:
             return JSONResponse(
-                {"reason_code": "WINDOWS_ATTESTATION_UNAVAILABLE"}, status_code=503
+                {"reason_code": "WINDOWS_ATTESTATION_UNAVAILABLE"},
+                status_code=503,
+                headers=_NO_STORE_HEADERS,
             )
-        return JSONResponse({"nonce": nonce}, status_code=201)
+        return JSONResponse(
+            {"nonce": nonce}, status_code=201, headers=_NO_STORE_HEADERS
+        )
 
     async def windows_session(request: Request) -> JSONResponse:
         try:
@@ -43,6 +51,8 @@ def create_session_routes(
             await asyncio.to_thread(
                 attestation.verify, body.sid, body.nonce, body.proof
             )
+            if not hmac.compare_digest(body.sid, expected_windows_sid):
+                raise ValueError("unexpected Windows SID")
         except (
             AttestationError,
             json.JSONDecodeError,
@@ -51,14 +61,18 @@ def create_session_routes(
             ValueError,
         ):
             return JSONResponse(
-                {"reason_code": _ATTESTATION_REJECTED}, status_code=401
+                {"reason_code": _ATTESTATION_REJECTED},
+                status_code=401,
+                headers=_NO_STORE_HEADERS,
             )
 
         try:
             session = await asyncio.to_thread(session_authority.issue, body.sid)
         except SessionCapacityExceeded:
             return JSONResponse(
-                {"reason_code": "SESSION_CAPACITY_EXCEEDED"}, status_code=503
+                {"reason_code": "SESSION_CAPACITY_EXCEEDED"},
+                status_code=503,
+                headers=_NO_STORE_HEADERS,
             )
         return JSONResponse(
             {
@@ -67,6 +81,7 @@ def create_session_routes(
                 "expires_at": session.expires_at.isoformat(),
             },
             status_code=201,
+            headers=_NO_STORE_HEADERS,
         )
 
     return [
