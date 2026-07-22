@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 from contextlib import asynccontextmanager
 from dataclasses import asdict
+import hmac
 import json
 from typing import AsyncIterator
 
@@ -18,7 +19,8 @@ from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from .contracts import MessageDraft, StoredMessage
 from .mcp import create_collab_mcp
-from .session import SessionAuthority
+from .secret_gate import scan_text
+from .session import SessionAuthority, SessionError
 from .session_routes import create_session_routes
 from .store import CollabStore, IdempotencyConflict
 from .task_routes import create_task_routes
@@ -85,6 +87,28 @@ async def _json_body(request: Request, model):
         return model.model_validate(await request.json())
     except (json.JSONDecodeError, ValidationError) as exc:
         raise HTTPException(status_code=422, detail="payload invalide") from exc
+
+
+async def require_florent_session(
+    request: Request,
+    principal: str,
+    session_authority: SessionAuthority,
+    expected_windows_sid: str,
+) -> JSONResponse | None:
+    if principal != "florent":
+        return None
+    token = request.headers.get("X-Collab-Session", "")
+    try:
+        session = await asyncio.to_thread(session_authority.verify, token)
+    except SessionError:
+        return JSONResponse(
+            {"reason_code": "FLORENT_SESSION_REQUIRED"}, status_code=401
+        )
+    if not hmac.compare_digest(session.windows_sid, expected_windows_sid):
+        return JSONResponse(
+            {"reason_code": "FLORENT_SESSION_REQUIRED"}, status_code=401
+        )
+    return None
 
 
 class RealtimeBroker:
@@ -156,6 +180,13 @@ def create_app(
 
     async def publish_message(request: Request) -> JSONResponse:
         body = await _json_body(request, MessageInput)
+        session_rejection = await require_florent_session(
+            request, body.principal, active_sessions, active_windows_sid
+        )
+        if session_rejection is not None:
+            return session_rejection
+        if scan_text(body.content):
+            return JSONResponse({"reason_code": "SECRET_REJECTED"}, status_code=400)
         draft = MessageDraft(
             principal=body.principal,
             target=body.target,
