@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>J.A.R.V.I.S · TITANIUM</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════════════════
+   COCKPIT ORBE v2 — architecture graphique JARVIS ORIGINALE (frontend/src)
+   reprise sur demande Florent : HUD Iron Man #00e5ff / Courier New / crochets
+   d'angle / scanlines / orbe PARTICULES plein écran (portage canvas 2D du
+   nuage Three.js de orb.ts — zéro dépendance, zéro CDN, exigence Codex n°5).
+   Données Titanium live, fail-visible (DASH_DESIGN.md).
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root{
+  --c:#00e5ff; --c2:#4ca8e8; --amber:#ffb454; --red:#ef4444; --green:#22c55e;
+  --dim:rgba(0,229,255,.5); --faint:rgba(0,229,255,.25);
+  --panel:rgba(5,5,8,.34); --blur:blur(6px);
+  --mono:'Courier New',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{background:#020409;color:var(--c);font-family:var(--mono);
+  font-size:12px;overflow:hidden;letter-spacing:1px}
+button{font-family:var(--mono);letter-spacing:2px;text-transform:uppercase;
+  background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.35);
+  color:var(--dim);font-size:10px;padding:5px 14px;border-radius:2px;cursor:pointer;
+  transition:all .25s}
+button:hover,button[aria-pressed="true"]{background:rgba(0,229,255,.18);
+  color:var(--c);box-shadow:0 0 15px rgba(0,229,255,.25)}
+:focus-visible{outline:1px solid var(--c);outline-offset:2px}
+
+/* ── couches ── */
+#orb-canvas{position:fixed;inset:0;z-index:1}
+#scanlines{position:fixed;inset:0;z-index:2;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,
+  rgba(0,229,255,.012) 3px,rgba(0,229,255,.012) 4px)}
+/* crochets d'angle écran (signature HUD) */
+.corner{position:fixed;width:22px;height:22px;z-index:3;opacity:.55;pointer-events:none}
+.tl{top:8px;left:8px;border-top:2px solid var(--c);border-left:2px solid var(--c)}
+.tr{top:8px;right:8px;border-top:2px solid var(--c);border-right:2px solid var(--c)}
+.bl{bottom:8px;left:8px;border-bottom:2px solid var(--c);border-left:2px solid var(--c)}
+.br{bottom:8px;right:8px;border-bottom:2px solid var(--c);border-right:2px solid var(--c)}
+
+/* ── identité (haut-gauche, comme l'original) ── */
+#brand{position:fixed;top:16px;left:22px;z-index:10;text-transform:uppercase;
+  pointer-events:none;line-height:1.8}
+#brand .t{font-size:20px;font-weight:bold;letter-spacing:5px;color:var(--c);
+  text-shadow:0 0 12px rgba(0,229,255,.5)}
+#brand .s{font-size:10px;letter-spacing:3px;color:var(--dim)}
+#brand .p{display:inline-block;margin-top:6px;font-size:10px;letter-spacing:3px;
+  color:var(--amber);border:1px solid var(--amber);padding:3px 10px;border-radius:2px;
+  animation:blink 4s ease-in-out infinite}
+@keyframes blink{50%{opacity:.5}}
+
+/* ── HUD horloge (haut-centre — reprise orb-clock-hud) ── */
+#clock-hud{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:10;
+  background:var(--panel);backdrop-filter:var(--blur);border:1px solid rgba(0,229,255,.2);
+  border-radius:4px;padding:10px 26px;text-align:center;min-width:330px}
+#clock-hud .hud-prefix{font-size:9px;letter-spacing:3px;color:var(--faint);margin-bottom:3px}
+#clock-hud .row{display:flex;align-items:center;justify-content:center;gap:24px}
+#hud-time{font-size:30px;font-weight:900;letter-spacing:4px;color:var(--c);
+  text-shadow:0 0 18px rgba(0,229,255,.55)}
+.stat-hud{text-align:center}
+.stat-hud .stat-label{display:block;font-size:9px;letter-spacing:2px;color:var(--faint)}
+.stat-hud .stat-value{font-size:15px;font-weight:bold;color:var(--c)}
+.stat-hud .stat-value.warn{color:var(--amber)} .stat-hud .stat-value.bad{color:var(--red)}
+#clock-hud .hud-labels{display:flex;justify-content:space-between;margin-top:4px;
+  font-size:9px;letter-spacing:2px;color:var(--faint)}
+.hud-corner{position:absolute;width:12px;height:12px}
+.hud-tl{top:-1px;left:-1px;border-top:2px solid var(--c);border-left:2px solid var(--c)}
+.hud-tr{top:-1px;right:-1px;border-top:2px solid var(--c);border-right:2px solid var(--c)}
+.hud-bl{bottom:-1px;left:-1px;border-bottom:2px solid var(--c);border-left:2px solid var(--c)}
+.hud-br{bottom:-1px;right:-1px;border-bottom:2px solid var(--c);border-right:2px solid var(--c)}
+
+/* ── badges connexion (haut-droite) ── */
+#badges{position:fixed;top:16px;right:22px;z-index:10;display:flex;
+  flex-direction:column;gap:6px;align-items:flex-end}
+.badge{display:inline-flex;align-items:center;gap:8px;background:var(--panel);
+  backdrop-filter:var(--blur);border:1px solid rgba(0,229,255,.2);border-radius:2px;
+  padding:4px 12px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--dim)}
+.badge .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.15)}
+.badge.ok{color:var(--c)} .badge.ok .dot{background:var(--green);box-shadow:0 0 8px var(--green)}
+.badge.warn{color:var(--amber);border-color:rgba(255,180,84,.4)}
+.badge.warn .dot{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+.badge.ko{color:var(--red);border-color:rgba(239,68,68,.4);text-decoration:line-through}
+.badge.ko .dot{background:var(--red)}
+
+/* ── widgets latéraux (style help-widget original) ── */
+.widget{position:fixed;z-index:10;background:rgba(0,229,255,.05);
+  border-left:3px solid var(--c);border-radius:0 4px 4px 0;padding:12px 16px;
+  backdrop-filter:var(--blur);box-shadow:0 0 20px rgba(0,229,255,.05);
+  max-width:330px;min-width:280px;transition:all .35s cubic-bezier(.4,0,.2,1);
+  cursor:pointer}
+.widget:hover{background:rgba(0,229,255,.09);box-shadow:0 0 30px rgba(0,229,255,.15);
+  transform:translateX(4px)}
+.widget.right{left:auto;right:22px;border-left:none;border-right:3px solid var(--c);
+  border-radius:4px 0 0 4px}
+.widget.right:hover{transform:translateX(-4px)}
+.widget.ko{border-color:var(--red)}
+.widget.warn{border-color:var(--amber)}
+.w-title{font-size:11px;font-weight:bold;letter-spacing:3px;text-transform:uppercase;
+  border-bottom:1px solid rgba(0,229,255,.2);padding-bottom:5px;margin-bottom:7px;
+  display:flex;justify-content:space-between;align-items:center;gap:8px}
+.w-title .st{font-size:9px;letter-spacing:1px;font-weight:normal}
+.w-title .st.live{color:var(--green)} .w-title .st.stale{color:var(--amber)}
+.w-title .st.dead{color:var(--red);text-decoration:line-through}
+.w-kpis{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+.w-kpi .k{display:block;font-size:8px;letter-spacing:2px;color:var(--faint);text-transform:uppercase}
+.w-kpi .v{font-size:15px;font-weight:900;text-shadow:0 0 10px rgba(0,229,255,.4)}
+.w-kpi .v.pos{color:var(--green)} .w-kpi .v.neg{color:var(--red)}
+.w-body{font-size:10px;line-height:1.7;color:var(--dim);overflow:hidden;
+  max-height:150px;transition:max-height .4s}
+.widget.folded .w-body{max-height:0}
+.w-body table{width:100%;border-collapse:collapse}
+.w-body td{padding:1px 6px 1px 0;color:var(--dim)}
+.w-body td.pos{color:var(--green)} .w-body td.neg{color:var(--red)}
+.w-body .side-l{color:var(--green)} .w-body .side-s{color:var(--red)}
+.w-valid{font-size:8px;letter-spacing:1px;color:var(--faint);margin-top:5px;
+  border-top:1px dashed rgba(0,229,255,.15);padding-top:4px;text-transform:uppercase}
+.unavail{color:var(--red);text-decoration:line-through}
+
+/* jauges R3 */
+.gauge{display:grid;grid-template-columns:46px 1fr auto;gap:8px;align-items:center;
+  margin:4px 0;font-size:9px}
+.gauge .bar{height:5px;background:rgba(0,229,255,.08);border-radius:3px;overflow:hidden}
+.gauge .fill{height:100%;background:var(--c);box-shadow:0 0 8px var(--c);
+  transition:width .6s;border-radius:3px}
+.gauge.warn .fill{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+.gauge.over .fill{background:var(--red);box-shadow:0 0 8px var(--red)}
+.cl-tag{display:inline-block;font-size:9px;padding:1px 7px;margin:2px 3px 0 0;
+  border:1px solid rgba(0,229,255,.25);border-radius:2px;color:var(--dim)}
+.cl-tag.sat{color:var(--red);border-color:rgba(239,68,68,.5);
+  text-shadow:0 0 8px rgba(239,68,68,.5)}
+
+/* ── sous-titres machine à écrire (bas-centre — reprise subtitle-hud) ── */
+#subtitle-hud{position:fixed;bottom:86px;left:50%;transform:translateX(-50%);
+  z-index:10;text-align:center;pointer-events:none;width:82%;max-width:860px}
+#subtitle-box{background:rgba(0,229,255,.01);border-top:1px solid rgba(0,229,255,.12);
+  border-bottom:1px solid rgba(0,229,255,.12);padding:14px 20px;position:relative;
+  backdrop-filter:var(--blur);border-radius:4px}
+#subtitle-box .cut{position:absolute;width:30px;height:2px;background:var(--c)}
+#subtitle-text{font-size:15px;font-weight:bold;letter-spacing:1px;
+  text-shadow:0 0 10px rgba(0,229,255,.5);text-transform:uppercase;display:inline}
+#subtitle-cursor{display:inline-block;width:9px;height:16px;background:var(--c);
+  vertical-align:middle;margin-left:5px;animation:cblink .8s infinite}
+@keyframes cblink{50%{opacity:0}}
+#subtitle-meta{display:flex;justify-content:space-between;margin-top:6px;
+  font-size:9px;letter-spacing:2px;color:var(--faint);text-transform:uppercase;padding:0 8px}
+
+/* ── barre d'état bas + boutons ── */
+#statusbar{position:fixed;bottom:0;left:0;right:0;z-index:10;display:flex;
+  justify-content:space-between;align-items:center;padding:8px 40px;
+  border-top:1px solid rgba(0,229,255,.12);background:rgba(2,4,9,.55);
+  backdrop-filter:var(--blur);font-size:10px;letter-spacing:2px;
+  color:var(--dim);text-transform:uppercase}
+#statusbar .actions{display:flex;gap:8px}
+#orb-state{color:var(--c);text-shadow:0 0 10px rgba(0,229,255,.4)}
+#orb-state.warn{color:var(--amber)} #orb-state.alert{color:var(--red)}
+
+/* ── séquence de boot (reprise boot-overlay) ── */
+#boot{position:fixed;inset:0;z-index:100;background:#020409;display:flex;
+  flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  transition:opacity .8s;cursor:pointer}
+#boot.done{opacity:0;pointer-events:none}
+#boot .ring{width:90px;height:90px;border-radius:50%;border:2px solid rgba(0,229,255,.25);
+  border-top-color:var(--c);animation:spin 1.1s linear infinite;position:relative}
+#boot .ring::after{content:"";position:absolute;inset:12px;border-radius:50%;
+  border:1px solid rgba(0,229,255,.2);border-bottom-color:var(--c);
+  animation:spin 1.7s linear infinite reverse}
+@keyframes spin{to{transform:rotate(360deg)}}
+#boot .logo{font-size:26px;font-weight:900;letter-spacing:8px;
+  text-shadow:0 0 25px rgba(0,229,255,.7)}
+#boot .sub{font-size:10px;letter-spacing:4px;color:var(--dim)}
+#boot-modules{font-size:11px;letter-spacing:2px;line-height:2;color:var(--dim);
+  text-align:left;min-height:112px}
+#boot-modules .ok::before{content:"◈ ";color:var(--green)}
+#boot .skip{font-size:9px;color:var(--faint);letter-spacing:2px}
+
+@media (prefers-reduced-motion:reduce){
+  #brand .p,#subtitle-cursor{animation:none}
+}
+@media (max-width:1100px){
+  .widget{position:static;max-width:none;margin:6px 14px}
+  body{overflow:auto}
+  #widgets-l,#widgets-r{position:static;padding-top:130px}
+}
+</style>
+</head>
+<body>
+<canvas id="orb-canvas"></canvas>
+<div id="scanlines"></div>
+<div class="corner tl"></div><div class="corner tr"></div>
+<div class="corner bl"></div><div class="corner br"></div>
+
+<!-- identité -->
+<div id="brand">
+  <div class="t">J.A.R.V.I.S</div>
+  <div class="s">TITANIUM MARKET INTERFACE · V12</div>
+  <div class="p" id="mode-banner" title="Mode contrôlé par l'état MT5 courant">◈ MODE EN VÉRIFICATION ◈</div>
+</div>
+
+<!-- horloge HUD -->
+<div id="clock-hud">
+  <div class="hud-corner hud-tl"></div><div class="hud-corner hud-tr"></div>
+  <div class="hud-corner hud-bl"></div><div class="hud-corner hud-br"></div>
+  <div class="hud-prefix">◈ SYSTÈME_TEMPS_RÉEL</div>
+  <div class="row">
+    <div class="stat-hud"><span class="stat-label">BASE&nbsp;RISQUE&nbsp;R3</span>
+      <span class="stat-value" id="hud-equity">—</span></div>
+    <div id="hud-time">--:--:--</div>
+    <div class="stat-hud"><span class="stat-label">GROSS&nbsp;/&nbsp;PLAFOND</span>
+      <span class="stat-value" id="hud-risk">—</span></div>
+  </div>
+  <div class="hud-labels"><span>SYS_CLOCK</span><span id="hud-date">--/--/----</span><span id="hud-zone">EUROPE/PARIS</span></div>
+</div>
+
+<!-- badges connexion -->
+<div id="badges">
+  <span class="badge" id="b-flux"><span class="dot"></span>FLUX —</span>
+  <span class="badge" id="b-mt5"><span class="dot"></span>MT5 —</span>
+  <span class="badge" id="b-hermes"><span class="dot"></span>HERMES —</span>
+</div>
+
+<!-- widgets moteurs (gauche) -->
+<div id="widgets-l">
+  <div class="widget" id="w-swing" style="top:150px;left:22px" role="button" tabindex="0">
+    <div class="w-title">SWING · H4 <span class="st">—</span></div>
+    <div class="w-kpis"></div><div class="w-body"></div>
+    <div class="w-valid">PAPER — validé testeur natif · statut statique v1 (R4 à venir)</div>
+  </div>
+  <div class="widget" id="w-forex" style="top:340px;left:22px" role="button" tabindex="0">
+    <div class="w-title">FOREX · H1 <span class="st">—</span></div>
+    <div class="w-kpis"></div><div class="w-body"></div>
+    <div class="w-valid">PAPER — V3 validée strategy_lab · statut statique v1</div>
+  </div>
+  <div class="widget" id="w-crypto" style="top:530px;left:22px" role="button" tabindex="0">
+    <div class="w-title">CRYPTO · 30S <span class="st">—</span></div>
+    <div class="w-kpis"></div><div class="w-body"></div>
+    <div class="w-valid">PAPER — observation · unités USDT (1 USDT ≈ 1 EUR documenté)</div>
+  </div>
+</div>
+
+<!-- widgets droite : R3 + journal -->
+<div id="widgets-r">
+  <div class="widget right" id="w-r3" style="top:150px" role="button" tabindex="0">
+    <div class="w-title">GARDE R3 · RISQUE <span class="st" id="r3-st">—</span></div>
+    <div class="gauge" id="g-gross"><span>GROSS</span><div class="bar"><div class="fill"></div></div><span class="val">—</span></div>
+    <div class="gauge" id="g-net"><span>NET</span><div class="bar"><div class="fill"></div></div><span class="val">—</span></div>
+    <div id="clusters" style="margin-top:6px"></div>
+  </div>
+  <div class="widget right" id="w-journal" style="top:360px" role="button" tabindex="0">
+    <div class="w-title">JOURNAL · 3 MOTEURS <span class="st live">TRADES</span></div>
+    <div class="w-body" id="journal" style="max-height:150px">en attente…</div>
+  </div>
+  <!-- SANTÉ SYSTÈME : alimenté par l'agent INDÉPENDANT (tools/health_agent.py). Il survit
+       au gel de cette API ; ce panneau n'est qu'une fenêtre sur son travail. -->
+  <div class="widget right" id="w-sante" style="top:530px" role="button" tabindex="0">
+    <div class="w-title">SANTÉ SYSTÈME <span class="st" id="sante-st">—</span></div>
+    <div class="w-body" id="sante" style="max-height:190px">en attente…</div>
+  </div>
+  <!-- CERVEAU : ce qui DÉCIDE réellement les entrées (cortex + porte neuronale). -->
+  <div class="widget left" id="w-cerveau" style="top:790px" role="button" tabindex="0">
+    <div class="w-title">CERVEAU · DÉCISION <span class="st" id="cerveau-st">—</span></div>
+    <div class="w-body" id="cerveau" style="max-height:200px">en attente…</div>
+  </div>
+</div>
+
+<!-- sous-titres -->
+<div id="subtitle-hud">
+  <div id="subtitle-box">
+    <span class="cut" style="top:0;left:0"></span><span class="cut" style="top:0;right:0"></span>
+    <span class="cut" style="bottom:0;left:0"></span><span class="cut" style="bottom:0;right:0"></span>
+    <span id="subtitle-text"></span><span id="subtitle-cursor"></span>
+  </div>
+  <div id="subtitle-meta"><span>SYNC_TITANIUM_V12</span><span id="sub-meta-r">EN ATTENTE DE FLUX…</span></div>
+</div>
+
+<!-- barre d'état -->
+<div id="statusbar">
+  <span>ÉTAT ORBE : <span id="orb-state">INITIALISATION</span></span>
+  <span id="hover-info" style="color:var(--dim)"></span>
+  <span class="actions">
+    <button id="btn-neural" aria-pressed="false" title="Topologie réelle du code (94 modules, 279 dépendances) animée par l'activité live">RÉSEAU NEURONAL</button>
+    <button id="btn-fold" aria-pressed="false">PLEIN ORBE</button>
+    <button onclick="location.href='/classic'">VUE CLASSIQUE</button>
+  </span>
+</div>
+
+<!-- boot -->
+<div id="boot" title="Cliquer pour passer">
+  <div class="ring"></div>
+  <div class="logo">J.A.R.V.I.S</div>
+  <div class="sub">TITANIUM MARKET INTERFACE · INITIALISATION DES PROTOCOLES</div>
+  <div id="boot-modules"></div>
+  <div class="skip">[ CLIC POUR PASSER ]</div>
+</div>
+
+<script>
+"use strict";
+/* ════════ Données Titanium (fail-visible, DASH_DESIGN.md) ════════ */
+const $ = s => document.querySelector(s);
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const now = () => Date.now();
+const S = {feeds:{}, lastTickTs:0, hermes:false, speakUntil:0, orb:"boot", fetching:false};
+
+const fmtEur = v => (v==null||!isFinite(v)) ? "—" : v.toLocaleString("fr-FR",{maximumFractionDigits:0})+" €";
+const fmtUsdt = v => (v==null||!isFinite(v)) ? "—" : v.toLocaleString("fr-FR",{maximumFractionDigits:0})+" USDT";
+const fmtAge = ms => ms<1500?"LIVE":ms<60000?Math.round(ms/1000)+"S":Math.round(ms/60000)+"MIN";
+function ageState(n,max=15000){const f=S.feeds[n];if(!f||!f.ok)return"dead";
+  return (now()-f.ts)>max?"stale":"live";}
+
+async function pull(n,url){try{const r=await fetch(url,{cache:"no-store"});
+  if(!r.ok)throw 0;S.feeds[n]={ok:true,ts:now(),data:await r.json()};}
+  catch(e){S.feeds[n]={ok:false,ts:now(),data:null};}}
+
+function kpi(k,v,cls){return `<span class="w-kpi"><span class="k">${k}</span><span class="v ${cls||""}">${v}</span></span>`;}
+function posRow(sym,side,entry,pnl,u){const s=(side||"").toLowerCase();
+  return `<tr><td>${sym}</td><td class="${(s==="long"||s==="buy")?"side-l":"side-s"}">${(side||"?").toUpperCase()}</td><td>${entry??"—"}</td><td class="${pnl>0?"pos":pnl<0?"neg":""}">${pnl==null?"—":pnl.toFixed(2)+" "+u}</td></tr>`;}
+
+function widget(id,feed,kpis,rows){
+  const w=$(id), st=ageState(feed), f=S.feeds[feed];
+  w.classList.toggle("ko",st==="dead"); w.classList.toggle("warn",st==="stale");
+  const stEl=w.querySelector(".st");
+  stEl.className="st "+st;
+  stEl.textContent = st==="dead"?"INDISPONIBLE":st==="stale"?"STALE "+fmtAge(now()-f.ts):"LIVE · "+fmtAge(now()-f.ts);
+  if(st==="dead"){
+    w.querySelector(".w-kpis").innerHTML=`<span class="w-kpi"><span class="v unavail">FLUX COUPÉ — AUCUNE VALEUR</span></span>`;
+    w.querySelector(".w-body").innerHTML=""; return "dead";
+  }
+  w.querySelector(".w-kpis").innerHTML=kpis(f.data);
+  const r=rows(f.data);
+  w.querySelector(".w-body").innerHTML=r.length?`<table>${r.join("")}</table>`:`<span style="color:var(--faint)">AUCUNE POSITION OUVERTE</span>`;
+  return st;
+}
+
+/* file de sous-titres machine à écrire */
+const subQueue=[]; let subBusy=false;
+function say(txt,meta){subQueue.push({txt,meta});if(subQueue.length>4)subQueue.shift();pumpSub();}
+function pumpSub(){
+  if(subBusy||!subQueue.length)return; subBusy=true;
+  const {txt,meta}=subQueue.shift(); const el=$("#subtitle-text");
+  $("#sub-meta-r").textContent=meta||"FLUX_DÉCRYPTÉ";
+  if(REDUCED){el.textContent=txt;subBusy=false;return;}
+  el.textContent=""; let i=0;
+  const it=setInterval(()=>{el.textContent=txt.slice(0,++i);
+    if(i>=txt.length){clearInterval(it);setTimeout(()=>{subBusy=false;pumpSub();},3200);}},26);
+}
+let lastSubKey="";
+
+function renderAll(){
+  const states=[];
+  states.push(widget("#w-swing","swing",
+    d=>kpi("EQUITY",fmtEur(d.equity))+kpi("P&L",fmtEur(d.total_pnl_eur),d.total_pnl_eur>0?"pos":d.total_pnl_eur<0?"neg":"")+kpi("TRADES",d.trades??"—"),
+    d=>Object.entries((S.feeds.swingState?.ok&&S.feeds.swingState.data.positions)||{}).map(([s,p])=>posRow(s,p.side,p.entry,p.pnl_eur,"€"))));
+  states.push(widget("#w-forex","forex",
+    d=>kpi("EQUITY",fmtEur(d.equity))+kpi("P&L",fmtEur(d.total_pnl_eur),d.total_pnl_eur>0?"pos":d.total_pnl_eur<0?"neg":"")+kpi("WINRATE",d.winrate_pct==null?"—":d.winrate_pct+" %"),
+    d=>Object.entries((S.feeds.forexState?.ok&&S.feeds.forexState.data.positions)||{}).map(([s,p])=>posRow(s,p.side,p.entry,p.pnl_eur,"€"))));
+  states.push(widget("#w-crypto","crypto",
+    d=>kpi("EQUITY",(d.equity??"—")+" USDT")+kpi("P&L",(d.realized_pnl??0).toFixed(2),d.realized_pnl>0?"pos":d.realized_pnl<0?"neg":"")+kpi("WINRATE",(d.winrate??"—")+" %")+kpi("DD",(d.current_drawdown_pct??"—")+" %",d.current_drawdown_pct>5?"neg":""),
+    d=>{const ps=S.feeds.cryptoPos?.ok?S.feeds.cryptoPos.data:null;
+      const l=ps?(Array.isArray(ps)?ps:Object.values(ps.positions||ps||{})):[];
+      return l.map(p=>posRow(p.symbol||"?",p.side,p.entry_price,p.unrealized_pnl,"USDT"));}));
+
+  /* R3 */
+  let riskAlert=false, riskDead=false, clusterAlerts=[];
+  const rf=S.feeds.risk;
+  if(rf&&rf.ok&&rf.data&&rf.data.ok){
+    const d=rf.data, eqT=d.equity_live_eur?.total||0, caps=d.caps_pct||{};
+    $("#r3-st").className="st live"; $("#r3-st").textContent="LIVE · "+fmtAge(now()-rf.ts);
+    $("#w-r3").classList.remove("ko");
+    const setG=(id,val,cap)=>{const g=$(id),p=cap>0?Math.abs(val)/cap*100:0;
+      g.className="gauge"+(p>=100?" over":p>=75?" warn":"");
+      g.querySelector(".fill").style.width=Math.min(100,p)+"%";
+      g.querySelector(".val").textContent=fmtEur(Math.abs(val))+" / "+fmtEur(cap);
+      return p>=100;};
+    riskAlert|=setG("#g-gross",d.gross_eur,eqT*(caps.gross||0)/100);
+    riskAlert|=setG("#g-net",d.net_eur,eqT*(caps.net||0)/100);
+    const eqEur=(d.equity_live_eur?.swing||0)+(d.equity_live_eur?.forex||0);
+    const eqCrypto=d.equity_live_eur?.crypto||0;
+    const eqBreakdown=fmtEur(eqEur)+" + "+fmtUsdt(eqCrypto);
+    $("#hud-equity").textContent=fmtEur(eqEur)+" + "+fmtUsdt(eqCrypto);
+    $("#hud-equity").title=`Base du garde R3 : ${eqBreakdown}. Le total interne ${fmtEur(eqT)} utilise l'approximation documentée 1 USDT = 1 EUR ; ce n'est pas le solde MT5.`;
+    const gp=eqT>0?Math.round(d.gross_eur/(eqT*(caps.gross||1)/100)*100):0;
+    const hr=$("#hud-risk"); hr.textContent=gp+" %";
+    hr.className="stat-value"+(gp>=100?" bad":gp>=75?" warn":"");
+    const eqSwing=d.equity_live_eur?.swing||0, capCl=eqSwing*(caps.cluster||0)/100;
+    $("#clusters").innerHTML=Object.entries(d.by_cluster||{}).map(([cl,v])=>{
+      const pct=capCl>0?Math.round(v.gross_eur/capCl*100):0;
+      const over=capCl>0?Math.max(0,v.gross_eur-capCl):0;
+      const sat=capCl>0&&v.gross_eur>=capCl; riskAlert|=sat;
+      if(sat)clusterAlerts.push(`${cl} ${pct}%`);
+      return `<span class="cl-tag${sat?" sat":""}" title="Exposition paper gross ${fmtEur(v.gross_eur)} · net ${fmtEur(v.net_eur)} · plafond R3 ${fmtEur(capCl)}">${cl}${sat?` ${pct}% · LIMITE DÉPASSÉE +${fmtEur(over)}`:""}</span>`;
+    }).join("")||`<span class="cl-tag">AUCUNE EXPOSITION</span>`;
+  }else{
+    riskDead=true; $("#w-r3").classList.add("ko");
+    $("#r3-st").className="st dead"; $("#r3-st").textContent="ILLISIBLE — FAIL-CLOSED";
+    $("#clusters").innerHTML=`<span class="cl-tag sat">ÉTAT RISQUE ILLISIBLE — OUVERTURES BLOQUÉES</span>`;
+    $("#hud-risk").textContent="—"; $("#hud-equity").textContent="—";
+  }
+
+  /* badges */
+  const tickAge=S.lastTickTs?now()-S.lastTickTs:Infinity;
+  const setB=(id,cls,txt)=>{const b=$(id);b.className="badge "+cls;b.lastChild.textContent=" "+txt;};
+  setB("#b-flux",tickAge<5000?"ok":tickAge<30000?"warn":"ko","FLUX "+(tickAge===Infinity?"—":fmtAge(tickAge)));
+  const mt5=S.feeds.swing?.ok&&S.feeds.swing.data.mt5;
+  const mt5ok=!!(mt5&&mt5.connected);
+  const demoArmed=!!(mt5ok&&mt5.mode==="demo"&&mt5.demo_execution_enabled);
+  const demoPnl=Number(mt5?.floating_pnl||0);
+  const demoCount=Number(mt5?.position_count||0);
+  const demoTxt=`MT5 DÉMO · ${demoCount} POS · ${demoPnl>=0?"+":""}${demoPnl.toFixed(2)} ${mt5?.currency||""}`;
+  setB("#b-mt5",mt5ok?"ok":"ko",demoArmed?demoTxt:(mt5ok?"MT5 LECTURE SEULE":"MT5 COUPÉ"));
+  const modeBanner=$("#mode-banner");
+  modeBanner.textContent=demoArmed?"◈ EXÉCUTION DÉMO MT5 ◈":"◈ PAPER ONLY ◈";
+  modeBanner.title=demoArmed?"Ordres autorisés uniquement sur le compte MT5 démo vérifié":"Aucun ordre MT5 envoyé par Titanium";
+  setB("#b-hermes",S.hermes?"ok":"ko","HERMES "+(S.hermes?"EN LIGNE":"HORS LIGNE"));
+
+  /* état orbe : la pire nouvelle gagne */
+  S.orb = riskDead||states.includes("dead")?"alert":(riskAlert||states.includes("stale"))?"warn":"live";
+  const lbl=$("#orb-state");
+  lbl.className=S.orb==="live"?"":S.orb==="warn"?"warn":"alert";
+  lbl.textContent=S.orb==="live"?(demoArmed?"NOMINAL — EXÉCUTION DÉMO":"NOMINAL — PAPER"):S.orb==="warn"?(clusterAlerts.length?`GARDE R3 — ${clusterAlerts.join(", ")} (PAPER)`:"SURVEILLANCE — FLUX RALENTI"):"ALERTE — FLUX COUPÉ / RISQUE ILLISIBLE (FAIL-CLOSED)";
+
+  /* journal + sous-titres */
+  const j=[];
+  const push=(eng,ts,u)=>(ts||[]).slice(-6).forEach(t=>j.push({ts:t.closed||t.exit_ts||"",eng,
+    txt:`${t.symbol} ${(t.side||"").toUpperCase()} → ${t.exit_reason||"?"}`,pnl:t.pnl_eur??t.pnl_usdt,u}));
+  push("SWING",S.feeds.swingState?.ok&&S.feeds.swingState.data.trades,"€");
+  push("FOREX",S.feeds.forexState?.ok&&S.feeds.forexState.data.trades,"€");
+  push("CRYPTO",S.feeds.cryptoTrades?.ok&&(S.feeds.cryptoTrades.data.trades||S.feeds.cryptoTrades.data),"USDT");
+  j.sort((a,b)=>(b.ts||"").localeCompare(a.ts||""));
+  $("#journal").innerHTML=j.length?j.slice(0,14).map(e=>
+    `<div><span style="color:var(--faint)">${(e.ts||"").slice(11,19)||"—"}</span> <span style="color:var(--c)">${e.eng}</span> ${e.txt} <span class="${e.pnl>0?"pos":e.pnl<0?"neg":""}" style="${e.pnl>0?"color:var(--green)":e.pnl<0?"color:var(--red)":""}">${e.pnl==null?"":(e.pnl>0?"+":"")+e.pnl.toFixed(2)+" "+e.u}</span></div>`).join("")
+    :`AUCUN TRADE CLÔTURÉ`;
+  if(j.length){const k=j[0].ts+j[0].txt;
+    if(k!==lastSubKey){lastSubKey=k;
+      say(`${j[0].eng} : ${j[0].txt} ${j[0].pnl!=null?((j[0].pnl>0?"+":"")+j[0].pnl.toFixed(2)+" "+j[0].u):""}`,"DERNIER_TRADE");}}
+  else if(S.orb==="alert"&&lastSubKey!=="alert"){lastSubKey="alert";
+    say("ALERTE : FLUX COUPÉ OU RISQUE ILLISIBLE — GARDE FAIL-CLOSED ACTIF","DIAGNOSTIC");}
+  else if(lastSubKey===""){lastSubKey="hello";
+    say(demoArmed?`SYSTÈMES TITANIUM EN LIGNE — DÉMO MT5 ARMÉE, ${demoCount} POSITION` : "SYSTÈMES TITANIUM EN LIGNE — MODE PAPER, AUCUN ORDRE MT5","INITIALISATION");}
+}
+
+async function tick(){
+  S.fetching=true;
+  await Promise.all([
+    pull("swing","/swing/status"),pull("swingState","/swing/state"),
+    pull("forex","/forex/status"),pull("forexState","/forex/state"),
+    pull("crypto","/paper/stats"),pull("cryptoPos","/paper/positions"),
+    pull("cryptoTrades","/paper/trades"),pull("risk","/swing/risk/exposure"),
+    pull("sante","/health/system"),pull("cortex","/cortex/snapshot"),pull("brain","/brain/master"),
+  ]);
+  S.fetching=false; trackActivity(); renderAll(); renderSante(); renderCerveau();
+}
+
+/* ════════ SANTÉ SYSTÈME ════════
+   Source : l'agent INDÉPENDANT. S'il se tait, on l'écrit — un panneau vert alimenté par un
+   agent mort serait pire que pas de panneau du tout. */
+function renderSante(){
+  const d=S.feeds.sante?.data, box=$("#sante"), st=$("#sante-st");
+  if(!d){box.textContent="agent injoignable";st.textContent="—";st.className="st";return;}
+  const sante=d.sante||"inconnue", agent=d.agent||"?";
+  const cls={ok:"live",degradee:"stale",critique:"dead",inconnue:"stale"}[sante]||"warn";
+  st.textContent=agent==="actif"?sante.toUpperCase():agent.toUpperCase();
+  st.className="st "+cls;
+  let h="";
+  if(agent!=="actif")h+=`<div style="color:var(--amber)">⚠ ${d.note||"agent de santé silencieux"}</div>`;
+  (d.problemes||[]).forEach(p=>{h+=`<div style="color:var(--red)">▲ ${p}</div>`;});
+  if(!(d.problemes||[]).length&&agent==="actif")h+=`<div style="color:var(--green)">✓ aucun incident</div>`;
+  const svc=d.services||{};
+  h+='<div style="margin-top:6px;display:grid;grid-template-columns:1fr auto;gap:1px 8px">';
+  Object.entries(svc).forEach(([nom,i])=>{
+    const c=i.etat==="ok"?"var(--green)":(i.etat==="fige"?"var(--red)":"var(--amber)");
+    const lat=i.latence_s!=null?` ${i.latence_s}s`:"";
+    h+=`<span style="opacity:.75">${nom}</span><span style="color:${c}">${i.etat}${lat}</span>`;
+  });
+  h+="</div>";
+  const r=d.ressources||{};
+  if(r.RamLibreMo!=null)h+=`<div style="margin-top:5px;opacity:.6">RAM ${r.RamLibreMo} Mo · disque ${r.DisqueLibreGo} Go</div>`;
+  const mur=d.mur_demo;
+  if(mur)h+=`<div style="margin-top:3px;color:${mur.intact?"var(--green)":"var(--red)"}">`
+           +`MUR DÉMO↔RÉEL ${mur.intact?"intact":"COMPROMIS"}</div>`;
+  box.innerHTML=h;
+}
+
+/* ════════ CERVEAU ════════
+   Ce qui DÉCIDE vraiment les entrées : les organes du cortex, puis la porte neuronale
+   (le cerveau filtre, l'émotion dimensionne, Florent prime). */
+function renderCerveau(){
+  const cx=S.feeds.cortex?.data, br=S.feeds.brain?.data;
+  const box=$("#cerveau"), st=$("#cerveau-st");
+  if(!cx&&!br){box.textContent="cerveau injoignable";st.textContent="—";st.className="st";return;}
+  let h="";
+  if(cx){
+    const g=cx.overall_health;
+    st.textContent=(g||"?").toUpperCase();
+    st.className="st "+(g==="ok"?"live":"stale");
+    h+='<div style="display:grid;grid-template-columns:1fr auto;gap:1px 8px">';
+    Object.entries(cx.engines||{}).forEach(([n,v])=>{
+      const c=v.health==="ok"?"var(--green)":"var(--amber)";
+      let extra="";
+      if(n==="emotion")extra=v.expressive?" · expressive":" · muette";
+      h+=`<span style="opacity:.75">${n}${extra}</span><span style="color:${c}">${v.health}</span>`;
+    });
+    h+="</div>";
+  }
+  if(br&&br.brain){
+    const e=Object.entries(br.brain);
+    const ok=e.filter(([,v])=>v.allow);
+    const raisons={};
+    e.filter(([,v])=>!v.allow).forEach(([,v])=>{const r=(v.reason_codes||["?"])[0];raisons[r]=(raisons[r]||0)+1;});
+    h+=`<div style="margin-top:6px">ENTRÉES AUTORISÉES <b style="color:var(--c)">${ok.length}</b> / ${e.length}</div>`;
+    ok.sort((a,b)=>(b[1].conviction||0)-(a[1].conviction||0)).slice(0,5).forEach(([s,v])=>{
+      const side=v.side>0?"long":(v.side<0?"short":"—");
+      h+=`<div style="opacity:.8">${s} ${side} · taille <b>${v.conviction}</b>`
+        +` <span style="opacity:.5">${(v.reason_codes||[]).filter(r=>r.startsWith("EMO_")).join("")}</span></div>`;
+    });
+    Object.entries(raisons).forEach(([r,n])=>{
+      h+=`<div style="color:var(--amber);opacity:.8">${n} bloqués · ${r}</div>`;});
+    const dir=br.directives||{};
+    if(Object.keys(dir).length)
+      h+=`<div style="margin-top:4px;color:var(--amber)">MASTER : ${JSON.stringify(dir)}</div>`;
+  }
+  box.innerHTML=h;
+}
+
+/* ── activité RÉELLE → neurones chauds (mode réseau neuronal) ──
+   Compare les compteurs live entre deux cycles : un scan swing incrémenté
+   allume core.swing_engine, un tick MT5 allume data.mt5_provider, etc. */
+const prevAct={}; const hotNodes=new Map(); // id -> expiry ms
+function heat(id,ms){hotNodes.set(id,now()+(ms||4000));}
+function trackActivity(){
+  const g=(f,path)=>{try{return path.split(".").reduce((o,k)=>o&&o[k],S.feeds[f]?.data);}catch(e){return undefined;}};
+  const cmp=(key,val,ids)=>{if(val!=null&&prevAct[key]!==undefined&&val!==prevAct[key])ids.forEach(i=>heat(i));
+    if(val!=null)prevAct[key]=val;};
+  cmp("swingScan",g("swing","scan_count"),["core.swing_engine","data.mt5_provider","core.portfolio_risk"]);
+  cmp("forexScan",g("forex","scan_count"),["core.forex_engine","data.mt5_provider","core.portfolio_risk"]);
+  cmp("cryptoTrades",g("crypto","total_trades"),["execution.paper_trading","execution.executor"]);
+  cmp("swingEq",g("swing","equity"),["core.swing_engine","utils.atomic_state"]);
+  cmp("forexEq",g("forex","equity"),["core.forex_engine","utils.atomic_state"]);
+  cmp("fund",g("crypto","realized_pnl"),["execution.paper_trading"]);
+  heat("api.api_server",2500); // l'API vient de répondre aux 8 sondes
+  if(S.feeds.risk?.ok)heat("core.portfolio_risk",2500);
+}
+const PARIS_TIME=new Intl.DateTimeFormat("fr-FR",{timeZone:"Europe/Paris",hourCycle:"h23",hour:"2-digit",minute:"2-digit",second:"2-digit"});
+const PARIS_DATE=new Intl.DateTimeFormat("fr-FR",{timeZone:"Europe/Paris",day:"2-digit",month:"2-digit",year:"numeric"});
+setInterval(()=>{const d=new Date();
+  $("#hud-time").textContent=PARIS_TIME.format(d);
+  $("#hud-date").textContent=PARIS_DATE.format(d);},500);
+
+/* WS temps réel (fraîcheur) + WS JARVIS (présence + impulsion parole) */
+function connectRT(){try{const ws=new WebSocket(`ws://${location.host}/ws/realtime`);
+  ws.onmessage=()=>{S.lastTickTs=now();};
+  ws.onclose=()=>setTimeout(connectRT,4000);}catch(e){setTimeout(connectRT,6000);}}
+connectRT();
+function connectJarvis(){try{const ws=new WebSocket("ws://localhost:8765");
+  ws.onopen=()=>{S.hermes=true;};
+  ws.onmessage=()=>{S.speakUntil=now()+2600;};
+  ws.onclose=()=>{S.hermes=false;setTimeout(connectJarvis,8000);};
+  ws.onerror=()=>{try{ws.close();}catch(e){}};}
+  catch(e){S.hermes=false;setTimeout(connectJarvis,10000);}}
+connectJarvis();
+
+/* repli des widgets (bouton PLEIN ORBE + clic/clavier sur widget) */
+document.querySelectorAll(".widget").forEach(w=>{
+  const t=()=>w.classList.toggle("folded");
+  w.addEventListener("click",t);
+  w.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();t();}});
+});
+$("#btn-fold").addEventListener("click",e=>{
+  const on=e.currentTarget.getAttribute("aria-pressed")!=="true";
+  e.currentTarget.setAttribute("aria-pressed",on);
+  document.querySelectorAll(".widget").forEach(w=>w.classList.toggle("folded",on));
+});
+
+/* ════════ L'ORBE PARTICULES — portage canvas 2D de frontend/src/orb.ts ════════
+   Nuage sphérique de particules + lignes de connexion + électrons voyageurs.
+   États (comme l'original) : idle / thinking (fetch) / speaking (WS JARVIS)
+   + alert/warn (santé Titanium) qui teintent le nuage. */
+const cv=$("#orb-canvas"), ctx=cv.getContext("2d");
+let W,H,CX,CY,SCALE;
+function resize(){const dpr=Math.min(devicePixelRatio,1.5);
+  W=cv.width=innerWidth*dpr;H=cv.height=innerHeight*dpr;
+  CX=W/2;CY=H/2;SCALE=Math.min(W,H)/230;}
+resize();addEventListener("resize",resize);
+
+const N=REDUCED?250:800, R0=25;
+const P=[]; // particules {x,y,z,ph}
+for(let i=0;i<N;i++){const th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),
+  r=Math.pow(Math.random(),.5)*R0;
+  P.push({x:r*Math.sin(ph)*Math.cos(th),y:r*Math.sin(ph)*Math.sin(th),z:r*Math.cos(ph),
+    ph:Math.random()*1000});}
+
+/* connexions recalculées par intervalle (économie CPU — machine sans GPU) */
+let links=[];
+function rebuildLinks(){
+  links=[];const maxD2=64, step=Math.ceil(N/240);
+  for(let i=0;i<N;i+=step)for(let j=i+step;j<N;j+=step){
+    const a=P[i],b=P[j],dx=a.x-b.x,dy=a.y-b.y,dz=a.z-b.z;
+    if(dx*dx+dy*dy+dz*dz<maxD2){links.push([i,j]);if(links.length>=340)return;}}
+}
+rebuildLinks();setInterval(rebuildLinks,2500);
+
+/* électrons voyageurs le long des connexions */
+const electrons=[];
+function spawnElectron(){if(!links.length)return;
+  const [i,j]=links[Math.floor(Math.random()*links.length)];
+  electrons.push({i,j,t:0,sp:.02+Math.random()*.05});}
+
+const MOODS={live:[0,229,255],warn:[255,180,84],alert:[239,68,68],boot:[76,168,232]};
+let rotY=0,rotX=0,radius=1,tPrev=0;
+
+/* ════ RÉSEAU NEURONAL — topologie RÉELLE du code (GET /orbe/map) ════
+   nodes = modules v12 (AST des imports, tools/gen_neural_map.py),
+   edges = dépendances effectives. Placement : anneaux par couche
+   (DONNÉES → CERVEAU → EXÉCUTION → INTERFACE → SOCLE), jitter déterministe. */
+let NEURAL=false, GRAPH=null, mouse={x:-1e4,y:-1e4}, hoverNode=null;
+const GROUP_COL={ "DONNÉES":[0,229,255], "CERVEAU":[110,196,255],
+  "EXÉCUTION":[63,222,140], "INTERFACE":[184,238,255], "SOCLE":[120,140,180] };
+function hash(s){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return h;}
+async function loadGraph(){
+  try{
+    const r=await fetch("/orbe/map",{cache:"no-store"}); if(!r.ok)throw 0;
+    const d=await r.json();
+    const groups=d.groups||[]; const latBand={}; // couche -> latitude
+    groups.forEach((gr,k)=>{latBand[gr]=(k+1)/(groups.length+1)*Math.PI;});
+    const idx={};
+    const nodes=d.nodes.map((n,i)=>{
+      idx[n.id]=i;
+      const h1=hash(n.id), h2=hash(n.id+"x");
+      const phi=latBand[n.group]+((h1%1000)/1000-.5)*.55;      // latitude ± jitter
+      const theta=((h2%1000)/1000)*Math.PI*2;                   // longitude
+      const r=R0*(.96+((h1>>10)%100)/100*.14);
+      return {id:n.id,group:n.group,deg:n.deg,
+        mod:n.mod||n.id,kind:n.kind||"module",file:n.file||"",
+        x:r*Math.sin(phi)*Math.cos(theta),y:r*Math.cos(phi),z:r*Math.sin(phi)*Math.sin(theta),
+        short:(n.name||n.id.split(".").pop())};
+    });
+    const edges=d.edges.map(([a,b])=>[idx[a],idx[b]]).filter(e=>e[0]!=null&&e[1]!=null);
+    GRAPH={nodes,edges,idx,source:d.source||"ast"};
+  }catch(e){GRAPH=null;}
+}
+loadGraph();
+cv.addEventListener("mousemove",e=>{const dpr=Math.min(devicePixelRatio,1.5);
+  mouse.x=e.clientX*dpr;mouse.y=e.clientY*dpr;});
+$("#btn-neural").addEventListener("click",e=>{
+  NEURAL=!NEURAL;e.currentTarget.setAttribute("aria-pressed",NEURAL);
+  try{localStorage.setItem("orbe_neural",NEURAL?"1":"0");}catch(err){}
+  if(NEURAL&&!GRAPH)loadGraph();});
+try{if(localStorage.getItem("orbe_neural")==="1"){NEURAL=true;
+  $("#btn-neural").setAttribute("aria-pressed","true");}}catch(e){}
+
+function draw(ts){
+  requestAnimationFrame(draw);
+  const t=ts/1000, dt=Math.min(t-tPrev,.05); tPrev=t;
+  const speaking=now()<S.speakUntil;
+  const thinking=S.fetching;
+  const mood=MOODS[S.orb]||MOODS.boot;
+  const [mr,mg,mb]=mood;
+
+  /* dynamique par état (transpose orb.ts) */
+  const spinSpeed=(speaking?1.4:thinking?.7:S.orb==="alert"?.9:.25)*(REDUCED?.3:1);
+  rotY+=dt*spinSpeed*.6; rotX+=dt*spinSpeed*.13;
+  const targetR=speaking?1+Math.sin(t*6)*.07:S.orb==="alert"?.94:1;
+  radius+=(targetR-radius)*.06;
+  const lineAlpha=speaking?.34:thinking?.30:S.orb==="alert"?.25:.13;
+  const wantE=speaking?5:thinking?3:1;
+  if(!REDUCED&&Math.random()<wantE*dt*3)spawnElectron();
+
+  ctx.clearRect(0,0,W,H);
+  const cy=Math.cos(rotY),sy=Math.sin(rotY),cx=Math.cos(rotX),sx=Math.sin(rotX);
+  const F=95; // focale
+  const proj=p=>{
+    let x=p.x*cy-p.z*sy, z=p.x*sy+p.z*cy, y=p.y*cx-z*sx; z=p.y*sx+z*cx;
+    const s=F/(F+z*radius);
+    return [CX+x*radius*SCALE*3.1*s, CY+y*radius*SCALE*3.1*s, s, z];
+  };
+  const pts=new Array(N);
+  for(let i=0;i<N;i++){const p=P[i];
+    const wob=REDUCED?0:Math.sin(t*.8+p.ph)*.35; // dérive douce
+    pts[i]=proj({x:p.x+wob,y:p.y+Math.cos(t*.7+p.ph)*.35,z:p.z});}
+
+  /* lignes (nuage estompé en mode neuronal pour laisser lire le graphe réel) */
+  const dim=NEURAL&&GRAPH?.28:1;
+  ctx.lineWidth=Math.max(.6,SCALE*.35);
+  for(const [i,j] of links){
+    const a=pts[i],b=pts[j],dp=(a[2]+b[2])/2;
+    ctx.strokeStyle=`rgba(${mr},${mg},${mb},${(lineAlpha*dp*dp*dim).toFixed(3)})`;
+    ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();
+  }
+  /* particules */
+  const step=NEURAL&&GRAPH?3:1;
+  for(let i=0;i<N;i+=step){const [x,y,s]=pts[i];
+    const al=(.15+.5*s*s)*dim;
+    ctx.fillStyle=`rgba(${mr},${mg},${mb},${al.toFixed(3)})`;
+    ctx.beginPath();ctx.arc(x,y,Math.max(.7,1.4*SCALE*s*.55),0,7);ctx.fill();}
+  /* électrons (points blancs voyageant sur les lignes) */
+  for(let k=electrons.length-1;k>=0;k--){const e=electrons[k];e.t+=e.sp*(speaking?2:1);
+    if(e.t>=1){electrons.splice(k,1);continue;}
+    const a=pts[e.i],b=pts[e.j];if(!a||!b)continue;
+    const x=a[0]+(b[0]-a[0])*e.t, y=a[1]+(b[1]-a[1])*e.t;
+    ctx.fillStyle=`rgba(255,255,255,${(.9*(1-Math.abs(e.t-.5)*1.4)).toFixed(2)})`;
+    ctx.beginPath();ctx.arc(x,y,Math.max(1,1.1*SCALE*.5),0,7);ctx.fill();}
+  /* ════ couche RÉSEAU NEURONAL (topologie réelle + activité live) ════ */
+  if(NEURAL&&GRAPH){
+    const gp=GRAPH.nodes.map(n=>proj(n));
+    /* axones (dépendances réelles) */
+    ctx.lineWidth=Math.max(.5,SCALE*.3);
+    const isHot=n=>hotNodes.has(n.mod)||hotNodes.has(n.id);
+    for(const [i,j] of GRAPH.edges){
+      const a=gp[i],b=gp[j],dp=(a[2]+b[2])/2;
+      const hot=isHot(GRAPH.nodes[i])||isHot(GRAPH.nodes[j]);
+      ctx.strokeStyle=hot?`rgba(255,255,255,${(.35*dp).toFixed(3)})`
+        :`rgba(${mr},${mg},${mb},${(.10*dp*dp).toFixed(3)})`;
+      ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();
+      /* influx nerveux : impulsion glissante sur les axones chauds */
+      if(hot&&!REDUCED){const ph=(t*1.6+((i*7+j)%10)/10)%1;
+        const x=a[0]+(b[0]-a[0])*ph,y=a[1]+(b[1]-a[1])*ph;
+        ctx.fillStyle=`rgba(255,255,255,${(.85*dp).toFixed(2)})`;
+        ctx.beginPath();ctx.arc(x,y,Math.max(1,1.2*SCALE*.5),0,7);ctx.fill();}
+    }
+    /* neurones (modules réels) */
+    hoverNode=null;let hoverD=400*SCALE*SCALE;
+    for(let i=0;i<GRAPH.nodes.length;i++){
+      const n=GRAPH.nodes[i],[x,y,s]=gp[i];
+      const col=GROUP_COL[n.group]||[0,229,255];
+      const hotKey=hotNodes.has(n.mod)?n.mod:(hotNodes.has(n.id)?n.id:null);
+      const hot=hotKey&&now()<hotNodes.get(hotKey);
+      if(hotKey&&!hot)hotNodes.delete(hotKey);
+      const rr=Math.max(1.2,(1.1+Math.min(n.deg,14)*.16)*SCALE*s*(hot?1.7:1));
+      if(hot){ctx.fillStyle=`rgba(255,255,255,.9)`;
+        ctx.beginPath();ctx.arc(x,y,rr*1.8,0,7);
+        ctx.fillStyle=`rgba(${col[0]},${col[1]},${col[2]},.18)`;ctx.fill();}
+      ctx.fillStyle=hot?`rgba(255,255,255,.95)`
+        :`rgba(${col[0]},${col[1]},${col[2]},${(.35+.5*s*s).toFixed(3)})`;
+      ctx.beginPath();ctx.arc(x,y,rr,0,7);ctx.fill();
+      const dx=x-mouse.x,dy=y-mouse.y,d2=dx*dx+dy*dy;
+      if(d2<hoverD){hoverD=d2;hoverNode={n,x,y};}
+      /* étiquettes permanentes des hubs majeurs */
+      if(n.deg>=10&&s>.92){ctx.fillStyle=`rgba(${col[0]},${col[1]},${col[2]},.6)`;
+        ctx.font=`${Math.max(8,SCALE*4.2)}px Courier New,monospace`;
+        ctx.textAlign="center";ctx.fillText(n.short.toUpperCase(),x,y-rr-4);}
+    }
+    /* étiquette au survol + barre d'état */
+    if(hoverNode){const {n,x,y}=hoverNode;
+      ctx.fillStyle="rgba(255,255,255,.92)";
+      ctx.font=`bold ${Math.max(9,SCALE*4.6)}px Courier New,monospace`;
+      ctx.textAlign="center";ctx.fillText(n.short.toUpperCase(),x,y-10*SCALE*.5-6);
+      $("#hover-info").textContent=`◈ ${n.kind.toUpperCase()} ${n.short} · ${n.file} · couche ${n.group} · ${n.deg} connexions réelles`;
+    } else $("#hover-info").textContent=NEURAL?
+      `◈ RÉSEAU NEURONAL — registre ${(GRAPH.source==="gitnexus"?"GITNEXUS (graphe d'appels)":"AST (imports)")} · ${GRAPH.nodes.length} neurones · survolez`:"";
+  } else if(!NEURAL) $("#hover-info").textContent="";
+
+  /* halo central */
+  const g=ctx.createRadialGradient(CX,CY,0,CX,CY,SCALE*95);
+  g.addColorStop(0,`rgba(${mr},${mg},${mb},.055)`);g.addColorStop(1,"transparent");
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+}
+requestAnimationFrame(draw);
+
+/* ════════ Séquence de boot (écourtée, cliquable) ════════ */
+const MODS=["LIAISON MT5 · COMPTE CONTRÔLÉ","MOTEURS PAPER + MIROIR DÉMO",
+  "GARDE PORTEFEUILLE R3 · FAIL-CLOSED","LIAISON HERMES · CERVEAU CENTRAL","FLUX TEMPS RÉEL"];
+const bm=$("#boot-modules");let bi=0;
+function bootStep(){if(bi<MODS.length){
+    const d=document.createElement("div");d.textContent=MODS[bi]+" … OK";d.className="ok";
+    bm.appendChild(d);bi++;setTimeout(bootStep,REDUCED?40:260);}
+  else setTimeout(endBoot,420);}
+function endBoot(){$("#boot").classList.add("done");S.orb==="boot"&&(S.orb="live");tick();setInterval(tick,5000);}
+$("#boot").addEventListener("click",endBoot,{once:true});
+setTimeout(bootStep,REDUCED?0:350);
+setTimeout(()=>{if(!$("#boot").classList.contains("done"))endBoot();},4200);
+</script>
+</body>
+</html>

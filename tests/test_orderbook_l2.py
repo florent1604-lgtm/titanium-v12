@@ -263,35 +263,55 @@ class TestScoringIntegration:
 
 class TestDepthUpdate:
     def test_apply_depth_update_add(self):
-        from data.orderbook_ws import _apply_depth_update
-        current = [[100.0, 5.0], [99.0, 3.0]]
+        from data.orderbook_ws import _apply_depth_update, _book_map
+        carnet = _book_map([[100.0, 5.0], [99.0, 3.0]])
         updates = [[98.0, 2.0]]
-        result = _apply_depth_update(current, updates, is_bids=True)
+        result = _apply_depth_update(carnet, updates, is_bids=True)
         assert len(result) == 3
         assert result[0][0] == 100.0  # sorted desc
 
     def test_apply_depth_update_remove(self):
-        from data.orderbook_ws import _apply_depth_update
-        current = [[100.0, 5.0], [99.0, 3.0]]
+        from data.orderbook_ws import _apply_depth_update, _book_map
+        carnet = _book_map([[100.0, 5.0], [99.0, 3.0]])
         updates = [[99.0, 0]]  # qty=0 → remove
-        result = _apply_depth_update(current, updates, is_bids=True)
+        result = _apply_depth_update(carnet, updates, is_bids=True)
         assert len(result) == 1
         assert result[0][0] == 100.0
 
     def test_apply_depth_update_replace(self):
-        from data.orderbook_ws import _apply_depth_update
-        current = [[100.0, 5.0], [99.0, 3.0]]
+        from data.orderbook_ws import _apply_depth_update, _book_map
+        carnet = _book_map([[100.0, 5.0], [99.0, 3.0]])
         updates = [[100.0, 10.0]]  # update qty
-        result = _apply_depth_update(current, updates, is_bids=True)
+        result = _apply_depth_update(carnet, updates, is_bids=True)
         assert len(result) == 2
         assert result[0][1] == 10.0
 
     def test_asks_sorted_ascending(self):
-        from data.orderbook_ws import _apply_depth_update
-        current = [[101.0, 5.0], [102.0, 3.0]]
+        from data.orderbook_ws import _apply_depth_update, _book_map
+        carnet = _book_map([[101.0, 5.0], [102.0, 3.0]])
         updates = [[100.5, 2.0]]
-        result = _apply_depth_update(current, updates, is_bids=False)
+        result = _apply_depth_update(carnet, updates, is_bids=False)
         assert result[0][0] == 100.5  # sorted asc
+
+    def test_carnet_mute_en_place(self):
+        """Le carnet est la source de vérité : il doit survivre au diff."""
+        from data.orderbook_ws import _apply_depth_update, _book_map
+        carnet = _book_map([[100.0, 5.0], [99.0, 3.0]])
+        _apply_depth_update(carnet, [[98.0, 2.0]], is_bids=True)
+        _apply_depth_update(carnet, [[97.0, 1.0]], is_bids=True)
+        assert carnet == {100.0: 5.0, 99.0: 3.0, 98.0: 2.0, 97.0: 1.0}
+
+    def test_vue_bornee_mais_carnet_complet(self):
+        """La vue est plafonnée ; le carnet profond reste intact pour les diffs."""
+        from data.orderbook_ws import _apply_depth_update, _book_map, _BOOK_VUE
+        carnet = _book_map([[1000.0 - i, 1.0] for i in range(_BOOK_VUE + 150)])
+        result = _apply_depth_update(carnet, [], is_bids=True)
+        assert len(result) == _BOOK_VUE
+        assert len(carnet) == _BOOK_VUE + 150
+        assert result[0][0] == 1000.0          # la vue part bien du meilleur prix
+        # un niveau hors vue reste modifiable et remonte s'il redevient le meilleur
+        _apply_depth_update(carnet, [[2000.0, 7.0]], is_bids=True)
+        assert _apply_depth_update(carnet, [], is_bids=True)[0] == [2000.0, 7.0]
 
 
 # ── Test Drawdown Realtime ───────────────────────────────────────────────────

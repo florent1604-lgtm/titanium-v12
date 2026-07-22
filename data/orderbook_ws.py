@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio, json, time
 from collections import deque
 from dataclasses import dataclass, field
+from heapq import nlargest, nsmallest
 from typing import Any, Dict, List, Optional, Tuple
 import aiohttp
 from utils.config import (
@@ -21,6 +22,13 @@ from utils.logger import get_logger
 
 logger = get_logger(__name__)
 
+# Profondeur matérialisée dans les listes exposées. Le carnet complet reste en
+# mémoire (dicts _*_map) pour que les diffs restent exacts ; seule la VUE est
+# bornée. Aucun consommateur ne lit au-delà du niveau 50 (imbalance, murs et
+# absorption plafonnent à 50, l'historique à 20), donc 200 laisse une marge
+# large sans changer un seul chiffre de trading.
+_BOOK_VUE = 200
+
 
 @dataclass
 class OrderBookState:
@@ -29,6 +37,11 @@ class OrderBookState:
     asks: List[List[float]] = field(default_factory=list)
     futures_bids: List[List[float]] = field(default_factory=list)
     futures_asks: List[List[float]] = field(default_factory=list)
+    # Carnets complets prix→quantité, source de vérité des diffs incrémentiels.
+    bids_map: Dict[float, float] = field(default_factory=dict, repr=False)
+    asks_map: Dict[float, float] = field(default_factory=dict, repr=False)
+    futures_bids_map: Dict[float, float] = field(default_factory=dict, repr=False)
+    futures_asks_map: Dict[float, float] = field(default_factory=dict, repr=False)
     spread_bps: float = 0.0
     mid_price: float = 0.0
     best_bid: float = 0.0
@@ -62,7 +75,8 @@ class OrderBookState:
             "best_bid": self.best_bid, "best_ask": self.best_ask,
             "mid_price": round(self.mid_price, 2),
             "spread_bps": round(self.spread_bps, 2),
-            "spot_levels": len(self.bids), "futures_levels": len(self.futures_bids),
+            "spot_levels": len(self.bids_map) or len(self.bids),
+            "futures_levels": len(self.futures_bids_map) or len(self.futures_bids),
             "history_size": len(self.history), "ts": self.ts,
         }
 
@@ -110,18 +124,37 @@ async def _fetch_futures_snapshot(session, sym):
     return [], [], 0
 
 
-def _apply_depth_update(current, updates, is_bids):
-    """Applique les diffs incrémentiels au carnet local."""
-    book = {lvl[0]: lvl[1] for lvl in current}
+def _book_map(levels) -> Dict[float, float]:
+    """Carnet prix→quantité à partir d'une liste de niveaux."""
+    return {float(lvl[0]): float(lvl[1]) for lvl in levels}
+
+
+def _book_vue(book_map: Dict[float, float], is_bids: bool) -> List[List[float]]:
+    """Vue triée et bornée du carnet.
+
+    Les paires (prix, qty) se comparent nativement par prix — pas de clé
+    Python à rappeler pour chaque niveau, la sélection reste en C.
+    """
+    tete = nlargest if is_bids else nsmallest
+    return [[p, q] for p, q in tete(_BOOK_VUE, book_map.items())]
+
+
+def _apply_depth_update(book_map, updates, is_bids):
+    """Applique les diffs incrémentiels au carnet et rend la vue à jour.
+
+    `book_map` est muté en place : le carnet n'est jamais reconstruit depuis
+    la liste exposée, ce qui rendait chaque diff proportionnel à la taille
+    totale du carnet (40 fois par seconde et par symbole).
+    """
+    if not isinstance(book_map, dict):      # tolère une liste de niveaux
+        book_map = _book_map(book_map)
     for u in updates:
         price, qty = float(u[0]), float(u[1])
         if qty == 0:
-            book.pop(price, None)
+            book_map.pop(price, None)
         else:
-            book[price] = qty
-    result = [[p, q] for p, q in book.items()]
-    result.sort(key=lambda x: x[0], reverse=is_bids)
-    return result
+            book_map[price] = qty
+    return _book_vue(book_map, is_bids)
 
 
 async def _ws_spot_depth(sym):
@@ -137,7 +170,10 @@ async def _ws_spot_depth(sym):
             async with aiohttp.ClientSession(connector=conn) as session:
                 bids, asks, lid = await _fetch_spot_snapshot(session, sym)
                 state = orderbook_store[sym]
-                state.bids, state.asks, state.last_update_id = bids, asks, lid
+                state.bids_map, state.asks_map = _book_map(bids), _book_map(asks)
+                state.bids = _book_vue(state.bids_map, True)
+                state.asks = _book_vue(state.asks_map, False)
+                state.last_update_id = lid
                 state._compute_derived()
                 state.ts = time.time()
                 logger.info("[ORDERBOOK] Spot snapshot %s — %d bids, %d asks", sym, len(bids), len(asks))
@@ -150,8 +186,8 @@ async def _ws_spot_depth(sym):
                             fid = data.get("u", 0)
                             if fid <= state.last_update_id:
                                 continue
-                            state.bids = _apply_depth_update(state.bids, data.get("b", []), True)
-                            state.asks = _apply_depth_update(state.asks, data.get("a", []), False)
+                            state.bids = _apply_depth_update(state.bids_map, data.get("b", []), True)
+                            state.asks = _apply_depth_update(state.asks_map, data.get("a", []), False)
                             state.last_update_id = fid
                             state._compute_derived()
                             state.ts = time.time()
@@ -177,7 +213,10 @@ async def _ws_futures_depth(sym):
             async with aiohttp.ClientSession(connector=conn) as session:
                 bids, asks, lid = await _fetch_futures_snapshot(session, sym)
                 state = orderbook_store[sym]
-                state.futures_bids, state.futures_asks = bids, asks
+                state.futures_bids_map = _book_map(bids)
+                state.futures_asks_map = _book_map(asks)
+                state.futures_bids = _book_vue(state.futures_bids_map, True)
+                state.futures_asks = _book_vue(state.futures_asks_map, False)
                 state.futures_last_update_id = lid
                 state._compute_derived()
                 state.push_history()
@@ -192,8 +231,8 @@ async def _ws_futures_depth(sym):
                             fid = data.get("u", 0)
                             if fid <= state.futures_last_update_id:
                                 continue
-                            state.futures_bids = _apply_depth_update(state.futures_bids, data.get("b", []), True)
-                            state.futures_asks = _apply_depth_update(state.futures_asks, data.get("a", []), False)
+                            state.futures_bids = _apply_depth_update(state.futures_bids_map, data.get("b", []), True)
+                            state.futures_asks = _apply_depth_update(state.futures_asks_map, data.get("a", []), False)
                             state.futures_last_update_id = fid
                             state._compute_derived()
                             state.ts = time.time()
@@ -223,10 +262,16 @@ async def _rest_polling_loop(sym):
             async with aiohttp.ClientSession(connector=conn) as session:
                 b, a, lid = await _fetch_spot_snapshot(session, sym)
                 if b:
-                    state.bids, state.asks, state.last_update_id = b, a, lid
+                    state.bids_map, state.asks_map = _book_map(b), _book_map(a)
+                    state.bids = _book_vue(state.bids_map, True)
+                    state.asks = _book_vue(state.asks_map, False)
+                    state.last_update_id = lid
                 fb, fa, flid = await _fetch_futures_snapshot(session, sym)
                 if fb:
-                    state.futures_bids, state.futures_asks = fb, fa
+                    state.futures_bids_map = _book_map(fb)
+                    state.futures_asks_map = _book_map(fa)
+                    state.futures_bids = _book_vue(state.futures_bids_map, True)
+                    state.futures_asks = _book_vue(state.futures_asks_map, False)
                     state.futures_last_update_id = flid
                 state._compute_derived()
                 state.ts = time.time()

@@ -11,8 +11,36 @@ une source en échec ne casse pas le snapshot.
 """
 from __future__ import annotations
 
+import threading
+import time
 from datetime import datetime, timezone
 from typing import Callable, Dict
+
+# verify_integrity() re-hache TOUT le journal, flux par flux : c'est un AUDIT,
+# pas une sonde. Le cockpit interroge le cortex toutes les 5 s — sans ce cache
+# l'audit complet tournait 12 fois par minute et pesait ~22 % du CPU du worker.
+_INTEGRITE_TTL = 600.0
+_integrite_verrou = threading.Lock()
+_integrite_cache: Dict[str, object] = {"at": 0.0, "rapport": None}
+
+
+def integrite_journal(force: bool = False) -> dict:
+    """Rapport d'intégrité de l'EventPlane, ré-audité au plus toutes les 10 min.
+
+    Le rapport porte son âge : un cache muet passerait pour une vérification
+    fraîche alors qu'il ne prouve plus rien.
+    """
+    from core.event_plane import get_event_plane
+
+    with _integrite_verrou:
+        at = float(_integrite_cache["at"] or 0.0)
+        rapport = _integrite_cache["rapport"]
+    if force or rapport is None or (time.time() - at) > _INTEGRITE_TTL:
+        rapport = get_event_plane().verify_integrity()
+        at = time.time()
+        with _integrite_verrou:
+            _integrite_cache.update(at=at, rapport=rapport)
+    return dict(rapport, verifie_il_y_a_s=round(time.time() - at, 1))
 
 
 def _safe(fn: Callable) -> dict:
@@ -41,8 +69,29 @@ def _eventplane() -> dict:
     from core.event_plane import get_event_plane
     plane = get_event_plane()
     health = plane.health()
-    health["integrity"] = plane.verify_integrity()
+    health["integrity"] = integrite_journal()
     return health
+
+
+def _emotion() -> dict:
+    """ÉMOTION comme ORGANE du cortex (demande Florent 21/07/2026 : « l'émotion doit
+    principalement être intégrée au cortex neuronal »). Elle est UNE PIÈCE du noyau de
+    calcul, pas le pilier décisionnaire : elle agit sur la décision à travers les familles
+    du consensus, et le cortex la rend simplement VISIBLE.
+
+    On projette l'émotion DÉJÀ CALCULÉE par la boucle de consensus — aucun appel MT5/réseau
+    ici, le cortex doit rester léger (contrat du module)."""
+    from core.consensus_engine import status_snapshot
+    syms = (status_snapshot() or {}).get("symbols") or {}
+    votes = {"long": 0, "short": 0, "neutral": 0}
+    confs = []
+    for s in syms.values():
+        d = int((s.get("engine_directions") or {}).get("emotion") or 0)
+        votes["long" if d > 0 else ("short" if d < 0 else "neutral")] += 1
+        c = ((s.get("engine_confirmation") or {}).get("emotion") or {}).get("confidence")
+        if isinstance(c, (int, float)):
+            confs.append(float(c))
+    return {"n_symbols": len(syms), "directions": votes, "confidences": confs}
 
 
 def _summarize(name: str, snap: dict) -> dict:
@@ -72,6 +121,18 @@ def _summarize(name: str, snap: dict) -> dict:
         return {"health": "ok" if snap.get("ts") else "cold",
                 "timeframes": list(by_tf.keys()), "n_strong_candidates": strong,
                 "note": "pré-M2, ne décide rien"}
+    if name == "emotion":
+        votes = snap.get("directions") or {}
+        confs = snap.get("confidences") or []
+        n = int(snap.get("n_symbols") or 0)
+        directional = int(votes.get("long", 0)) + int(votes.get("short", 0))
+        # `health` reflète le fonctionnement de l'ORGANE, pas son humeur du moment : une
+        # émotion neutre n'est pas une panne. `expressive` dit si elle porte une direction.
+        return {"health": "ok" if n else "cold",
+                "expressive": directional > 0, "n_symbols": n,
+                "n_directional": directional, "directions": votes,
+                "mean_confidence": round(sum(confs) / len(confs), 3) if confs else 0.0,
+                "note": "une pièce du noyau de calcul, pas le pilier décisionnaire"}
     if name == "eventplane":
         integ = (snap.get("integrity") or {})
         integrity_ok = integ.get("ok")
@@ -88,7 +149,7 @@ def snapshot(*, full: bool = False) -> dict:
     `full=True` → snapshots complets de chaque moteur. LECTURE SEULE, fail-safe."""
     sources: Dict[str, Callable] = {
         "confluence": _confluence, "consensus": _consensus, "leadlag": _leadlag,
-        "eventplane": _eventplane,
+        "emotion": _emotion, "eventplane": _eventplane,
     }
     raw = {name: _safe(fn) for name, fn in sources.items()}
     health = {name: _summarize(name, snap) for name, snap in raw.items()}

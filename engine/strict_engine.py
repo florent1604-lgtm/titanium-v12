@@ -29,32 +29,35 @@ _strict_lock = asyncio.Lock()
 _CANDLES_PER_DAY_5M = 288   # 5m candles par jour
 
 
-def _trix_series(close: np.ndarray, length: int) -> np.ndarray:
-    """TRIX vectorisé numpy (triple EMA)."""
-    def ema(arr: np.ndarray, span: int) -> np.ndarray:
-        alpha  = 2.0 / (span + 1)
-        result = np.empty_like(arr)
-        result[0] = arr[0]
-        for i in range(1, len(arr)):
-            result[i] = alpha * arr[i] + (1 - alpha) * result[i - 1]
-        return result
+def _ema_recursive(arr: np.ndarray, span: int) -> np.ndarray:
+    """EMA récursive calculée en C.
 
-    ema1 = ema(close, length)
-    ema2 = ema(ema1, length)
-    ema3 = ema(ema2, length)
+    Exactement la même récurrence que la boucle Python qu'elle remplace —
+    y[0] = x[0], y[i] = α·x[i] + (1−α)·y[i−1] avec α = 2/(span+1) — mais sans
+    repasser par l'interpréteur à chaque barre : `adjust=False` EST cette forme.
+    La calibration STRICT balaye des centaines de combinaisons, la boucle Python
+    y pesait à elle seule un tiers du CPU du worker.
+    """
+    if len(arr) == 0:
+        return np.asarray(arr, dtype=float)
+    alpha = 2.0 / (span + 1)
+    serie = pd.Series(arr, copy=False).ewm(alpha=alpha, adjust=False).mean()
+    return serie.to_numpy(dtype=float)
+
+
+def _trix_series(close: np.ndarray, length: int) -> np.ndarray:
+    """TRIX (triple EMA)."""
+    ema1 = _ema_recursive(close, length)
+    ema2 = _ema_recursive(ema1, length)
+    ema3 = _ema_recursive(ema2, length)
     trix = np.zeros(len(ema3))
     trix[1:] = (ema3[1:] - ema3[:-1]) / np.where(ema3[:-1] != 0, ema3[:-1], 1e-9) * 100
     return trix
 
 
 def _ema_series(close: np.ndarray, span: int) -> np.ndarray:
-    """EMA vectorisée simple."""
-    alpha  = 2.0 / (span + 1)
-    result = np.empty_like(close)
-    result[0] = close[0]
-    for i in range(1, len(close)):
-        result[i] = alpha * close[i] + (1 - alpha) * result[i - 1]
-    return result
+    """EMA simple — même récurrence, calculée en C."""
+    return _ema_recursive(close, span)
 
 
 def _sharpe_trix(df: pd.DataFrame, trix_len: int, signal_len: int, fee_bps: float) -> float:

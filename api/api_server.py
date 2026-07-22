@@ -443,13 +443,17 @@ async def dashboard_v13():
 
 
 @app.get("/eventplane/health")
-async def eventplane_health():
+async def eventplane_health(verifier: int = 0):
     """Santé de l'EventPlane (B0) : nb d'événements, dernier offset, échecs, intégrité.
-    Lecture seule. Ne déclenche rien."""
+    Lecture seule. Ne déclenche rien.
+
+    L'intégrité vient de l'audit mutualisé (ré-haché au plus toutes les 10 min) et
+    porte son âge. `?verifier=1` force un ré-audit complet immédiat.
+    """
+    from core.cortex import integrite_journal
     from core.event_plane import get_event_plane
-    p = get_event_plane()
-    h = p.health()
-    h["integrity"] = p.verify_integrity()
+    h = get_event_plane().health()
+    h["integrity"] = integrite_journal(force=bool(verifier))
     return h
 
 
@@ -515,6 +519,40 @@ async def confluence_demo_status():
         "ltf": CONFLUENCE_DEMO_LTF, "htf": CONFLUENCE_DEMO_HTF,
         **snap,   # heartbeat + symbols (décisions) + recent
     }
+
+
+@app.get("/health/system")
+async def health_system():
+    """État produit par l'AGENT DE SANTÉ (`tools/health_agent.py`), lu depuis son fichier.
+
+    ⚠️ On LIT seulement : l'agent est un processus INDÉPENDANT, à dessein. S'il tournait ici,
+    il serait gelé en même temps que l'API le jour où celle-ci s'emballe — et ne signalerait
+    rien (incident du 21/07/2026). Cette route n'est qu'une fenêtre sur son travail ; les
+    alertes, elles, partent de lui directement en fenêtre Windows, sans dépendre d'ici."""
+    from pathlib import Path as _P
+    import json as _json
+    from datetime import datetime as _dt, timezone as _tz
+    f = _P(__file__).resolve().parent.parent / "data" / "health_status.json"
+    try:
+        etat = _json.loads(f.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return {"sante": "inconnue", "agent": "arrete",
+                "note": "Agent de santé non démarré : venv\\Scripts\\python.exe tools\\health_agent.py"}
+    except Exception as exc:  # noqa: BLE001
+        return {"sante": "inconnue", "agent": "illisible", "detail": repr(exc)}
+    # Un état figé est un état MENSONGER : si l'agent est mort, on le dit.
+    try:
+        age = (_dt.now(_tz.utc) - _dt.fromisoformat(etat["ts"])).total_seconds()
+        etat["age_s"] = round(age, 1)
+        if age > 180:
+            etat["agent"] = "muet"
+            etat["sante"] = "inconnue"
+            etat["note"] = f"Aucune mise à jour depuis {age:.0f}s — l'agent de santé ne tourne plus."
+        else:
+            etat["agent"] = "actif"
+    except Exception:  # noqa: BLE001
+        etat["agent"] = "inconnu"
+    return etat
 
 
 @app.get("/brain/master")
