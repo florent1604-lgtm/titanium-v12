@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import hmac
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -99,6 +101,41 @@ def test_session_challenge_is_exposed_over_http(tmp_path: Path) -> None:
     assert isinstance(response.json()["nonce"], str)
     assert response.headers["cache-control"] == "no-store"
     assert response.headers["pragma"] == "no-cache"
+    store.close()
+
+
+def test_session_challenge_exposes_exact_canonical_expiration_for_native_proof(
+    tmp_path: Path,
+) -> None:
+    clock = FakeClock()
+    client, store, attestation, _sessions = _client(tmp_path, clock)
+
+    response = client.post("/v1/session/challenge")
+
+    assert response.status_code == 201
+    assert set(response.json()) == {"nonce", "expires_at"}
+    assert response.json()["expires_at"] == "2026-07-22T08:00:30+00:00"
+    expires_at = datetime.fromisoformat(response.json()["expires_at"])
+    assert expires_at.tzinfo is not None
+    assert expires_at.utcoffset() == timedelta(0)
+
+    # Build the proof exactly as an independent native client does: the response
+    # must contain every non-secret input used by the backend MAC.
+    sid = "S-1-5-21-florent"
+    nonce = response.json()["nonce"]
+    key = attestation._key
+    proof = hmac.new(
+        key,
+        f"{sid}|{nonce}|{response.json()['expires_at']}".encode("utf-8"),
+        hashlib.sha256,
+    ).hexdigest()
+    accepted = client.post(
+        "/v1/session/windows",
+        json={"sid": sid, "nonce": nonce, "proof": proof},
+    )
+
+    assert accepted.status_code == 201
+    assert "token" in accepted.json()
     store.close()
 
 

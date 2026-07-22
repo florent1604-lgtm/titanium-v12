@@ -34,7 +34,7 @@ def create_session_routes(
 
     async def challenge(_request: Request) -> JSONResponse:
         try:
-            nonce = await asyncio.to_thread(attestation.challenge)
+            issued = await asyncio.to_thread(attestation.challenge_details)
         except AttestationError:
             return JSONResponse(
                 {"reason_code": "WINDOWS_ATTESTATION_UNAVAILABLE"},
@@ -42,7 +42,9 @@ def create_session_routes(
                 headers=_NO_STORE_HEADERS,
             )
         return JSONResponse(
-            {"nonce": nonce}, status_code=201, headers=_NO_STORE_HEADERS
+            {"nonce": issued.nonce, "expires_at": issued.expires_at},
+            status_code=201,
+            headers=_NO_STORE_HEADERS,
         )
 
     async def windows_session(request: Request) -> JSONResponse:

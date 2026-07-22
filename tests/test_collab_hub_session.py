@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import hashlib
+import hmac
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -298,6 +301,43 @@ def test_challenge_capacity_refuses_a_new_live_nonce(tmp_path: Path) -> None:
 
     with pytest.raises(AttestationError, match="CHALLENGE_CAPACITY_EXCEEDED"):
         attestation.challenge()
+
+
+def test_challenge_details_are_atomic_unique_and_share_canonical_expiration(
+    tmp_path: Path,
+) -> None:
+    clock = FakeClock()
+    attestation = _attestation(tmp_path, clock, max_challenges=32)
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        challenges = tuple(
+            pool.map(lambda _index: attestation.challenge_details(), range(16))
+        )
+
+    assert len({challenge.nonce for challenge in challenges}) == 16
+    assert {challenge.expires_at for challenge in challenges} == {
+        "2026-07-22T08:00:30+00:00"
+    }
+    for challenge in challenges:
+        proof = attestation.test_proof("S-1-5-21-florent", challenge.nonce)
+        attestation.verify("S-1-5-21-florent", challenge.nonce, proof)
+
+
+def test_challenge_details_expiration_is_the_exact_hmac_input(tmp_path: Path) -> None:
+    attestation = _attestation(tmp_path, FakeClock())
+
+    challenge = attestation.challenge_details()
+    proof = attestation.test_proof("S-1-5-21-florent", challenge.nonce)
+
+    expected = hmac.new(
+        attestation._key,
+        (
+            "S-1-5-21-florent|"
+            f"{challenge.nonce}|{challenge.expires_at}"
+        ).encode("utf-8"),
+        hashlib.sha256,
+    ).hexdigest()
+    assert proof == expected
 
 
 def test_bootstrap_key_is_persisted_only_through_protector(tmp_path: Path) -> None:

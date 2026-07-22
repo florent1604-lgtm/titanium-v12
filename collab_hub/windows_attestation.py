@@ -11,6 +11,7 @@ import sys
 import threading
 from collections.abc import Callable
 from ctypes import wintypes
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Protocol
@@ -38,6 +39,14 @@ class ProofRejected(AttestationError):
 
 class ChallengeCapacityExceeded(AttestationError):
     """Raised when all bounded challenge slots contain live nonces."""
+
+
+@dataclass(frozen=True)
+class AttestationChallenge:
+    """Public, non-secret inputs required to reproduce an attestation proof."""
+
+    nonce: str
+    expires_at: str
 
 
 class KeyProtector(Protocol):
@@ -340,6 +349,13 @@ class WindowsAttestation:
             raise KeyProtectionError("KEY_PROTECTION_FAILED") from exc
 
     def challenge(self) -> str:
+        """Issue a nonce for legacy in-process callers."""
+
+        return self.challenge_details().nonce
+
+    def challenge_details(self) -> AttestationChallenge:
+        """Issue a nonce and its exact canonical HMAC expiration input."""
+
         now = self._now()
         with self._lock:
             self._purge_expired(now)
@@ -349,8 +365,9 @@ class WindowsAttestation:
                 nonce = secrets.token_urlsafe(32)
                 if nonce not in self._challenges:
                     break
-            self._challenges[nonce] = now + timedelta(seconds=self._ttl_seconds)
-        return nonce
+            expires_at = now + timedelta(seconds=self._ttl_seconds)
+            self._challenges[nonce] = expires_at
+        return AttestationChallenge(nonce=nonce, expires_at=expires_at.isoformat())
 
     def _purge_expired(
         self, now: datetime, *, preserve_nonce: str | None = None
