@@ -18,7 +18,11 @@ from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from .contracts import MessageDraft, StoredMessage
 from .mcp import create_collab_mcp
+from .session import SessionAuthority
+from .session_routes import create_session_routes
 from .store import CollabStore, IdempotencyConflict
+from .task_routes import create_task_routes
+from .windows_attestation import WindowsAttestation
 
 
 class MessageInput(BaseModel):
@@ -117,10 +121,17 @@ class RealtimeBroker:
                     pass
 
 
-def create_app(store: CollabStore) -> Starlette:
+def create_app(
+    store: CollabStore,
+    *,
+    attestation: WindowsAttestation | None = None,
+    session_authority: SessionAuthority | None = None,
+) -> Starlette:
     broker = RealtimeBroker()
     collab_mcp = create_collab_mcp(store, broker)
     mcp_app = collab_mcp.streamable_http_app()
+    active_attestation = attestation or WindowsAttestation()
+    active_sessions = session_authority or SessionAuthority()
 
     @asynccontextmanager
     async def lifespan(_app: Starlette):
@@ -162,9 +173,26 @@ def create_app(store: CollabStore) -> Starlette:
         return JSONResponse(asdict(receipt), status_code=201)
 
     async def read_messages(request: Request) -> JSONResponse:
-        after_offset = _query_int(request, "after_offset", 0, 0, 2**63 - 1)
+        has_after = "after_offset" in request.query_params
+        has_before = "before_offset" in request.query_params
+        if has_after and has_before:
+            raise HTTPException(
+                status_code=400,
+                detail="before_offset et after_offset sont mutuellement exclusifs",
+            )
         limit = _query_int(request, "limit", 100, 1, 1000)
-        rows = await asyncio.to_thread(store.read, after_offset=after_offset, limit=limit)
+        if has_before:
+            before_offset = _query_int(
+                request, "before_offset", 0, 0, 2**63 - 1
+            )
+            rows = await asyncio.to_thread(
+                store.read_before, before_offset=before_offset, limit=limit
+            )
+        else:
+            after_offset = _query_int(request, "after_offset", 0, 0, 2**63 - 1)
+            rows = await asyncio.to_thread(
+                store.read, after_offset=after_offset, limit=limit
+            )
         return JSONResponse({"messages": [_message_dict(row) for row in rows]})
 
     async def acknowledge(request: Request) -> JSONResponse:
@@ -289,9 +317,13 @@ def create_app(store: CollabStore) -> Starlette:
         Route("/v1/stream", stream_messages, methods=["GET"]),
         WebSocketRoute("/v1/ws", websocket_messages),
     ]
+    routes.extend(create_session_routes(active_attestation, active_sessions))
+    routes.extend(create_task_routes(store, active_sessions))
     app = Starlette(routes=routes, lifespan=lifespan)
     app.state.collab_store = store
     app.state.collab_broker = broker
     app.state.collab_mcp = collab_mcp
+    app.state.collab_attestation = active_attestation
+    app.state.collab_sessions = active_sessions
     app.router.routes.extend(mcp_app.routes)
     return app
