@@ -1,13 +1,24 @@
 import { HostBridge } from '../host_bridge.mjs';
 import { selectMessages } from '../state.mjs';
+import {
+  createInteractionState,
+  interactionError,
+  isPending,
+  runGuardedInteraction,
+} from './interaction.mjs';
 
 export function renderMessages(root, options = {}) {
   const document = documentOf(root);
   const state = options.state ?? { messages: [] };
   const filters = options.filters ?? {};
+  const interaction = options.interaction ?? createInteractionState();
   const records = selectMessages(state, selectorFilters(filters));
   const filterBar = createFilterBar(document, state.messages ?? [], filters, options.onFilterChange);
-  const history = createHistoryControl(document, state.messages ?? [], options.onLoadOlder);
+  const history = createHistoryControl(document, state.messages ?? [], {
+    interaction,
+    onInteractionChange: options.onInteractionChange,
+    onLoadOlder: options.onLoadOlder,
+  });
   const log = element(document, 'div', 'message-log');
   log.setAttribute('aria-label', 'Messages du journal');
 
@@ -19,7 +30,13 @@ export function renderMessages(root, options = {}) {
   }
   log.replaceChildren(...rows);
 
-  const composer = createComposer(document, options.bridge);
+  const composer = createComposer(document, {
+    bridge: options.bridge,
+    draft: options.draft,
+    interaction,
+    onDraftChange: options.onDraftChange,
+    onInteractionChange: options.onInteractionChange,
+  });
   root.replaceChildren(filterBar, history, log, composer);
   return root;
 }
@@ -66,7 +83,8 @@ function createFilterBar(document, records, filters, onFilterChange) {
   return bar;
 }
 
-function createHistoryControl(document, records, onLoadOlder) {
+function createHistoryControl(document, records, options) {
+  const key = 'load-older';
   const row = element(document, 'div', 'history-control');
   const button = element(document, 'button', 'load-older');
   button.type = 'button';
@@ -76,10 +94,22 @@ function createHistoryControl(document, records, onLoadOlder) {
     .map((record) => Number(record.global_offset))
     .filter((offset) => Number.isSafeInteger(offset) && offset >= 0);
   const earliest = offsets.length > 0 ? Math.min(...offsets) : null;
-  const enabled = earliest !== null && typeof onLoadOlder === 'function';
+  const enabled = earliest !== null &&
+    typeof options.onLoadOlder === 'function' &&
+    !isPending(options.interaction, key);
   setEnabled(button, enabled);
-  if (enabled) button.addEventListener('click', () => onLoadOlder(earliest));
-  row.replaceChildren(button);
+  if (enabled) {
+    button.addEventListener('click', () => runGuardedInteraction({
+      interaction: options.interaction,
+      key,
+      operation: () => options.onLoadOlder(earliest),
+      errorMessage: 'Chargement indisponible. Réessayez manuellement.',
+      onChange: options.onInteractionChange,
+      controls: [button],
+    }));
+  }
+  const error = errorNode(document, interactionError(options.interaction, key), key);
+  row.replaceChildren(...[button, error].filter(Boolean));
   return row;
 }
 
@@ -104,7 +134,8 @@ function createMessage(document, record) {
   return article;
 }
 
-function createComposer(document, bridge) {
+function createComposer(document, options) {
+  const key = 'chat.publish';
   const wrapper = element(document, 'div', 'composer');
   wrapper.setAttribute('aria-label', 'Composer un message');
   const label = element(document, 'label');
@@ -113,25 +144,41 @@ function createComposer(document, bridge) {
   const textarea = element(document, 'textarea');
   textarea.id = 'message-input';
   textarea.rows = 2;
+  textarea.value = String(options.draft ?? '');
   textarea.setAttribute('data-action', 'compose-message');
+  textarea.setAttribute('data-focus-key', 'composer');
   textarea.setAttribute('placeholder', 'Écrire à l’équipe ou /commander…');
   const send = element(document, 'button');
   send.type = 'button';
   send.textContent = 'Envoyer';
   send.setAttribute('data-action', 'send-message');
 
-  const available = bridge instanceof HostBridge;
+  if (typeof options.onDraftChange === 'function') {
+    textarea.addEventListener('input', (event) => {
+      options.onDraftChange(String(event.currentTarget.value ?? ''));
+    });
+  }
+  const available = options.bridge instanceof HostBridge;
   setEnabled(textarea, available);
   textarea.readOnly = !available;
-  setEnabled(send, available);
-  if (available) {
+  const enabled = available && !isPending(options.interaction, key);
+  setEnabled(send, enabled);
+  if (enabled) {
     send.addEventListener('click', () => {
       const content = String(textarea.value ?? '').trim();
       if (content.length === 0) return;
-      bridge.postIntent({ type: 'chat.publish', content });
+      return runGuardedInteraction({
+        interaction: options.interaction,
+        key,
+        operation: () => options.bridge.postIntent({ type: 'chat.publish', content }),
+        errorMessage: 'Envoi indisponible. Le brouillon est conservé.',
+        onChange: options.onInteractionChange,
+        controls: [send],
+      });
     });
   }
-  wrapper.replaceChildren(label, textarea, send);
+  const error = errorNode(document, interactionError(options.interaction, key), key);
+  wrapper.replaceChildren(...[label, textarea, send, error].filter(Boolean));
   return wrapper;
 }
 
@@ -143,6 +190,7 @@ function inputFilter(document, labelText, type, name, value, onChange) {
   input.type = type;
   input.name = name;
   input.value = value;
+  input.setAttribute('data-focus-key', `filter-${name}`);
   input.addEventListener('change', (event) => onChange(event.currentTarget.value));
   label.replaceChildren(text, input);
   return label;
@@ -155,6 +203,7 @@ function selectFilter(document, labelText, name, value, values, onChange) {
   const select = element(document, 'select');
   select.name = name;
   select.value = value;
+  select.setAttribute('data-focus-key', `filter-${name}`);
   const all = element(document, 'option');
   all.value = '';
   all.textContent = 'Tous';
@@ -203,6 +252,15 @@ function display(value, fallback) {
 function setEnabled(control, enabled) {
   control.disabled = !enabled;
   control.setAttribute('aria-disabled', String(!enabled));
+}
+
+function errorNode(document, message, key) {
+  if (!message) return null;
+  const node = element(document, 'p', 'interaction-error');
+  node.textContent = message;
+  node.setAttribute('role', 'status');
+  node.setAttribute('data-error-key', key);
+  return node;
 }
 
 function element(document, tagName, className = '') {

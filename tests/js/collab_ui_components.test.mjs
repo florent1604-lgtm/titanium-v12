@@ -26,6 +26,9 @@ class FakeElement {
     this.disabled = false;
     this.readOnly = false;
     this.value = '';
+    this.selectionStart = 0;
+    this.selectionEnd = 0;
+    this.selectionDirection = 'none';
     this._textContent = '';
   }
 
@@ -49,6 +52,7 @@ class FakeElement {
   replaceChildren(...children) {
     this._textContent = '';
     this.children = children;
+    for (const child of children) child.parentElement = this;
   }
 
   addEventListener(type, listener) {
@@ -62,11 +66,23 @@ class FakeElement {
       currentTarget: this,
       preventDefault() {},
     };
-    for (const listener of this.listeners.get(type) ?? []) listener(event);
+    return (this.listeners.get(type) ?? []).map((listener) => listener(event));
+  }
+
+  focus() {
+    this.ownerDocument.activeElement = this;
+  }
+
+  setSelectionRange(start, end, direction = 'none') {
+    this.selectionStart = start;
+    this.selectionEnd = end;
+    this.selectionDirection = direction;
   }
 }
 
 class FakeDocument {
+  activeElement = null;
+
   createElement(tagName) {
     return new FakeElement(tagName, this);
   }
@@ -89,6 +105,21 @@ function one(node, predicate) {
 
 function byAction(node, action) {
   return one(node, (item) => item.getAttribute('data-action') === action);
+}
+
+function deferred() {
+  let resolve;
+  let reject;
+  const promise = new Promise((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
+  });
+  return { promise, reject, resolve };
+}
+
+async function settle(results) {
+  await Promise.all(results.filter((value) => value instanceof Promise));
+  await Promise.resolve();
 }
 
 function message(offset, overrides = {}) {
@@ -156,6 +187,83 @@ test('message rendering uses state selectors and loads older messages only on cl
   assert.deepEqual(requested, [2]);
 });
 
+test('load older has a synchronous durable lock and releases it after settle', async () => {
+  const target = root();
+  const pending = deferred();
+  const interaction = { pending: new Set(), errors: new Map() };
+  const state = reduce(createState(), {
+    type: 'messages.loaded',
+    messages: [message(2)],
+  });
+  let calls = 0;
+  let options;
+  const rerender = () => renderMessages(target, options);
+  options = {
+    state,
+    interaction,
+    onInteractionChange: rerender,
+    onLoadOlder() {
+      calls += 1;
+      return pending.promise;
+    },
+  };
+  rerender();
+  const original = byAction(target, 'load-older');
+
+  const first = original.dispatch('click');
+  const second = original.dispatch('click');
+
+  assert.equal(calls, 1);
+  assert.equal(byAction(target, 'load-older').disabled, true);
+  pending.resolve([]);
+  await settle([...first, ...second]);
+  assert.equal(byAction(target, 'load-older').disabled, false);
+});
+
+test('load older disables its current button even without a rerender callback', async () => {
+  const target = root();
+  const pending = deferred();
+  const state = reduce(createState(), {
+    type: 'messages.loaded',
+    messages: [message(2)],
+  });
+  renderMessages(target, {
+    state,
+    onLoadOlder: () => pending.promise,
+  });
+  const button = byAction(target, 'load-older');
+
+  const result = button.dispatch('click');
+  assert.equal(button.disabled, true);
+  pending.resolve([]);
+  await settle(result);
+  assert.equal(button.disabled, false);
+});
+
+test('load older rejection is handled, sanitized, and releases pending', async () => {
+  const target = root();
+  const interaction = { pending: new Set(), errors: new Map() };
+  const state = reduce(createState(), {
+    type: 'messages.loaded',
+    messages: [message(2)],
+  });
+  let options;
+  const rerender = () => renderMessages(target, options);
+  options = {
+    state,
+    interaction,
+    onInteractionChange: rerender,
+    onLoadOlder: () => Promise.reject(new Error('ADMIN_TOKEN=do-not-render')),
+  };
+  rerender();
+
+  await settle(byAction(target, 'load-older').dispatch('click'));
+
+  assert.match(target.textContent, /Chargement indisponible/);
+  assert.doesNotMatch(target.textContent, /ADMIN_TOKEN|do-not-render/);
+  assert.equal(byAction(target, 'load-older').disabled, false);
+});
+
 test('text filters commit after editing instead of rerendering on each keystroke', () => {
   const target = root();
   const updates = [];
@@ -206,6 +314,28 @@ test('composer forwards one allowlisted intent only after a manual click', () =>
   ]);
 });
 
+test('composer handles asynchronous HostBridge rejection without leaking details', async () => {
+  const target = root();
+  const interaction = { pending: new Set(), errors: new Map() };
+  const bridge = new HostBridge(() => Promise.reject(new Error('secret payload')));
+  let options;
+  const rerender = () => renderMessages(target, options);
+  options = {
+    state: createState(),
+    bridge,
+    interaction,
+    draft: 'Verdict commun',
+    onInteractionChange: rerender,
+  };
+  rerender();
+
+  await settle(byAction(target, 'send-message').dispatch('click'));
+
+  assert.match(target.textContent, /Envoi indisponible/);
+  assert.doesNotMatch(target.textContent, /secret payload/);
+  assert.equal(byAction(target, 'send-message').disabled, false);
+});
+
 test('agent rendering treats supplied names as text', () => {
   const target = root();
   renderAgents(target, {
@@ -214,6 +344,14 @@ test('agent rendering treats supplied names as text', () => {
 
   assert.match(target.textContent, /<img src=x>/);
   assert.equal(descendants(target).some((node) => node.tagName === 'IMG'), false);
+});
+
+test('desktop guard has a real separator and never concatenates its warnings', () => {
+  const target = root();
+  renderAgents(target);
+
+  assert.equal(descendants(target).some((node) => node.tagName === 'BR'), true);
+  assert.doesNotMatch(target.textContent, /PAPER ONLYRÉEL INTERDIT/);
 });
 
 test('dock exposes the five exact capability states and UNKNOWN is unavailable', () => {
@@ -253,6 +391,29 @@ test('dock actions only forward HostBridge intents after a manual click', () => 
   ]);
 });
 
+test('dock catches synchronous HostBridge throws and shows only a safe error', async () => {
+  const target = root();
+  const interaction = { pending: new Set(), errors: new Map() };
+  const bridge = new HostBridge(() => {
+    throw new Error('X-Collab-Session=never-render');
+  });
+  let options;
+  const rerender = () => renderActions(target, options);
+  options = {
+    bridge,
+    capabilities: { serviceHealth: 'AVAILABLE' },
+    interaction,
+    onInteractionChange: rerender,
+  };
+  rerender();
+
+  await settle(byAction(target, 'service-health').dispatch('click'));
+
+  assert.match(target.textContent, /Action indisponible/);
+  assert.doesNotMatch(target.textContent, /X-Collab-Session|never-render/);
+  assert.equal(byAction(target, 'service-health').disabled, false);
+});
+
 test('failure view counts non-closed failures and retries only on click', () => {
   const target = root();
   const posted = [];
@@ -276,6 +437,52 @@ test('failure view counts non-closed failures and retries only on click', () => 
   ]);
 });
 
+test('failure view exposes an unavailable state without raw transport details', () => {
+  const target = root();
+  const state = reduce(createState(), { type: 'failures.failed' });
+
+  renderFailures(target, { state });
+
+  assert.match(target.textContent, /Échecs indisponibles/);
+  assert.doesNotMatch(target.textContent, /401|X-Collab-Session|token/i);
+});
+
+test('retry has a per-task synchronous lock across rerenders and releases on rejection', async () => {
+  const target = root();
+  const pending = deferred();
+  const interaction = { pending: new Set(), errors: new Map() };
+  let posts = 0;
+  const bridge = new HostBridge(() => {
+    posts += 1;
+    return pending.promise;
+  });
+  const state = reduce(createState(), {
+    type: 'failures.loaded',
+    failures: [failure()],
+  });
+  let options;
+  const rerender = () => renderFailures(target, options);
+  options = {
+    state,
+    bridge,
+    interaction,
+    onInteractionChange: rerender,
+  };
+  rerender();
+  const original = byAction(target, 'retry-task-1');
+
+  const first = original.dispatch('click');
+  const second = original.dispatch('click');
+
+  assert.equal(posts, 1);
+  assert.equal(byAction(target, 'retry-task-1').disabled, true);
+  pending.reject(new Error('private retry detail'));
+  await settle([...first, ...second]);
+  assert.match(target.textContent, /Nouvel essai indisponible/);
+  assert.doesNotMatch(target.textContent, /private retry detail/);
+  assert.equal(byAction(target, 'retry-task-1').disabled, false);
+});
+
 test('command deck mounts Conversation and Échecs à suivre as keyboard buttons', () => {
   const target = root();
   const app = {
@@ -297,4 +504,42 @@ test('command deck mounts Conversation and Échecs à suivre as keyboard buttons
   failures.dispatch('click');
   assert.equal(failures.getAttribute('aria-selected'), 'true');
   assert.match(target.textContent, /Aucun échec à suivre/);
+});
+
+test('realtime snapshots preserve composer draft, focus, and text selection', () => {
+  const target = root();
+  const bridge = new HostBridge(() => {});
+  let current = { connectionStatus: 'connected', state: createState() };
+  let subscriber;
+  const app = {
+    snapshot: () => current,
+    subscribe(listener) {
+      subscriber = listener;
+      listener(current);
+      return () => {};
+    },
+    loadOlder() {},
+  };
+  mountCommandDeck({ root: target, app, bridge });
+  const composer = byAction(target, 'compose-message');
+  composer.value = 'Brouillon non publié';
+  composer.dispatch('input');
+  composer.focus();
+  composer.setSelectionRange(4, 12, 'forward');
+
+  current = {
+    connectionStatus: 'connected',
+    state: reduce(createState(), {
+      type: 'messages.loaded',
+      messages: [message(8)],
+    }),
+  };
+  subscriber(current);
+
+  const restored = byAction(target, 'compose-message');
+  assert.equal(restored.value, 'Brouillon non publié');
+  assert.strictEqual(target.ownerDocument.activeElement, restored);
+  assert.equal(restored.selectionStart, 4);
+  assert.equal(restored.selectionEnd, 12);
+  assert.equal(restored.selectionDirection, 'forward');
 });

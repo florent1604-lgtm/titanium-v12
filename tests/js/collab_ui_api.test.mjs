@@ -7,6 +7,7 @@ import {
   createWebViewBridge,
 } from '../../collab_ui/host_bridge.mjs';
 import { createApp } from '../../collab_ui/app.mjs';
+import { createState, reduce } from '../../collab_ui/state.mjs';
 
 function message(globalOffset, overrides = {}) {
   return {
@@ -27,6 +28,30 @@ function response(messages) {
     async json() {
       return { messages };
     },
+  };
+}
+
+function failureResponse(failures, overrides = {}) {
+  return {
+    ok: true,
+    async json() {
+      return { failures };
+    },
+    ...overrides,
+  };
+}
+
+function failure(overrides = {}) {
+  return {
+    task_id: 'task-1',
+    attempt_id: 'attempt-1',
+    reason_code: 'TEST_FAILED',
+    evidence_ref: 'node --test',
+    status: 'A_REVALIDER',
+    event_id: 'event-1',
+    created_at: '2026-07-22T10:00:00Z',
+    payload_sha256: 'a'.repeat(64),
+    ...overrides,
   };
 }
 
@@ -86,6 +111,14 @@ function fakeScheduler() {
       if (!timer.cancelled) await timer.callback();
     },
   };
+}
+
+function deferredResponse() {
+  let resolve;
+  const promise = new Promise((resolvePromise) => {
+    resolve = resolvePromise;
+  });
+  return { promise, resolve };
 }
 
 test('replays after the last confirmed offset before opening and reconnecting the socket', async () => {
@@ -195,6 +228,63 @@ test('loads older pages to the beginning in increasing order without gaps or dup
     [1, 2, 3, 4, 5, 6],
   );
   assert.deepEqual(beginning, []);
+});
+
+test('loads failures from the relative endpoint without a JavaScript auth header', async () => {
+  const calls = [];
+  const client = new CollabClient({
+    fetch: async () => response([]),
+    failureLoader: async (url, options) => {
+      calls.push({ url, options });
+      return failureResponse([failure()]);
+    },
+    socketFactory: fakeSockets([]).factory,
+  });
+
+  const loaded = await client.loadFailures();
+
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].url, '/v1/failures');
+  assert.deepEqual(calls[0].options.headers, { Accept: 'application/json' });
+  assert.equal(Object.hasOwn(calls[0].options.headers, 'X-Collab-Session'), false);
+  assert.equal(Object.hasOwn(calls[0].options.headers, 'Authorization'), false);
+  assert.deepEqual(loaded, [failure()]);
+  assert.deepEqual(client.state.failures, [failure()]);
+  assert.equal(client.state.loadState.failures, 'READY');
+});
+
+test('failure feed authorization errors fail closed without altering messages', async () => {
+  const initial = reduce(createState(), {
+    type: 'messages.loaded',
+    messages: [message(7)],
+  });
+  const client = new CollabClient({
+    state: initial,
+    fetch: async () => response([]),
+    failureLoader: async () => failureResponse([], { ok: false, status: 401 }),
+    socketFactory: fakeSockets([]).factory,
+  });
+
+  await assert.rejects(client.loadFailures(), /failure feed unavailable/i);
+
+  assert.equal(client.state.loadState.failures, 'UNAVAILABLE');
+  assert.deepEqual(client.state.messages, initial.messages);
+});
+
+test('a stale failure response cannot mutate state after stop', async () => {
+  const pending = deferredResponse();
+  const client = new CollabClient({
+    fetch: async () => response([]),
+    failureLoader: () => pending.promise,
+    socketFactory: fakeSockets([]).factory,
+  });
+
+  const loading = client.loadFailures();
+  client.stop();
+  pending.resolve(failureResponse([failure()]));
+
+  assert.deepEqual(await loading, []);
+  assert.deepEqual(client.state.failures, []);
 });
 
 test('a stale older page cannot mutate state after cancellation', async () => {

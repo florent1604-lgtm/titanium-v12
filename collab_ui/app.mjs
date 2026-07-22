@@ -4,6 +4,7 @@ import { renderAgents } from './components/agents.mjs';
 import { renderFailures } from './components/failures.mjs';
 import { renderMessages } from './components/messages.mjs';
 import { createWebViewBridge } from './host_bridge.mjs';
+import { createInteractionState } from './components/interaction.mjs';
 
 export function createApp(options = {}) {
   const client = options.client ?? new CollabClient(options.clientOptions);
@@ -48,6 +49,14 @@ export function createApp(options = {}) {
     return messages;
   }
 
+  async function loadFailures() {
+    try {
+      return await client.loadFailures();
+    } finally {
+      notify();
+    }
+  }
+
   function stop() {
     client.stop();
   }
@@ -65,7 +74,7 @@ export function createApp(options = {}) {
     return () => listeners.delete(listener);
   }
 
-  return Object.freeze({ loadOlder, snapshot, start, stop, subscribe });
+  return Object.freeze({ loadFailures, loadOlder, snapshot, start, stop, subscribe });
 }
 
 export function mountCommandDeck(options = {}) {
@@ -81,7 +90,9 @@ export function mountCommandDeck(options = {}) {
 
   let activeTab = 'conversation';
   let filters = {};
+  let composerDraft = '';
   let snapshot = app.snapshot();
+  const interaction = createInteractionState();
 
   root.className = 'workspace';
   const agentRail = element(document, 'aside', 'operator-rail');
@@ -109,13 +120,11 @@ export function mountCommandDeck(options = {}) {
 
   const dock = element(document, 'aside', 'action-dock');
   dock.setAttribute('aria-label', 'Actions contrôlées');
-  renderActions(dock, {
-    bridge: options.bridge,
-    capabilities: options.capabilities,
-  });
+  renderDock();
   root.replaceChildren(agentRail, center, dock);
 
   function renderView() {
+    const preserved = captureInteraction(document, view);
     connection.textContent = connectionLabel(snapshot.connectionStatus);
     connection.setAttribute('data-connection-state', String(snapshot.connectionStatus ?? 'UNKNOWN').toLocaleUpperCase('fr-FR'));
     const offsets = (snapshot.state?.messages ?? [])
@@ -132,7 +141,13 @@ export function mountCommandDeck(options = {}) {
         state: snapshot.state,
         filters,
         bridge: options.bridge,
+        draft: composerDraft,
         onFilterChange: updateFilters,
+        onDraftChange: (draft) => {
+          composerDraft = draft;
+        },
+        interaction,
+        onInteractionChange: renderView,
         onLoadOlder: (beforeOffset) => app.loadOlder(beforeOffset),
       });
     } else {
@@ -141,8 +156,20 @@ export function mountCommandDeck(options = {}) {
         filters,
         bridge: options.bridge,
         onFilterChange: updateFilters,
+        interaction,
+        onInteractionChange: renderView,
       });
     }
+    restoreInteraction(view, preserved);
+  }
+
+  function renderDock() {
+    renderActions(dock, {
+      bridge: options.bridge,
+      capabilities: options.capabilities,
+      interaction,
+      onInteractionChange: renderDock,
+    });
   }
 
   function updateFilters(nextFilters) {
@@ -180,7 +207,15 @@ export function bootCommandDeck(options = {}) {
   const bridge = options.bridge ?? availableHostBridge(globalThis.chrome?.webview);
   const mounted = mountCommandDeck({ ...options, app, bridge, root });
   if (options.start !== false && typeof app.start === 'function') {
-    void app.start(0);
+    const startup = Promise.resolve()
+      .then(() => app.start(0))
+      .catch(() => null)
+      .then(() => {
+        if (typeof app.loadFailures !== 'function') return null;
+        return app.loadFailures();
+      })
+      .catch(() => null);
+    void startup;
   }
   if (typeof globalThis.addEventListener === 'function' && typeof app.stop === 'function') {
     globalThis.addEventListener('beforeunload', () => app.stop(), { once: true });
@@ -229,6 +264,56 @@ function element(document, tagName, className = '') {
   const node = document.createElement(tagName);
   node.className = className;
   return node;
+}
+
+function captureInteraction(document, root) {
+  const active = document.activeElement;
+  if (!active || !contains(root, active)) return null;
+  const key = active.getAttribute?.('data-focus-key');
+  if (!key) return null;
+  return {
+    key,
+    value: typeof active.value === 'string' ? active.value : null,
+    selectionStart: Number.isInteger(active.selectionStart) ? active.selectionStart : null,
+    selectionEnd: Number.isInteger(active.selectionEnd) ? active.selectionEnd : null,
+    selectionDirection: active.selectionDirection,
+  };
+}
+
+function restoreInteraction(root, preserved) {
+  if (!preserved) return;
+  const control = findFocusKey(root, preserved.key);
+  if (!control) return;
+  if (preserved.value !== null) control.value = preserved.value;
+  if (typeof control.focus === 'function') control.focus();
+  if (
+    preserved.selectionStart !== null &&
+    preserved.selectionEnd !== null &&
+    typeof control.setSelectionRange === 'function'
+  ) {
+    control.setSelectionRange(
+      preserved.selectionStart,
+      preserved.selectionEnd,
+      preserved.selectionDirection,
+    );
+  }
+}
+
+function contains(root, target) {
+  if (root === target) return true;
+  for (const child of root.children ?? []) {
+    if (contains(child, target)) return true;
+  }
+  return false;
+}
+
+function findFocusKey(root, key) {
+  if (root.getAttribute?.('data-focus-key') === key) return root;
+  for (const child of root.children ?? []) {
+    const match = findFocusKey(child, key);
+    if (match) return match;
+  }
+  return null;
 }
 
 if (typeof globalThis.document?.querySelector === 'function') {

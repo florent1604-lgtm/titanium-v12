@@ -278,6 +278,26 @@ h2 {
   letter-spacing: 0.08em;
 }
 
+.rail-guard span {
+  display: block;
+}
+
+.interaction-error {
+  margin: 6px 0 0;
+  color: var(--red);
+  font: 0.59rem/1.35 var(--utility);
+}
+
+.composer .interaction-error {
+  grid-column: 1 / -1;
+}
+
+.dock-action-row + .dock-action-row,
+.dock-action-row + .dock-action,
+.dock-action + .dock-action-row {
+  margin-top: 9px;
+}
+
 .conversation {
   min-width: 0;
   display: grid;
@@ -784,6 +804,10 @@ h2 {
   .filters {
     grid-template-columns: 1.6fr repeat(2, minmax(100px, 1fr));
   }
+
+  .filters > .filter:last-child {
+    grid-column: span 2;
+  }
 }
 
 @media (max-width: 880px) {
@@ -953,6 +977,10 @@ h2 {
   .filter-search,
   .dock-heading,
   .dock-note {
+    grid-column: auto;
+  }
+
+  .filters > .filter:last-child {
     grid-column: auto;
   }
 

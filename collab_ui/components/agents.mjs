@@ -15,10 +15,11 @@ export function renderAgents(root, options = {}) {
 
   const guard = element(document, 'p', 'rail-guard');
   const paper = element(document, 'span');
-  paper.textContent = 'PAPER ONLY';
+  paper.textContent = 'PAPER ONLY ';
+  const separator = element(document, 'br');
   const real = element(document, 'span');
   real.textContent = 'RÉEL INTERDIT';
-  guard.replaceChildren(paper, real);
+  guard.replaceChildren(paper, separator, real);
   root.replaceChildren(heading, list, guard);
   return root;
 }

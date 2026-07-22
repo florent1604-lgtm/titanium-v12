@@ -59,3 +59,11 @@ def test_exact_labels_and_no_direct_host_or_trading_surface():
         assert label in source
     for forbidden in ("order_send", "MetaTrader5", "child_process", "powershell", "cmd.exe"):
         assert forbidden not in source
+
+
+def test_failure_loader_never_embeds_session_credentials_in_javascript():
+    source = (UI / "api.mjs").read_text(encoding="utf-8")
+    assert "'/v1/failures'" in source
+    assert "X-Collab-Session" not in source
+    assert "Authorization" not in source
+    assert "error.message" not in source

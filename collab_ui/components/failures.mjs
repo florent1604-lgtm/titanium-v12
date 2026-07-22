@@ -1,5 +1,11 @@
 import { HostBridge } from '../host_bridge.mjs';
 import { selectFailures } from '../state.mjs';
+import {
+  createInteractionState,
+  interactionError,
+  isPending,
+  runGuardedInteraction,
+} from './interaction.mjs';
 
 const CLOSED_STATUSES = new Set(['CLOSED', 'CLOTURE', 'CLOTUREE', 'DONE', 'RESOLVED', 'SUCCESS', 'VALIDATED']);
 
@@ -15,6 +21,7 @@ export function renderFailures(root, options = {}) {
   const document = documentOf(root);
   const state = options.state ?? { failures: [] };
   const filters = options.filters ?? {};
+  const interaction = options.interaction ?? createInteractionState();
   const records = selectFailures(state, selectorFilters(filters));
   const heading = element(document, 'div', 'failure-title-row');
   const title = element(document, 'h2');
@@ -27,19 +34,33 @@ export function renderFailures(root, options = {}) {
   heading.replaceChildren(title, count);
 
   const filterBar = createFilterBar(document, state.failures ?? [], filters, options.onFilterChange);
+  const availability = state.loadState?.failures === 'UNAVAILABLE'
+    ? unavailableNode(document)
+    : null;
   const ledger = element(document, 'div', 'failure-ledger');
-  const rows = records.map((failure) => createFailure(document, failure, options.bridge));
+  const rows = records.map((failure) => createFailure(document, failure, {
+    bridge: options.bridge,
+    interaction,
+    onInteractionChange: options.onInteractionChange,
+  }));
   if (rows.length === 0) {
     const empty = element(document, 'p', 'empty-state');
     empty.textContent = 'Aucun échec à suivre.';
     rows.push(empty);
   }
-  ledger.replaceChildren(...rows);
+  ledger.replaceChildren(...[availability, ...rows].filter(Boolean));
   root.replaceChildren(heading, filterBar, ledger);
   return root;
 }
 
-function createFailure(document, failure, bridge) {
+function unavailableNode(document) {
+  const node = element(document, 'p', 'interaction-error failure-unavailable');
+  node.textContent = 'Échecs indisponibles. Le journal reste accessible.';
+  node.setAttribute('role', 'status');
+  return node;
+}
+
+function createFailure(document, failure, options) {
   const row = element(document, 'article', `failure-row${isOpenFailure(failure) ? ' is-open' : ' is-closed'}`);
   const header = element(document, 'header');
   const reason = element(document, 'strong');
@@ -54,15 +75,33 @@ function createFailure(document, failure, bridge) {
 
   const children = [header, task, evidence];
   if (isOpenFailure(failure)) {
+    const key = `retry:${text(failure.task_id, 'unknown')}`;
     const retry = element(document, 'button', 'retry-action');
     retry.type = 'button';
     retry.textContent = 'Demander un nouvel essai';
     retry.setAttribute('data-action', `retry-${text(failure.task_id, 'unknown')}`);
-    const enabled = bridge instanceof HostBridge;
+    const enabled = options.bridge instanceof HostBridge && !isPending(options.interaction, key);
     retry.disabled = !enabled;
     retry.setAttribute('aria-disabled', String(!enabled));
-    if (enabled) retry.addEventListener('click', () => bridge.postIntent(retryIntent(failure)));
+    if (enabled) {
+      retry.addEventListener('click', () => runGuardedInteraction({
+        interaction: options.interaction,
+        key,
+        operation: () => options.bridge.postIntent(retryIntent(failure)),
+        errorMessage: 'Nouvel essai indisponible. Réessayez manuellement.',
+        onChange: options.onInteractionChange,
+        controls: [retry],
+      }));
+    }
     children.push(retry);
+    const error = interactionError(options.interaction, key);
+    if (error) {
+      const errorNode = element(document, 'p', 'interaction-error');
+      errorNode.textContent = error;
+      errorNode.setAttribute('role', 'status');
+      errorNode.setAttribute('data-error-key', key);
+      children.push(errorNode);
+    }
   }
   row.replaceChildren(...children);
   return row;
@@ -88,6 +127,7 @@ function createFilterBar(document, records, filters, onFilterChange) {
     input.type = type;
     input.name = name;
     input.value = name === 'period' ? periodValue(filters.period) : String(filters[name] ?? '');
+    input.setAttribute('data-focus-key', `filter-${name}`);
     input.addEventListener('change', (event) => update({ ...filters, [name]: event.currentTarget.value }));
     label.replaceChildren(caption, input);
     return label;

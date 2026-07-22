@@ -6,6 +6,7 @@ const RECONNECT_DELAYS = [1000, 2000, 5000, 10000];
 export class CollabClient {
   constructor(options = {}) {
     this.fetch = options.fetch ?? globalThis.fetch?.bind(globalThis);
+    this.failureLoader = options.failureLoader ?? this.fetch;
     this.socketFactory = options.socketFactory ?? defaultSocketFactory;
     this.setTimeout = options.setTimeout ?? globalThis.setTimeout.bind(globalThis);
     this.clearTimeout = options.clearTimeout ?? globalThis.clearTimeout.bind(globalThis);
@@ -28,6 +29,9 @@ export class CollabClient {
     }
     if (typeof this.socketFactory !== 'function') {
       throw new TypeError('A socketFactory implementation is required');
+    }
+    if (typeof this.failureLoader !== 'function') {
+      throw new TypeError('A failureLoader implementation is required');
     }
   }
 
@@ -67,6 +71,20 @@ export class CollabClient {
     if (!this.isCurrent(generation, false)) return [];
     this.state = reduce(this.state, { type: 'messages.loaded', messages });
     return messages;
+  }
+
+  async loadFailures() {
+    const generation = this.generation;
+    try {
+      const failures = await this.requestFailures('/v1/failures', { generation });
+      if (failures === null || !this.isCurrent(generation, false)) return [];
+      this.state = reduce(this.state, { type: 'failures.loaded', failures });
+      return failures;
+    } catch {
+      if (!this.isCurrent(generation, false)) return [];
+      this.state = reduce(this.state, { type: 'failures.failed' });
+      throw new Error('CollabHub failure feed unavailable');
+    }
   }
 
   async connect(onMessage = this.onMessage) {
@@ -142,6 +160,34 @@ export class CollabClient {
         throw new TypeError('CollabHub returned an invalid message page');
       }
       return payload.messages.map(validateMessage);
+    } finally {
+      this.requestControllers.delete(controller);
+    }
+  }
+
+  async requestFailures(url, operation = {}) {
+    const generation = operation.generation ?? this.generation;
+    const controller = this.abortControllerFactory();
+    if (!controller || typeof controller.abort !== 'function') {
+      throw new TypeError('abortControllerFactory must return an AbortController');
+    }
+    if (!this.isCurrent(generation, false)) {
+      controller.abort();
+      return null;
+    }
+    this.requestControllers.add(controller);
+    try {
+      const response = await this.failureLoader(url, {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+        signal: controller.signal,
+      });
+      if (!response?.ok) throw new Error('Failure feed unavailable');
+      const payload = await response.json();
+      if (!isPlainObject(payload) || !Array.isArray(payload.failures)) {
+        throw new TypeError('Invalid failure feed');
+      }
+      return payload.failures.map(validateFailure);
     } finally {
       this.requestControllers.delete(controller);
     }
@@ -298,6 +344,23 @@ function validateMessage(value) {
     throw new TypeError('Invalid CollabHub message_id');
   }
   validOffset(value.global_offset, 'global_offset');
+  return { ...value };
+}
+
+function validateFailure(value) {
+  if (!isPlainObject(value)) throw new TypeError('Invalid CollabHub failure');
+  for (const key of [
+    'task_id',
+    'attempt_id',
+    'reason_code',
+    'evidence_ref',
+    'status',
+    'created_at',
+  ]) {
+    if (typeof value[key] !== 'string' || value[key].length === 0) {
+      throw new TypeError('Invalid CollabHub failure');
+    }
+  }
   return { ...value };
 }
 

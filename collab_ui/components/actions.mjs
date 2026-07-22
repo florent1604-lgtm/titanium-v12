@@ -1,4 +1,10 @@
 import { HostBridge } from '../host_bridge.mjs';
+import {
+  createInteractionState,
+  interactionError,
+  isPending,
+  runGuardedInteraction,
+} from './interaction.mjs';
 
 const CAPABILITY_LABELS = Object.freeze({
   AVAILABLE: 'Disponible',
@@ -43,6 +49,7 @@ export function renderActions(root, options = {}) {
   const document = documentOf(root);
   const bridge = options.bridge;
   const capabilities = options.capabilities ?? {};
+  const interaction = options.interaction ?? createInteractionState();
   const heading = element(document, 'div', 'dock-heading');
   const eyebrow = element(document, 'p', 'eyebrow');
   eyebrow.textContent = 'Intentions contrôlées';
@@ -50,7 +57,12 @@ export function renderActions(root, options = {}) {
   title.textContent = 'Actions';
   heading.replaceChildren(eyebrow, title);
 
-  const rows = ACTIONS.map((definition) => createAction(document, definition, capabilities, bridge));
+  const rows = ACTIONS.map((definition) => createAction(document, definition, {
+    bridge,
+    capabilities,
+    interaction,
+    onInteractionChange: options.onInteractionChange,
+  }));
   const note = element(document, 'p', 'dock-note');
   note.textContent = bridge instanceof HostBridge
     ? 'Chaque action émet une intention traçable. Aucun effet direct n’est exécuté par cette interface.'
@@ -59,10 +71,11 @@ export function renderActions(root, options = {}) {
   return root;
 }
 
-function createAction(document, definition, capabilities, bridge) {
-  const status = normalizeStatus(capabilities[definition.key]);
+function createAction(document, definition, options) {
+  const key = `action:${definition.action}`;
+  const status = normalizeStatus(options.capabilities[definition.key]);
   const permitted = status === 'AVAILABLE' || status === 'VALIDATION_REQUIRED' || status === 'DOUBLE_SIGNATURE';
-  const enabled = bridge instanceof HostBridge && permitted;
+  const enabled = options.bridge instanceof HostBridge && permitted && !isPending(options.interaction, key);
   const button = element(document, 'button', `dock-action capability-${status.toLocaleLowerCase('fr-FR')}${status === 'AVAILABLE' ? ' is-available' : ''}`);
   button.type = 'button';
   button.setAttribute('data-action', definition.action);
@@ -74,8 +87,25 @@ function createAction(document, definition, capabilities, bridge) {
   const state = element(document, 'small');
   state.textContent = capabilityLabel(status);
   button.replaceChildren(label, state);
-  if (enabled) button.addEventListener('click', () => bridge.postIntent(definition.intent));
-  return button;
+  if (enabled) {
+    button.addEventListener('click', () => runGuardedInteraction({
+      interaction: options.interaction,
+      key,
+      operation: () => options.bridge.postIntent(definition.intent),
+      errorMessage: 'Action indisponible. Aucun effet n’a été exécuté.',
+      onChange: options.onInteractionChange,
+      controls: [button],
+    }));
+  }
+  const error = interactionError(options.interaction, key);
+  if (!error) return button;
+  const wrapper = element(document, 'div', 'dock-action-row');
+  const statusNode = element(document, 'p', 'interaction-error');
+  statusNode.textContent = error;
+  statusNode.setAttribute('role', 'status');
+  statusNode.setAttribute('data-error-key', key);
+  wrapper.replaceChildren(button, statusNode);
+  return wrapper;
 }
 
 function normalizeStatus(status) {

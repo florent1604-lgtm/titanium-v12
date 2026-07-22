@@ -157,6 +157,19 @@ test('loads and filters failures while keeping explicit UNKNOWN distinct from mi
   assert.deepEqual(state.failures, sourceSnapshot);
 });
 
+test('marks the failure feed unavailable without exposing an error payload', () => {
+  const initial = reduce(createState(), {
+    type: 'messages.loaded',
+    messages: [message(3, 'codex')],
+  });
+
+  const state = reduce(initial, { type: 'failures.failed' });
+
+  assert.equal(state.loadState.failures, 'UNAVAILABLE');
+  assert.deepEqual(state.messages, initial.messages);
+  assert.equal(JSON.stringify(state).includes('secret'), false);
+});
+
 test('returns the same state for an unknown reducer event', () => {
   const state = createState();
   assert.strictEqual(reduce(state, { type: 'outside.task-1' }), state);

@@ -30,6 +30,13 @@ export function reduce(state, event) {
     };
   }
 
+  if (event?.type === 'failures.failed') {
+    return {
+      ...state,
+      loadState: { ...state.loadState, failures: 'UNAVAILABLE' },
+    };
+  }
+
   return state;
 }
 
