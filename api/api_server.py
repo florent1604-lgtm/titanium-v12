@@ -875,16 +875,20 @@ async def websocket_realtime(ws: WebSocket):
     """Flux temps réel ~5 Hz : ticks MT5 (timestamp ms) + carnet L2 Binance.
     Symbole du carnet via query param ?book=BTCUSDT (défaut BTC/USDT)."""
     import asyncio
+    # Réservation de la place AVANT le moindre await. Sur une boucle asyncio
+    # mono-thread, test + insertion sans await entre les deux sont atomiques ;
+    # tester puis `await ws.accept()` puis insérer laissait des handshakes
+    # simultanés franchir le plafond ensemble (revue red-team Codex 22/07/2026).
     if len(_RT_CLIENTS) >= _RT_MAX_CLIENTS:
         logger.warning("[RT] connexion REFUSÉE : plafond atteint (%d clients). "
                        "Symptôme d'un client qui se reconnecte en boucle.", len(_RT_CLIENTS))
         await ws.close(code=1013)                      # « try again later »
         return
-    await ws.accept()
     _RT_CLIENTS.add(ws)
-    raw = ws.query_params.get("book", "BTC/USDT").upper().replace("USDT", "/USDT")
-    book_sym = raw if raw in SYMBOLS else "BTC/USDT"
     try:
+        await ws.accept()
+        raw = ws.query_params.get("book", "BTC/USDT").upper().replace("USDT", "/USDT")
+        book_sym = raw if raw in SYMBOLS else "BTC/USDT"
         while True:
             ticks = await _rt_ticks()
             await ws.send_json({
