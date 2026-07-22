@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from dataclasses import asdict
 import hmac
 import json
+from pathlib import Path
 from typing import AsyncIterator
 
 from pydantic import BaseModel, Field, ValidationError
@@ -24,6 +25,7 @@ from .session import SessionAuthority, SessionError
 from .session_routes import create_session_routes
 from .store import CollabStore, IdempotencyConflict
 from .task_routes import create_task_routes
+from .ui_routes import create_ui_routes
 from .windows_attestation import (
     KeyProtectionError,
     WindowsAttestation,
@@ -362,6 +364,9 @@ def create_app(
         create_session_routes(active_attestation, active_sessions, active_windows_sid)
     )
     routes.extend(create_task_routes(store, active_sessions, active_windows_sid))
+    routes.extend(
+        create_ui_routes(Path(__file__).resolve().parent.parent / "collab_ui")
+    )
     app = Starlette(routes=routes, lifespan=lifespan)
     app.state.collab_store = store
     app.state.collab_broker = broker
