@@ -40,7 +40,9 @@ export class CollabClient {
     while (true) {
       const messages = await this.requestMessages(
         `/v1/messages?after_offset=${offset}&limit=${PAGE_LIMIT}`,
+        { generation, requireActive },
       );
+      if (messages === null) return [];
       if (!this.isCurrent(generation, requireActive)) return [];
       this.confirm(messages);
       replayed.push(...messages);
@@ -59,7 +61,9 @@ export class CollabClient {
     const generation = this.generation;
     const messages = await this.requestMessages(
       `/v1/messages?before_offset=${offset}&limit=${PAGE_LIMIT}`,
+      { generation, requireActive: false },
     );
+    if (messages === null) return [];
     if (!this.isCurrent(generation, false)) return [];
     this.state = reduce(this.state, { type: 'messages.loaded', messages });
     return messages;
@@ -99,8 +103,9 @@ export class CollabClient {
     this.stopped = true;
     this.generation += 1;
     if (this.reconnectTimer !== null) {
-      this.clearTimeout(this.reconnectTimer);
+      const reconnectTimer = this.reconnectTimer;
       this.reconnectTimer = null;
+      this.clearTimeout(reconnectTimer.handle);
     }
     for (const controller of this.requestControllers) controller.abort();
     this.requestControllers.clear();
@@ -109,10 +114,16 @@ export class CollabClient {
     if (socket && typeof socket.close === 'function') socket.close();
   }
 
-  async requestMessages(url) {
+  async requestMessages(url, operation = {}) {
+    const generation = operation.generation ?? this.generation;
+    const requireActive = operation.requireActive ?? false;
     const controller = this.abortControllerFactory();
     if (!controller || typeof controller.abort !== 'function') {
       throw new TypeError('abortControllerFactory must return an AbortController');
+    }
+    if (!this.isCurrent(generation, requireActive)) {
+      controller.abort();
+      return null;
     }
     this.requestControllers.add(controller);
     try {
@@ -231,7 +242,10 @@ export class CollabClient {
     this.reconnectAttempt += 1;
     this.setStatus('reconnecting');
     if (!this.isCurrent(generation, true)) return;
+    const timerRecord = { fired: false, handle: null };
     const reconnectTimer = this.setTimeout(async () => {
+      timerRecord.fired = true;
+      if (this.reconnectTimer !== timerRecord) return;
       this.reconnectTimer = null;
       if (!this.isCurrent(generation, true)) return;
       try {
@@ -245,11 +259,12 @@ export class CollabClient {
         }
       }
     }, delay);
-    if (!this.isCurrent(generation, true)) {
+    timerRecord.handle = reconnectTimer;
+    if (!this.isCurrent(generation, true) || timerRecord.fired) {
       this.clearTimeout(reconnectTimer);
       return;
     }
-    this.reconnectTimer = reconnectTimer;
+    this.reconnectTimer = timerRecord;
   }
 
   setStatus(status) {

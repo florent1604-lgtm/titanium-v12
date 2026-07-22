@@ -280,6 +280,30 @@ test('stop aborts an in-flight replay before any socket can open', async () => {
   assert.equal(sockets.sockets.length, 0);
 });
 
+test('a stop inside abortControllerFactory aborts locally without starting fetch', async () => {
+  let client;
+  let fetchCalls = 0;
+  const controller = new AbortController();
+  client = new CollabClient({
+    abortControllerFactory() {
+      client.stop();
+      return controller;
+    },
+    fetch: async () => {
+      fetchCalls += 1;
+      return response([]);
+    },
+    socketFactory: fakeSockets([]).factory,
+  });
+
+  await client.start(0);
+
+  assert.equal(controller.signal.aborted, true);
+  assert.equal(fetchCalls, 0);
+  assert.equal(client.requestControllers.size, 0);
+  assert.equal(client.connectionStatus, 'stopped');
+});
+
 test('a stale replay cannot mutate state after stop when fetch ignores abort', async () => {
   let finishReplay;
   const sockets = fakeSockets([]);
@@ -485,6 +509,37 @@ test('a stop inside setTimeout clears the returned timer without retaining it', 
   assert.equal(client.connectionStatus, 'stopped');
 });
 
+test('a stale timer callback cannot clear the current generation timer', async () => {
+  const timers = [];
+  const sockets = fakeSockets([]);
+  const client = new CollabClient({
+    fetch: async () => response([]),
+    socketFactory: sockets.factory,
+    setTimeout(callback) {
+      const timer = { callback, cleared: false };
+      timers.push(timer);
+      return timer;
+    },
+    clearTimeout(timer) {
+      timer.cleared = true;
+    },
+  });
+  await client.start(0);
+  sockets.sockets[0].emitClose();
+  const staleTimer = timers[0];
+  await client.connect();
+  sockets.sockets[1].emitClose();
+  const currentTimer = timers[1];
+
+  await staleTimer.callback();
+  assert.notEqual(client.reconnectTimer, null);
+  client.stop();
+
+  assert.equal(staleTimer.cleared, true);
+  assert.equal(currentTimer.cleared, true);
+  assert.equal(client.reconnectTimer, null);
+});
+
 test('a reentrant stop at reconnect replay prevents another fetch', async () => {
   let client;
   let fetchCalls = 0;
@@ -653,6 +708,67 @@ test('HostBridge rejects nested accessors and toJSON without invoking callbacks'
   assert.equal(toJsonCalls, 0);
 });
 
+test('HostBridge rejects inherited Object and Array toJSON without invoking them', () => {
+  const objectDescriptor = Object.getOwnPropertyDescriptor(
+    Object.prototype,
+    'toJSON',
+  );
+  const arrayDescriptor = Object.getOwnPropertyDescriptor(
+    Array.prototype,
+    'toJSON',
+  );
+  let objectCalls = 0;
+  let arrayCalls = 0;
+  let forwarded = 0;
+  let objectError;
+  let arrayError;
+  const bridge = new HostBridge(() => {
+    forwarded += 1;
+  });
+
+  try {
+    Object.defineProperty(Object.prototype, 'toJSON', {
+      configurable: true,
+      value() {
+        objectCalls += 1;
+        return this;
+      },
+    });
+    try {
+      bridge.postIntent({ type: 'chat.publish', content: 'safe' });
+    } catch (error) {
+      objectError = error;
+    }
+    restoreDescriptor(Object.prototype, 'toJSON', objectDescriptor);
+
+    Object.defineProperty(Array.prototype, 'toJSON', {
+      configurable: true,
+      value() {
+        arrayCalls += 1;
+        return this;
+      },
+    });
+    try {
+      bridge.postIntent({
+        type: 'action.preview',
+        action: 'service.health',
+        parameters: { values: [1, 2] },
+      });
+    } catch (error) {
+      arrayError = error;
+    }
+  } finally {
+    restoreDescriptor(Object.prototype, 'toJSON', objectDescriptor);
+    restoreDescriptor(Array.prototype, 'toJSON', arrayDescriptor);
+  }
+
+  assert.match(String(objectError), /inherited toJSON/);
+  assert.match(String(arrayError), /inherited toJSON/);
+  assert.equal(objectCalls, 0);
+  assert.equal(arrayCalls, 0);
+  assert.equal(forwarded, 0);
+});
+
 test('HostBridge dispatches a deeply cloned and recursively frozen intent', () => {
   const original = {
     type: 'action.preview',
@@ -762,4 +878,12 @@ function assertDeepFrozen(value, seen = new Set()) {
   seen.add(value);
   assert.equal(Object.isFrozen(value), true);
   for (const nested of Object.values(value)) assertDeepFrozen(nested, seen);
+}
+
+function restoreDescriptor(target, name, descriptor) {
+  if (descriptor) {
+    Object.defineProperty(target, name, descriptor);
+  } else {
+    delete target[name];
+  }
 }

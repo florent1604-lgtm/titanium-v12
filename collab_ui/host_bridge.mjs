@@ -89,6 +89,7 @@ function rejectExecutableProperties(root) {
     if (!Array.isArray(value) && !isPlainObject(value)) {
       throw new TypeError('Intent contains a non-data object');
     }
+    rejectInheritedToJSON(value);
 
     const descriptors = Object.getOwnPropertyDescriptors(value);
     if (Object.hasOwn(descriptors, 'toJSON')) {
@@ -102,6 +103,16 @@ function rejectExecutableProperties(root) {
       const nested = descriptor.value;
       if (nested !== null && typeof nested === 'object') pending.push(nested);
     }
+  }
+}
+
+function rejectInheritedToJSON(value) {
+  let prototype = Object.getPrototypeOf(value);
+  while (prototype !== null) {
+    if (Object.getOwnPropertyDescriptor(prototype, 'toJSON') !== undefined) {
+      throw new TypeError('Intent must not contain inherited toJSON');
+    }
+    prototype = Object.getPrototypeOf(prototype);
   }
 }
 
