@@ -70,3 +70,6 @@ Sans titre.base
 DESIGN-IS-*/
 PATHFINDER-*/
 REVIEWS/
+
+# Worktrees Git locaux pour les chantiers agentiques isolés
+.worktrees/
