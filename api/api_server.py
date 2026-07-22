@@ -7,19 +7,21 @@ from pathlib import Path
 from typing import Any, Dict
 import aiohttp
 import uvicorn
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import Depends, FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi import Request as FARequest
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from api.auth import require_admin
 from starlette.middleware.gzip import GZipMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from utils.config import (
     UVICORN_HOST, UVICORN_PORT, UVICORN_LOG_LEVEL,
     HTTP_POOL_SIZE, HTTP_CONNECT_LIMIT, HTTP_TIMEOUT_TOTAL,
-    SYMBOLS, FUNDAMENTALS_ENABLED, TRADING_MODE,
+    SYMBOLS, FUNDAMENTALS_ENABLED, TRADING_MODE, SCORE_CRITERIA,
 )
 from utils.logger import get_logger
 from api.websocket import broadcast, ws_connect, ws_disconnect, get_client_count
 from execution.signal_manager import get_all_signals
+from api.json_contract import serialize_signal_states
 from engine.optimizer import get_opt_results
 from engine.learning_engine import scoring_weights, signal_history
 from data.binance_ws import delta_vol
@@ -146,6 +148,179 @@ async def lifespan(app: FastAPI):
     if FUNDAMENTALS_ENABLED:
         tasks.append(asyncio.create_task(fundamentals_loop(session), name="fundamentals"))
 
+    # Moteur forex/or MT5-Axi (paper only, stratégie V3 validée par strategy_lab)
+    from utils.config import FOREX_ENABLED
+    if FOREX_ENABLED:
+        try:
+            from core.forex_engine import forex_engine_loop
+            tasks.append(asyncio.create_task(forex_engine_loop(), name="forex_engine"))
+        except Exception as e:
+            logger.warning("[FOREX] Moteur non démarré: %s", e)
+
+    # Moteur SWING (paper only — panier validé au tester natif MT5 : USTECH/NAS100/HSI)
+    from utils.config import SWING_ENABLED
+    if SWING_ENABLED:
+        try:
+            from core.swing_engine import swing_engine_loop
+            tasks.append(asyncio.create_task(swing_engine_loop(), name="swing_engine"))
+        except Exception as e:
+            logger.warning("[SWING] Moteur non démarré: %s", e)
+
+    # Scan d'opportunités périodique (cron in-app tous les N jours)
+    from utils.config import OPP_SCAN_ENABLED
+    if OPP_SCAN_ENABLED:
+        try:
+            from core.opportunity_scan import opportunity_scan_loop
+            tasks.append(asyncio.create_task(opportunity_scan_loop(), name="opportunity_scan"))
+        except Exception as e:
+            logger.warning("[OPP] Scan non démarré: %s", e)
+
+    # Forward-paper GELÉ XRP/LINK intraday (Binance, config pré-enregistrée) — boucle
+    # horaire. Détecte les signaux sur la H1 clôturée, journalise + émotion observée,
+    # et (si MIRROR) place un ordre sur le démo MT5 pour visibilité iOS. PAPER ONLY.
+    from utils.config import FORWARD_PAPER_ENABLED, FORWARD_PAPER_MIRROR, FORWARD_PAPER_SECONDS
+    if FORWARD_PAPER_ENABLED:
+        async def _forward_paper_loop():
+            from tools.forward_paper_intraday import run_once
+            await asyncio.sleep(30)          # laisser le démarrage se stabiliser
+            while True:
+                try:
+                    await asyncio.to_thread(run_once, FORWARD_PAPER_MIRROR)
+                except Exception as e:
+                    logger.warning("[FWD-PAPER] boucle: %s", e)
+                await asyncio.sleep(FORWARD_PAPER_SECONDS)
+        tasks.append(asyncio.create_task(_forward_paper_loop(), name="forward_paper"))
+        logger.info("[FWD-PAPER] boucle activée (miroir démo=%s, %ss)",
+                    FORWARD_PAPER_MIRROR, FORWARD_PAPER_SECONDS)
+
+    # Moteur de CONFLUENCE en DÉMO MT5 (méthode Florent, mode EXPLORE). Câble la stack
+    # de détection sur l'exécuteur démo pour ouvrir de vraies positions sur le compte
+    # DÉMO et les observer (dashboard « pourquoi » + iOS). DÉSARMÉ par défaut ; les
+    # ordres exigent EN PLUS DEMO_EXEC_ENABLED=1 + le mur démo↔réel.
+    from utils.config import (CONFLUENCE_DEMO_ENABLED, CONFLUENCE_DEMO_SYMBOLS,
+                              CONFLUENCE_DEMO_LTF, CONFLUENCE_DEMO_HTF,
+                              CONFLUENCE_DEMO_SECONDS, CONFLUENCE_DEMO_SL_ATR,
+                              CONFLUENCE_DEMO_TP_ATR, CONFLUENCE_DEMO_TP_LADDER,
+                              CONFLUENCE_CRYPTO_ENABLED, CONFLUENCE_CRYPTO_SYMBOLS,
+                              CONFLUENCE_AGGRESSIVE_MIN, CONFLUENCE_AGGRESSIVE_EXEC,
+                              CONFLUENCE_ROTATE_BATCH)
+    if CONFLUENCE_DEMO_ENABLED or CONFLUENCE_CRYPTO_ENABLED:
+        async def _confluence_demo_loop():
+            from core.confluence_demo_engine import run_once
+            from data.binance_ohlcv import reference_close
+            cfd = ([{"symbol": s, "ltf": CONFLUENCE_DEMO_LTF, "htf": CONFLUENCE_DEMO_HTF,
+                     "venue": "cfd"} for s in CONFLUENCE_DEMO_SYMBOLS]
+                   if CONFLUENCE_DEMO_ENABLED else [])
+            crypto = ([{"symbol": s, "ltf": CONFLUENCE_DEMO_LTF, "htf": CONFLUENCE_DEMO_HTF,
+                        "venue": "crypto"} for s in CONFLUENCE_CRYPTO_SYMBOLS]
+                      if CONFLUENCE_CRYPTO_ENABLED else [])
+            batch = CONFLUENCE_ROTATE_BATCH
+            idx = 0
+            await asyncio.sleep(30)          # laisser le démarrage se stabiliser
+            while True:
+                try:
+                    # ROTATION : crypto (ouvert 24/7) scanné à CHAQUE cycle ; CFD (univers large)
+                    # par lots rotatifs → couvre tout l'univers sans marteler MT5.
+                    if batch > 0 and len(cfd) > batch:
+                        cfd_batch = [cfd[(idx + j) % len(cfd)] for j in range(batch)]
+                        idx = (idx + batch) % len(cfd)
+                    else:
+                        cfd_batch = cfd
+                    # ref_fn=reference_close : ajustement Binance (None hors crypto). MT5 reste
+                    # la source PRINCIPALE (données + exécution).
+                    await run_once(crypto + cfd_batch, ref_fn=reference_close,
+                                   sl_atr_mult=CONFLUENCE_DEMO_SL_ATR,
+                                   tp_atr_mult=CONFLUENCE_DEMO_TP_ATR,
+                                   tp_ladder=CONFLUENCE_DEMO_TP_LADDER,
+                                   aggressive_min=CONFLUENCE_AGGRESSIVE_MIN,
+                                   aggressive_exec=CONFLUENCE_AGGRESSIVE_EXEC)
+                except Exception as e:
+                    logger.warning("[CONFLUENCE-DEMO] boucle: %s", e)
+                await asyncio.sleep(CONFLUENCE_DEMO_SECONDS)
+        tasks.append(asyncio.create_task(_confluence_demo_loop(), name="confluence_demo"))
+        logger.info("[CONFLUENCE-DEMO] boucle activée — CFD=%s crypto=%s (LTF=%s HTF=%s, %ss) — "
+                    "MT5 principal, ajusté Binance ; ordres si DEMO_EXEC_ENABLED=1 + compte démo",
+                    CONFLUENCE_DEMO_SYMBOLS if CONFLUENCE_DEMO_ENABLED else [],
+                    CONFLUENCE_CRYPTO_SYMBOLS if CONFLUENCE_CRYPTO_ENABLED else [],
+                    CONFLUENCE_DEMO_LTF, CONFLUENCE_DEMO_HTF, CONFLUENCE_DEMO_SECONDS)
+
+        # Consensus inter-moteurs AUTONOME : détection read-only, aucune injection dans
+        # la confluence/l'exécuteur. Même univers/cadence et rotation bornée pour ne pas
+        # augmenter sans limite la pression sur MT5. Pré-M2 : observation uniquement.
+        async def _consensus_detection_loop():
+            from core.consensus_engine import run_once as run_consensus_once
+            cfd = ([{"symbol": s, "ltf": CONFLUENCE_DEMO_LTF, "htf": CONFLUENCE_DEMO_HTF,
+                     "venue": "cfd"} for s in CONFLUENCE_DEMO_SYMBOLS]
+                   if CONFLUENCE_DEMO_ENABLED else [])
+            crypto = ([{"symbol": s, "ltf": CONFLUENCE_DEMO_LTF, "htf": CONFLUENCE_DEMO_HTF,
+                        "venue": "crypto"} for s in CONFLUENCE_CRYPTO_SYMBOLS]
+                      if CONFLUENCE_CRYPTO_ENABLED else [])
+            batch = CONFLUENCE_ROTATE_BATCH
+            idx = 0
+            await asyncio.sleep(40)
+            while True:
+                try:
+                    if batch > 0 and len(cfd) > batch:
+                        cfd_batch = [cfd[(idx + j) % len(cfd)] for j in range(batch)]
+                        idx = (idx + batch) % len(cfd)
+                    else:
+                        cfd_batch = cfd
+                    await run_consensus_once(crypto + cfd_batch)
+                except Exception as e:
+                    logger.warning("[CONSENSUS] boucle de détection: %s", e)
+                await asyncio.sleep(CONFLUENCE_DEMO_SECONDS)
+        tasks.append(asyncio.create_task(_consensus_detection_loop(), name="consensus_detection"))
+        logger.info("[CONSENSUS] détection 3 moteurs active — pré-M2, aucune décision/aucun ordre")
+
+    # Concordance inter-actifs (lead/lag) — recherche EXPLORATOIRE pré-M2. Cherche quel
+    # actif ANTICIPE quel autre + persistance ; débrief Telegram. Ne décide RIEN.
+    from utils.config import (LEADLAG_ENABLED, LEADLAG_SYMBOLS, LEADLAG_SECONDS,
+                              LEADLAG_MAX_LAG, LEADLAG_TFS)
+    if LEADLAG_ENABLED:
+        async def _lead_lag_loop():
+            from core.lead_lag_engine import run_cycle
+            await asyncio.sleep(45)
+            while True:
+                try:
+                    await run_cycle(LEADLAG_SYMBOLS, tfs=tuple(LEADLAG_TFS),
+                                    max_lag=LEADLAG_MAX_LAG)
+                except Exception as e:
+                    logger.warning("[LEADLAG] boucle: %s", e)
+                await asyncio.sleep(LEADLAG_SECONDS)
+        tasks.append(asyncio.create_task(_lead_lag_loop(), name="lead_lag"))
+        logger.info("[LEADLAG] boucle de concordance activée (%d actifs, TF=%s, lag≤%d, %ss) — pré-M2",
+                    len(LEADLAG_SYMBOLS), LEADLAG_TFS, LEADLAG_MAX_LAG, LEADLAG_SECONDS)
+
+    # EventPlane MIROIR read-only (fusion Hermes B0/C0) : publie les faits des moteurs
+    # dans core.event_plane. Observationnel STRICT — aucun ordre, aucun CommandGateway.
+    from utils.config import EVENTPLANE_MIRROR_ENABLED, EVENTPLANE_MIRROR_SECONDS
+    if EVENTPLANE_MIRROR_ENABLED:
+        async def _eventplane_mirror_loop():
+            from core.event_mirror import mirror_all_once   # C0b : confluence+consensus+leadlag
+            import uuid as _uuid
+            boot = _uuid.uuid4().hex[:12]
+            await asyncio.sleep(50)
+            while True:
+                try:
+                    await asyncio.to_thread(lambda: mirror_all_once(instance_id=boot))
+                except Exception as e:
+                    logger.warning("[EVENTPLANE] miroir: %s", e)
+                await asyncio.sleep(EVENTPLANE_MIRROR_SECONDS)
+        tasks.append(asyncio.create_task(_eventplane_mirror_loop(), name="eventplane_mirror"))
+        logger.info("[EVENTPLANE] miroir read-only activé (%ss) — confluence+consensus+leadlag, "
+                    "faits seulement, aucun ordre", EVENTPLANE_MIRROR_SECONDS)
+
+    # Régénération périodique du pack de connaissance expert pour JARVIS (10 min)
+    async def _knowledge_regen_loop():
+        from tools.gen_jarvis_knowledge import write
+        while True:
+            try:
+                await asyncio.to_thread(write)
+            except Exception as e:
+                logger.debug("[CONTEXT] regen: %s", e)
+            await asyncio.sleep(600)
+    tasks.append(asyncio.create_task(_knowledge_regen_loop(), name="knowledge_regen"))
+
     # Démarrer l'assistant Titan (si TITAN_ENABLED=1)
     from assistant.titan_core import start_titan
     await start_titan(session)
@@ -176,6 +351,14 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Titanium v12", lifespan=lifespan)
 app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+# Assets de l'overlay JARVIS (orbe, boot, HUD vocal) — dashboard unifié.
+# Le build Vite vit chez JARVIS ; on le sert aussi sur 8090 pour n'avoir
+# qu'une seule version de l'interface.
+from fastapi.staticfiles import StaticFiles
+_JARVIS_ASSETS = Path(r"C:\Program Files\JARVIS\frontend\dist\assets")
+if _JARVIS_ASSETS.exists():
+    app.mount("/assets", StaticFiles(directory=str(_JARVIS_ASSETS)), name="jarvis_assets")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://127.0.0.1:5173",
@@ -191,6 +374,17 @@ from api.webhook_routes import router as webhook_router
 from api.titan_routes import router as titan_router
 from api.services_routes import router as services_router
 from api.cockpit_routes import router as cockpit_router
+from api.latency_routes import router as latency_router
+from api.forex_routes import router as forex_router
+from api.swing_routes import router as swing_router
+from api.opportunity_routes import router as opportunity_router
+from api.context_routes import router as context_router
+from api.emotion_routes import router as emotion_router
+from api.snapshot_routes import (
+    canonical_router as snapshot_canonical_router,
+    router as snapshot_router,
+)
+from api.consensus_routes import router as consensus_router
 from assistant.alexa_connector import router as alexa_router
 
 app.include_router(fundamentals_router)
@@ -199,14 +393,37 @@ app.include_router(webhook_router)
 app.include_router(titan_router)
 app.include_router(services_router)
 app.include_router(cockpit_router)
+app.include_router(latency_router)
+app.include_router(forex_router)
+app.include_router(swing_router)
+app.include_router(opportunity_router)
+app.include_router(context_router)
+app.include_router(emotion_router)
+app.include_router(snapshot_router)
+app.include_router(snapshot_canonical_router)
+app.include_router(consensus_router)
 app.include_router(alexa_router)
 
 
 # ── Routes ───────────────────────────────────────────────────────────────────
 
+_DASHBOARD_ORBE_ROOT = Path(__file__).resolve().parent.parent / "titanium_orbe.html"
+
+
 @app.get("/", response_class=HTMLResponse)
 async def dashboard():
-    """Sert le dashboard HTML v11 tel quel."""
+    """Interface LIVRÉE (07/2026) : cockpit ORBE JARVIS/Hermes. L'ancien dashboard
+    reste disponible et réversible sur /classic. HTML relu par requête."""
+    if _DASHBOARD_ORBE_ROOT.exists():
+        return HTMLResponse(_DASHBOARD_ORBE_ROOT.read_text(encoding="utf-8"))
+    if _DASHBOARD_HTML.exists():
+        return HTMLResponse(_DASHBOARD_HTML.read_text(encoding="utf-8"))
+    return HTMLResponse("<h1>Titanium v12</h1><p>Dashboard HTML non trouvé.</p>")
+
+
+@app.get("/classic", response_class=HTMLResponse)
+async def dashboard_classic():
+    """Ancien dashboard v12 (préservé, réversible)."""
     if _DASHBOARD_HTML.exists():
         return HTMLResponse(_DASHBOARD_HTML.read_text(encoding="utf-8"))
     return HTMLResponse("<h1>Titanium v12</h1><p>Dashboard HTML non trouvé.</p>")
@@ -223,6 +440,191 @@ async def dashboard_v13():
     if _DASHBOARD_V13.exists():
         return HTMLResponse(_DASHBOARD_V13.read_text(encoding="utf-8"))
     return HTMLResponse("<h1>Titanium v13</h1><p>Dashboard v13 non trouvé.</p>")
+
+
+@app.get("/eventplane/health")
+async def eventplane_health():
+    """Santé de l'EventPlane (B0) : nb d'événements, dernier offset, échecs, intégrité.
+    Lecture seule. Ne déclenche rien."""
+    from core.event_plane import get_event_plane
+    p = get_event_plane()
+    h = p.health()
+    h["integrity"] = p.verify_integrity()
+    return h
+
+
+@app.get("/eventplane/read")
+async def eventplane_read(after_offset: int = 0, limit: int = 50, event_type: str = ""):
+    """Lit les FAITS après un offset (ordre de commit). Filtre optionnel par type.
+    Lecture seule — un fait ne déclenche jamais rien."""
+    from core.event_plane import get_event_plane
+    types = tuple(t.strip() for t in event_type.split(",") if t.strip())
+    evs = get_event_plane().read(after_offset=after_offset, limit=limit, event_types=types)
+    return {"count": len(evs), "events": [{
+        "global_offset": e.global_offset, "event_type": e.event_type,
+        "occurred_at": e.occurred_at, "stream_id": e.stream_id, "stream_seq": e.stream_seq,
+        "partition_key": e.partition_key, "payload": e.payload,
+        "event_hash": e.event_hash[:16]} for e in evs]}
+
+
+@app.get("/cortex/snapshot")
+async def cortex_snapshot(full: bool = False):
+    """CORTEX : état projeté UNIFIÉ (confluence + consensus + lead/lag) en un seul point.
+    Lecture seule — ne décide rien. `?full=true` pour le détail complet de chaque moteur."""
+    from core.cortex import snapshot
+    return snapshot(full=full)
+
+
+@app.get("/leadlag/status")
+async def leadlag_status():
+    """Concordance inter-actifs (lead/lag) : quelle relation anticipe quel actif, avec
+    persistance. Lecture seule. EXPLORATOIRE pré-M2 — ne décide rien."""
+    from core.lead_lag_engine import status_snapshot
+    return status_snapshot()
+
+
+_DASHBOARD_CONFLUENCE = Path(__file__).resolve().parent.parent / "titanium_confluence.html"
+
+
+@app.get("/confluence", response_class=HTMLResponse)
+async def dashboard_confluence():
+    """Cockpit « analyse explicable » : les 5 piliers de la méthode par instrument,
+    le verdict et les preuves. Se rafraîchit sur /confluence/demo/status."""
+    if _DASHBOARD_CONFLUENCE.exists():
+        return HTMLResponse(_DASHBOARD_CONFLUENCE.read_text(encoding="utf-8"))
+    return HTMLResponse("<h1>Confluence</h1><p>Page non trouvée.</p>", status_code=404)
+
+
+@app.get("/confluence/demo/status")
+async def confluence_demo_status():
+    """État du moteur de confluence DÉMO : dernière décision par symbole + récents,
+    avec la TRACE « pourquoi » (portes, reason-codes, piliers). Lecture seule."""
+    from utils.config import (CONFLUENCE_DEMO_ENABLED, CONFLUENCE_DEMO_SYMBOLS,
+                              CONFLUENCE_DEMO_LTF, CONFLUENCE_DEMO_HTF,
+                              CONFLUENCE_CRYPTO_ENABLED, CONFLUENCE_CRYPTO_SYMBOLS)
+    import os
+    from core.confluence_demo_engine import status_snapshot
+    snap = status_snapshot()
+    watchlist = (list(CONFLUENCE_DEMO_SYMBOLS) if CONFLUENCE_DEMO_ENABLED else []) + \
+                (list(CONFLUENCE_CRYPTO_SYMBOLS) if CONFLUENCE_CRYPTO_ENABLED else [])
+    return {
+        "enabled": CONFLUENCE_DEMO_ENABLED or CONFLUENCE_CRYPTO_ENABLED,
+        "orders_armed": os.getenv("DEMO_EXEC_ENABLED", "0") == "1",
+        "watchlist": watchlist,
+        "crypto_enabled": CONFLUENCE_CRYPTO_ENABLED,
+        "ltf": CONFLUENCE_DEMO_LTF, "htf": CONFLUENCE_DEMO_HTF,
+        **snap,   # heartbeat + symbols (décisions) + recent
+    }
+
+
+@app.get("/brain/master")
+async def brain_master_status():
+    """PORTE NEURONALE — vue MASTER (Florent). Directives en cours + verdict EFFECTIF du
+    cerveau par symbole (ce qui se passerait maintenant : entrée autorisée/bloquée et par qui).
+    Lecture seule. Le cerveau décide en AUTO ; Florent prime en FORCE_LONG/FORCE_SHORT/BLOCK/PAUSE."""
+    from core.brain_gate import all_masters, gate_entry, AUTO, FORCE_LONG, FORCE_SHORT, BLOCK, PAUSE
+    from core.confluence_demo_engine import status_snapshot
+    snap = status_snapshot()
+    verdicts = {}
+    for sym, s in (snap.get("symbols") or {}).items():
+        try:
+            g = gate_entry(sym, int(s.get("side") or 0))
+            verdicts[sym] = {"allow": g.allow, "side": g.side, "source": g.source,
+                             "verdict": g.verdict, "conviction": round(g.conviction, 3),
+                             "reason_codes": list(g.reason_codes)}
+        except Exception as exc:  # noqa: BLE001
+            verdicts[sym] = {"allow": False, "conviction": 0.0, "source": "BRAIN",
+                             "reason_codes": [repr(exc)]}
+    return {"directives": all_masters(),
+            "modes": [AUTO, FORCE_LONG, FORCE_SHORT, BLOCK, PAUSE],
+            "note": "AUTO=le cerveau décide ; '*'=directive globale ; le master prime toujours.",
+            "brain": verdicts}
+
+
+@app.post("/brain/master", dependencies=[Depends(require_admin)])
+async def brain_master_set(request: FARequest):
+    """MASTER (Florent) pose/lève une directive : {symbol, mode}. `symbol='*'` = global.
+    modes : AUTO (rend la main au cerveau), FORCE_LONG, FORCE_SHORT, BLOCK, PAUSE. Persisté."""
+    body = await request.json()
+    symbol = str(body.get("symbol") or "").strip()
+    mode = str(body.get("mode") or "").strip().upper()
+    if not symbol:
+        raise HTTPException(400, "symbol requis (ou '*' pour global)")
+    from core.brain_gate import set_master
+    try:
+        directives = set_master(symbol, mode)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+    return {"ok": True, "symbol": symbol, "mode": mode, "directives": directives}
+
+
+_DASHBOARD_ORBE = Path(__file__).resolve().parent.parent / "titanium_orbe.html"
+
+
+_DASHBOARD_EMOTION = Path(__file__).resolve().parent.parent / "titanium_emotion.html"
+
+
+@app.get("/emotions", response_class=HTMLResponse)
+async def dashboard_emotion():
+    """Carte d'ÉMOTION du marché — dôme valence×énergie, actifs crypto + MT5.
+    Route au PLURIEL : /emotion/{symbole} est l'API JSON, /emotions est la vue.
+    Relue à chaque requête (itérations HTML sans redémarrage). Read-only."""
+    if _DASHBOARD_EMOTION.exists():
+        return HTMLResponse(_DASHBOARD_EMOTION.read_text(encoding="utf-8"))
+    return HTMLResponse("<h1>Émotion</h1><p>titanium_emotion.html non trouvé.</p>")
+
+
+@app.get("/orbe", response_class=HTMLResponse)
+async def dashboard_orbe():
+    """Cockpit ORBE (refonte DASH 07/2026) — orbe JARVIS/Hermes au centre.
+    Cahier des charges co-signé : collab/DASH_DESIGN.md. Relu à chaque requête
+    (itérations HTML sans redémarrage)."""
+    if _DASHBOARD_ORBE.exists():
+        return HTMLResponse(_DASHBOARD_ORBE.read_text(encoding="utf-8"))
+    return HTMLResponse("<h1>Orbe</h1><p>titanium_orbe.html non trouvé.</p>")
+
+
+@app.get("/nexus")
+async def dashboard_nexus():
+    """Acces lecture seule au registre GitNexus, sans remplacer l'orbe.
+
+    Health-check résilient : GitNexus peut n'écouter que sur IPv6 (::1) ou
+    IPv4 (127.0.0.1) selon l'environnement — on teste les deux avant de
+    rediriger vers l'URL amie du navigateur (localhost)."""
+    browser_target = "http://localhost:4747/"
+    probes = ("http://127.0.0.1:4747/api/health",
+              "http://localhost:4747/api/health")
+    for probe in probes:
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    probe, timeout=aiohttp.ClientTimeout(total=1.5)
+                ) as response:
+                    if response.status == 200:
+                        return RedirectResponse(browser_target, status_code=307)
+        except Exception:
+            continue
+    return HTMLResponse(
+        "<h1>GitNexus indisponible</h1>"
+        "<p>Le registre local localhost:4747 ne répond pas.</p>"
+        "<p>Lancer <code>tools\\gitnexus_session.ps1</code>, puis recharger. "
+        "L’orbe reste disponible sur <a href='/orbe'>/orbe</a>.</p>",
+        status_code=503,
+    )
+
+
+_NEURAL_MAP = Path(__file__).resolve().parent.parent / "data" / "neural_map.json"
+
+
+@app.get("/orbe/map")
+async def orbe_neural_map():
+    """Topologie RÉELLE du bot (modules + imports, gen_neural_map.py) pour le
+    mode RÉSEAU NEURONAL de l'orbe. Lecture seule ; regénérer via
+    `venv\\Scripts\\python.exe tools\\gen_neural_map.py` après refactor."""
+    if _NEURAL_MAP.exists():
+        return JSONResponse(json.loads(_NEURAL_MAP.read_text(encoding="utf-8")))
+    return JSONResponse({"error": "neural_map.json absent — lancer tools/gen_neural_map.py"},
+                        status_code=404)
 
 
 def _health_snapshot() -> dict:
@@ -256,7 +658,7 @@ async def api_state():
     return JSONResponse({
         "health":          _health_snapshot(),
         "external":        get_external_snapshot(),
-        "signals":         get_all_signals(),
+        "signals":         serialize_signal_states(get_all_signals(), SCORE_CRITERIA),
         "scoring_weights": scoring_weights,
         "delta_vol":       {s: {k: v for k, v in delta_vol[s].items() if k != "trades"} for s in SYMBOLS},
         "futures":         futures_store,
@@ -275,7 +677,7 @@ async def api_optim_results():
     return JSONResponse(get_opt_results())
 
 
-@app.post("/api/optim/run")
+@app.post("/api/optim/run", dependencies=[Depends(require_admin)])
 async def api_optim_run(request: FARequest):
     """Déclenche une optimisation manuelle."""
     from engine.optimizer import optimisation_loop
@@ -332,7 +734,134 @@ async def api_chat(request: FARequest):
         raise HTTPException(500, str(e))
 
 
+# ── Temps réel : ticks MT5 (ms) + carnet L2 Binance ──────────────────────────
+
+# Watchlist MT5 poussée au dashboard (data-only). Inclut les indices validés.
+RT_MT5_SYMBOLS = ["EURUSD", "GBPUSD", "USDJPY", "XAUUSD", "XAUEUR",
+                  "BTCUSD", "USTECH", "NAS100.fs", "HSI.fs"]
+
+
+def _clean_book(bids, asks, depth):
+    """Assainit un carnet pour l'affichage : retire le dust (vieux niveaux
+    micro non nettoyés par la resynchro diff) et garde-fou anti-croisement.
+    Retourne (bids, asks, best_bid, best_ask, mid, spread_bps)."""
+    sample = [q for _, q in (bids[:40] + asks[:40])]
+    dust = (max(sample) * 0.01) if sample else 0.0
+    b = [[p, q] for p, q in bids if q >= dust]
+    a = [[p, q] for p, q in asks if q >= dust]
+    if b and a:                                   # anti-croisement
+        bb = b[0][0]
+        a2 = [l for l in a if l[0] > bb]
+        a = a2 or a
+        ba = a[0][0]
+        b2 = [l for l in b if l[0] < ba]
+        b = b2 or b
+    bb = b[0][0] if b else 0.0
+    ba = a[0][0] if a else 0.0
+    mid = (bb + ba) / 2 if (bb and ba) else 0.0
+    spread = (ba - bb) / mid * 10000 if mid else 0.0
+    trim = lambda rows: [[p, round(q, 4)] for p, q in rows[:depth]]
+    return trim(b), trim(a), bb, ba, mid, spread
+
+
+def _book_snapshot(sym: str, depth: int = 12) -> Dict[str, Any]:
+    """Snapshot L2 (Binance) depuis orderbook_store, assaini pour le dashboard."""
+    from data.orderbook_ws import orderbook_store
+    st = orderbook_store.get(sym)
+    if not st or st.ts <= 0:
+        return {}
+    bids, asks, bb, ba, mid, spread = _clean_book(st.bids, st.asks, depth)
+    fb, fa, _, _, _, _ = _clean_book(st.futures_bids, st.futures_asks, depth)
+    return {
+        "symbol": sym, "source": "binance",
+        "bids": bids, "asks": asks, "futures_bids": fb, "futures_asks": fa,
+        "best_bid": round(bb, 2), "best_ask": round(ba, 2),
+        "mid": round(mid, 2), "spread_bps": round(spread, 2), "ts": st.ts,
+    }
+
+
+@app.get("/mt5/ticks")
+async def mt5_ticks() -> JSONResponse:
+    """Fallback REST : ticks MT5 temps réel (poll rapide côté dashboard)."""
+    import asyncio
+    from data.mt5_provider import get_ticks_fast
+    ticks = await asyncio.to_thread(get_ticks_fast, RT_MT5_SYMBOLS)
+    return JSONResponse({"t": int(datetime.now(timezone.utc).timestamp() * 1000),
+                         "ticks": ticks})
+
+
+@app.get("/orderbook/{symbol}")
+async def orderbook_snapshot(symbol: str) -> JSONResponse:
+    sym = symbol.upper().replace("USDT", "/USDT")
+    book = _book_snapshot(sym)
+    if not book:
+        raise HTTPException(404, f"Carnet indisponible pour {sym}")
+    return JSONResponse(book)
+
+
 # ── WebSocket ─────────────────────────────────────────────────────────────────
+
+# --- Flux temps réel : garde-fous ANTI-EMBALLEMENT (incident du 21/07/2026) -------------
+# Chaque connexion ouvrait SA PROPRE boucle 5 Hz appelant MT5 sous le `mt5_lock` partagé,
+# sans plafond de clients ni nettoyage garanti. Les reconnexions du dashboard empilaient
+# ces boucles : N clients = N×5 appels MT5/s en contention sur UN seul verrou → emballement
+# CPU (34 372 s cumulées en 8 h) et TOUS les endpoints figés, connexion TCP acceptée mais
+# aucune réponse. Trois remèdes ci-dessous.
+_RT_CLIENTS: set = set()
+_RT_MAX_CLIENTS = 8              # plafond dur : au-delà on refuse proprement
+_RT_CACHE: Dict[str, Any] = {"at": 0.0, "ticks": None}
+_RT_CACHE_TTL = 0.18             # < période d'envoi : les clients partagent LA MÊME lecture
+_RT_FETCH_LOCK = None            # créé paresseusement (pas de boucle asyncio à l'import)
+
+
+async def _rt_ticks():
+    """Lecture MT5 MUTUALISÉE entre tous les clients du flux. Quel que soit le nombre de
+    connexions, MT5 n'est interrogé qu'une fois par fenêtre : c'est ce qui supprime la
+    contention sur `mt5_lock` qui faisait s'emballer le service."""
+    import asyncio
+    import time as _time
+    global _RT_FETCH_LOCK
+    if _RT_FETCH_LOCK is None:
+        _RT_FETCH_LOCK = asyncio.Lock()
+    async with _RT_FETCH_LOCK:
+        now = _time.monotonic()
+        if _RT_CACHE["ticks"] is None or (now - _RT_CACHE["at"]) > _RT_CACHE_TTL:
+            from data.mt5_provider import get_ticks_fast
+            _RT_CACHE["ticks"] = await asyncio.to_thread(get_ticks_fast, RT_MT5_SYMBOLS)
+            _RT_CACHE["at"] = now
+        return _RT_CACHE["ticks"]
+
+
+@app.websocket("/ws/realtime")
+async def websocket_realtime(ws: WebSocket):
+    """Flux temps réel ~5 Hz : ticks MT5 (timestamp ms) + carnet L2 Binance.
+    Symbole du carnet via query param ?book=BTCUSDT (défaut BTC/USDT)."""
+    import asyncio
+    if len(_RT_CLIENTS) >= _RT_MAX_CLIENTS:
+        logger.warning("[RT] connexion REFUSÉE : plafond atteint (%d clients). "
+                       "Symptôme d'un client qui se reconnecte en boucle.", len(_RT_CLIENTS))
+        await ws.close(code=1013)                      # « try again later »
+        return
+    await ws.accept()
+    _RT_CLIENTS.add(ws)
+    raw = ws.query_params.get("book", "BTC/USDT").upper().replace("USDT", "/USDT")
+    book_sym = raw if raw in SYMBOLS else "BTC/USDT"
+    try:
+        while True:
+            ticks = await _rt_ticks()
+            await ws.send_json({
+                "t": int(datetime.now(timezone.utc).timestamp() * 1000),
+                "ticks": ticks,
+                "book": _book_snapshot(book_sym),
+            })
+            await asyncio.sleep(0.2)
+    except WebSocketDisconnect:
+        pass
+    except Exception as exc:      # noqa: BLE001 — plus JAMAIS avalé en silence
+        logger.warning("[RT] flux interrompu (%d clients) : %r", len(_RT_CLIENTS), exc)
+    finally:
+        _RT_CLIENTS.discard(ws)   # nettoyage GARANTI : plus de boucle orpheline
+
 
 @app.websocket("/ws/{symbol}")
 async def websocket_endpoint(ws: WebSocket, symbol: str):
