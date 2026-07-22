@@ -9,6 +9,7 @@ from typing import Any
 from mcp.server.fastmcp import FastMCP
 
 from .contracts import MessageDraft
+from .secret_gate import scan_text
 from .store import CollabStore
 
 
@@ -47,6 +48,8 @@ def create_collab_mcp(store: CollabStore, broker: Any) -> FastMCP:
         classification: str = "INTERNAL",
     ) -> dict:
         """Publish one typed C1 message after a durable SQLite commit."""
+        if scan_text(content):
+            raise ValueError("SECRET_REJECTED")
         draft = MessageDraft(
             principal=principal,
             target=target,

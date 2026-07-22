@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from fastapi.testclient import TestClient
 
 from collab_hub.app import create_app
+from collab_hub.session import SessionAuthority
 from collab_hub.store import CollabStore
 
 
@@ -80,5 +82,32 @@ def test_http_auth_precedes_secret_rejection_and_persistence(tmp_path: Path) -> 
     assert authenticated.json() == {"reason_code": "SECRET_REJECTED"}
     assert secret not in unauthenticated.text
     assert secret not in authenticated.text
+    assert store.health()["head_offset"] == 0
+    store.close()
+
+
+def test_http_rejects_expired_florent_session_without_persistence(
+    tmp_path: Path,
+) -> None:
+    current = [datetime(2026, 7, 22, 8, 0, tzinfo=timezone.utc)]
+    sessions = SessionAuthority(clock=lambda: current[0], ttl_seconds=1)
+    store = CollabStore(tmp_path / "collab.sqlite3")
+    app = create_app(
+        store,
+        session_authority=sessions,
+        expected_windows_sid=EXPECTED_SID,
+    )
+    client = TestClient(app)
+    session = sessions.issue(EXPECTED_SID)
+    current[0] += timedelta(seconds=2)
+
+    response = client.post(
+        "/v1/messages",
+        json=_payload("florent-expired-session"),
+        headers={"X-Collab-Session": session.token},
+    )
+
+    assert response.status_code == 401
+    assert response.json() == {"reason_code": "FLORENT_SESSION_REQUIRED"}
     assert store.health()["head_offset"] == 0
     store.close()
