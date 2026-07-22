@@ -48,6 +48,11 @@ select {
   cursor: pointer;
 }
 
+button:disabled,
+textarea:disabled {
+  cursor: not-allowed;
+}
+
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
@@ -128,6 +133,10 @@ h2 {
   white-space: nowrap;
 }
 
+.compact-guard {
+  display: none;
+}
+
 .state-lamp {
   width: 7px;
   height: 7px;
@@ -204,8 +213,7 @@ h2 {
   font: 0.66rem/1 var(--utility);
 }
 
-.agent-row strong,
-.agent-row small {
+.agent-row strong {
   display: block;
   min-width: 0;
   overflow: hidden;
@@ -219,10 +227,15 @@ h2 {
 }
 
 .agent-row small {
+  display: block;
+  min-width: 0;
   margin-top: 3px;
   color: var(--mute);
   font: 0.6rem/1.2 var(--utility);
   text-transform: uppercase;
+  white-space: normal;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
 }
 
 .organ-section {
@@ -437,6 +450,7 @@ h2 {
   color: #d1dde1;
   font-size: 0.82rem;
   line-height: 1.46;
+  overflow-wrap: anywhere;
 }
 
 .message footer {
@@ -485,6 +499,13 @@ h2 {
   font: 700 0.68rem/1 var(--utility);
   letter-spacing: 0.07em;
   text-transform: uppercase;
+}
+
+.composer textarea:disabled,
+.composer button:disabled,
+.dock-action:disabled,
+.failure-row:disabled {
+  opacity: 0.62;
 }
 
 .action-dock {
@@ -538,8 +559,8 @@ h2 {
   text-transform: uppercase;
 }
 
-.dock-action:hover,
-.failure-row:hover {
+.dock-action:not(:disabled):hover,
+.failure-row:not(:disabled):hover {
   border-color: var(--cyan);
   background: var(--panel-raised);
 }
@@ -659,9 +680,58 @@ h2 {
     gap: 4px;
   }
 
+  .compact-guard {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 1px 0 0;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+    color: var(--red);
+    font: 700 0.66rem/1.2 var(--utility);
+    letter-spacing: 0.08em;
+  }
+
   .workspace {
     min-height: 0;
     display: block;
+    max-width: 100%;
+  }
+
+  .conversation {
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  .filters,
+  .message-log,
+  .composer,
+  .action-dock {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .message-log {
+    overflow-x: hidden;
+  }
+
+  .message,
+  .message header,
+  .message footer {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .message header,
+  .message footer {
+    flex-wrap: wrap;
+  }
+
+  .eyebrow,
+  .message footer span,
+  .dock-note {
+    overflow-wrap: anywhere;
   }
 
   .operator-rail {
@@ -702,7 +772,7 @@ h2 {
   }
 }
 
-@media (max-width: 460px) {
+@media (max-width: 520px) {
   .system-state {
     flex-wrap: wrap;
   }

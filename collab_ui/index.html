@@ -20,6 +20,9 @@
           <span class="state-divider" aria-hidden="true"></span>
           <span>LECTURE SEULE</span>
         </div>
+        <p class="compact-guard" aria-label="Garde permanente">
+          <span>PAPER ONLY</span><span aria-hidden="true">/</span><span>RÉEL INTERDIT</span>
+        </p>
       </header>
 
       <main class="workspace">
@@ -150,9 +153,9 @@
           </div>
 
           <div class="composer" aria-label="Composer un message">
-            <label for="message-input">Message ou commande</label>
-            <textarea id="message-input" rows="2" placeholder="Écrire à l’équipe ou /commander…"></textarea>
-            <button type="button">Envoyer</button>
+            <label for="message-input">Message ou commande · Bientôt disponible</label>
+            <textarea id="message-input" rows="2" placeholder="Écrire à l’équipe ou /commander…" data-task-1-inert disabled aria-disabled="true"></textarea>
+            <button type="button" data-task-1-inert disabled aria-disabled="true">Envoyer</button>
           </div>
         </section>
 
@@ -164,20 +167,20 @@
 
           <div class="action-group">
             <p class="group-label">Atelier</p>
-            <button type="button" class="dock-action">
+            <button type="button" class="dock-action" data-task-1-inert disabled aria-disabled="true">
               <span>Ouvrir VS Code</span><small>Hôte local</small>
             </button>
-            <button type="button" class="dock-action">
+            <button type="button" class="dock-action" data-task-1-inert disabled aria-disabled="true">
               <span>Santé services</span><small>Lecture</small>
             </button>
           </div>
 
           <div class="action-group">
             <p class="group-label">Sous garde</p>
-            <button type="button" class="dock-action action-demo">
+            <button type="button" class="dock-action action-demo" data-task-1-inert disabled aria-disabled="true">
               <span>Préparer commande DEMO</span><small>Confirmation requise</small>
             </button>
-            <button type="button" class="dock-action action-locked">
+            <button type="button" class="dock-action action-locked" data-task-1-inert disabled aria-disabled="true">
               <span>GitNexus signé</span><small>2 signatures · TTL</small>
             </button>
           </div>
@@ -187,15 +190,15 @@
               <h3 id="failures-title">Échecs récents</h3>
               <span>02</span>
             </div>
-            <button type="button" class="failure-row">
+            <button type="button" class="failure-row" data-task-1-inert disabled aria-disabled="true">
               <span>TEST_FAILED</span><small>UI_TASK_1 · à revalider</small>
             </button>
-            <button type="button" class="failure-row">
+            <button type="button" class="failure-row" data-task-1-inert disabled aria-disabled="true">
               <span>UNKNOWN</span><small>Cause distincte · inspecter</small>
             </button>
           </section>
 
-          <p class="dock-note">Les actions sont des intentions traçables. Aucun effet direct n’est câblé dans cette coque.</p>
+          <p class="dock-note">Bientôt disponible : ces intentions traçables seront activées par la connexion locale. Aucun effet direct n’est câblé dans cette coque.</p>
         </aside>
       </main>
     </div>
