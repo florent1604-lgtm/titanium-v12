@@ -91,7 +91,7 @@ def test_secret_gate_rejects_credentials_without_returning_their_values() -> Non
         "password=" + "not-a-real-credential-42",
         "token=" + "not-a-real-session-token-42",
         "api_key=" + "not-a-real-api-key-42",
-        "Bearer " + "not-a-real-bearer-token-42",
+        "Bearer " + "A7k9_Qp2.zX4-19Lm.N6r3_vB8",
     )
 
     assert tuple(scan_text(sample) for sample in samples) == (
@@ -109,6 +109,54 @@ def test_secret_gate_avoids_manifest_assignment_name_false_positives() -> None:
     )
 
     assert scan_text(harmless) == ()
+
+
+def test_secret_gate_rejects_quoted_json_credential_fields() -> None:
+    samples = (
+        '{"password":"not-a-real-password-42"}',
+        '{ "token" : "not-a-real-token-42" }',
+        "{'api_key': 'not-a-real-api-key-42'}",
+    )
+
+    assert tuple(scan_text(sample) for sample in samples) == (
+        ("PASSWORD",),
+        ("TOKEN",),
+        ("API_KEY",),
+    )
+
+
+def test_secret_gate_ignores_masked_credential_value_matrix() -> None:
+    samples = (
+        '{"password":"***"}',
+        '{"token":"<redacted>"}',
+        '{"api_key":"${API_KEY}"}',
+        "password = masked",
+        "token: null",
+        "api_key = [REDACTED]",
+    )
+
+    assert tuple(scan_text(sample) for sample in samples) == ((), (), (), (), (), ())
+
+
+def test_secret_gate_ignores_bearer_prose() -> None:
+    prose = (
+        "use bearer credentials for local authentication",
+        "bearer tokenization is not an authorization scheme",
+    )
+
+    assert tuple(scan_text(value) for value in prose) == ((), ())
+
+
+def test_secret_gate_detects_token_like_bearer_outside_header() -> None:
+    value = "Bearer " + "A7k9_Qp2.zX4-19Lm.N6r3_vB8"
+
+    assert scan_text(value) == ("BEARER_TOKEN",)
+
+
+def test_secret_gate_detects_high_diversity_opaque_bearer() -> None:
+    value = "Bearer " + "AbCdEfGhIjKlMnOp12345678"
+
+    assert scan_text(value) == ("BEARER_TOKEN",)
 
 
 def test_session_expires_and_never_serializes_token() -> None:
