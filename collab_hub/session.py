@@ -24,6 +24,10 @@ class SessionExpired(SessionError):
     """Raised when a token identifies an expired session."""
 
 
+class SessionCapacityExceeded(SessionError):
+    """Raised when all bounded session slots contain live sessions."""
+
+
 @dataclass(frozen=True)
 class LocalSession:
     session_id: str
@@ -56,21 +60,27 @@ class SessionAuthority:
         *,
         clock: Callable[[], datetime] = _utc_now,
         ttl_seconds: int = 900,
+        max_sessions: int = 1024,
     ) -> None:
         if not callable(clock):
             raise TypeError("clock must be callable")
         if not isinstance(ttl_seconds, int) or ttl_seconds <= 0:
             raise ValueError("ttl_seconds must be a positive integer")
+        if not isinstance(max_sessions, int) or max_sessions <= 0:
+            raise ValueError("max_sessions must be a positive integer")
         self._clock = clock
         self._ttl_seconds = ttl_seconds
+        self._max_sessions = max_sessions
         self._sessions: dict[bytes, _SessionRecord] = {}
         self._lock = threading.RLock()
 
-    def _purge_expired(self, now: datetime) -> None:
+    def _purge_expired(
+        self, now: datetime, *, preserve_digest: bytes | None = None
+    ) -> None:
         expired = [
             digest
             for digest, record in self._sessions.items()
-            if now >= record.expires_at
+            if digest != preserve_digest and now >= record.expires_at
         ]
         for digest in expired:
             del self._sessions[digest]
@@ -88,6 +98,8 @@ class SessionAuthority:
         expires_at = now + timedelta(seconds=self._ttl_seconds)
         with self._lock:
             self._purge_expired(now)
+            if len(self._sessions) >= self._max_sessions:
+                raise SessionCapacityExceeded("SESSION_CAPACITY_EXCEEDED")
             while True:
                 token = secrets.token_urlsafe(32)
                 digest = _token_digest(token)
@@ -100,15 +112,18 @@ class SessionAuthority:
         return LocalSession(record.session_id, record.windows_sid, record.expires_at, token)
 
     def verify(self, token: str) -> LocalSession:
-        if not isinstance(token, str) or not token:
-            raise InvalidSession("SESSION_INVALID")
-        presented = _token_digest(token)
+        now = self._now()
+        presented = _token_digest(token) if isinstance(token, str) and token else None
         with self._lock:
+            self._purge_expired(now, preserve_digest=presented)
+            if presented is None:
+                raise InvalidSession("SESSION_INVALID")
             record = self._sessions.get(presented)
             candidate = record.token_digest if record is not None else bytes(len(presented))
             if record is None or not hmac.compare_digest(presented, candidate):
                 raise InvalidSession("SESSION_INVALID")
-            if self._now() >= record.expires_at:
+            if now >= record.expires_at:
+                del self._sessions[presented]
                 raise SessionExpired("SESSION_EXPIRED")
         return LocalSession(record.session_id, record.windows_sid, record.expires_at, token)
 

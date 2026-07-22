@@ -36,6 +36,10 @@ class ProofRejected(AttestationError):
     """Raised when a proof is not valid for the SID and nonce."""
 
 
+class ChallengeCapacityExceeded(AttestationError):
+    """Raised when all bounded challenge slots contain live nonces."""
+
+
 class KeyProtector(Protocol):
     def protect(self, value: bytes) -> bytes: ...
 
@@ -264,18 +268,22 @@ class WindowsAttestation:
         key_path: Path | None = None,
         protector: KeyProtector | None = None,
         acl_hardener: Callable[[Path], None] = _restrict_acl_to_current_user_and_system,
+        max_challenges: int = 1024,
     ) -> None:
         if not callable(clock):
             raise TypeError("clock must be callable")
         if not isinstance(ttl_seconds, int) or ttl_seconds <= 0:
             raise ValueError("ttl_seconds must be a positive integer")
+        if not isinstance(max_challenges, int) or max_challenges <= 0:
+            raise ValueError("max_challenges must be a positive integer")
         self._clock = clock
         self._ttl_seconds = ttl_seconds
         self._key_path = Path(key_path) if key_path is not None else _default_key_path()
         self._protector = protector or DpapiCurrentUserProtector()
         self._acl_hardener = acl_hardener
+        self._max_challenges = max_challenges
         self._lock = threading.RLock()
-        self._challenges: dict[str, tuple[datetime, bool]] = {}
+        self._challenges: dict[str, datetime] = {}
         self._key = self._load_or_create_key()
 
     def _now(self) -> datetime:
@@ -326,11 +334,28 @@ class WindowsAttestation:
             raise KeyProtectionError("KEY_PROTECTION_FAILED") from exc
 
     def challenge(self) -> str:
-        nonce = secrets.token_urlsafe(32)
-        expires_at = self._now() + timedelta(seconds=self._ttl_seconds)
+        now = self._now()
         with self._lock:
-            self._challenges[nonce] = (expires_at, False)
+            self._purge_expired(now)
+            if len(self._challenges) >= self._max_challenges:
+                raise ChallengeCapacityExceeded("CHALLENGE_CAPACITY_EXCEEDED")
+            while True:
+                nonce = secrets.token_urlsafe(32)
+                if nonce not in self._challenges:
+                    break
+            self._challenges[nonce] = now + timedelta(seconds=self._ttl_seconds)
         return nonce
+
+    def _purge_expired(
+        self, now: datetime, *, preserve_nonce: str | None = None
+    ) -> None:
+        expired = [
+            nonce
+            for nonce, expires_at in self._challenges.items()
+            if nonce != preserve_nonce and now >= expires_at
+        ]
+        for nonce in expired:
+            del self._challenges[nonce]
 
     def _message(self, sid: str, nonce: str, expires_at: datetime) -> bytes:
         return f"{sid}|{nonce}|{expires_at.isoformat()}".encode("utf-8")
@@ -338,12 +363,14 @@ class WindowsAttestation:
     def test_proof(self, sid: str, nonce: str) -> str:
         """Create the native-host proof for an outstanding challenge."""
 
+        now = self._now()
         with self._lock:
-            challenge = self._challenges.get(nonce)
-            if challenge is None or challenge[1]:
+            self._purge_expired(now, preserve_nonce=nonce)
+            expires_at = self._challenges.get(nonce)
+            if expires_at is None:
                 raise ReplayRejected("NONCE_REPLAYED")
-            expires_at = challenge[0]
-            if self._now() >= expires_at:
+            if now >= expires_at:
+                del self._challenges[nonce]
                 raise ChallengeExpired("NONCE_EXPIRED")
             return hmac.new(
                 self._key,
@@ -352,13 +379,13 @@ class WindowsAttestation:
             ).hexdigest()
 
     def verify(self, sid: str, nonce: str, proof: str) -> None:
+        now = self._now()
         with self._lock:
-            challenge = self._challenges.get(nonce)
-            if challenge is None or challenge[1]:
+            self._purge_expired(now, preserve_nonce=nonce)
+            expires_at = self._challenges.pop(nonce, None)
+            if expires_at is None:
                 raise ReplayRejected("NONCE_REPLAYED")
-            expires_at = challenge[0]
-            self._challenges[nonce] = (expires_at, True)
-            if self._now() >= expires_at:
+            if now >= expires_at:
                 raise ChallengeExpired("NONCE_EXPIRED")
             expected = hmac.new(
                 self._key,
