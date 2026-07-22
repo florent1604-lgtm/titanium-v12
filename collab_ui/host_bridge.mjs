@@ -46,6 +46,7 @@ export function createWebViewBridge(webview) {
 
 function validateIntent(intent) {
   if (!isPlainObject(intent)) throw new TypeError('Intent must be an object');
+  rejectExecutableProperties(intent);
   const serialized = serializeIntent(intent);
   if (new TextEncoder().encode(serialized).byteLength > MAX_INTENT_BYTES) {
     throw new RangeError('Intent is too large');
@@ -74,7 +75,42 @@ function validateIntent(intent) {
 
   validateFields(safeIntent);
   validateJsonValue(safeIntent, 0);
-  return safeIntent;
+  return deepFreeze(safeIntent);
+}
+
+function rejectExecutableProperties(root) {
+  const seen = new Set();
+  const pending = [root];
+
+  while (pending.length > 0) {
+    const value = pending.pop();
+    if (seen.has(value)) continue;
+    seen.add(value);
+    if (!Array.isArray(value) && !isPlainObject(value)) {
+      throw new TypeError('Intent contains a non-data object');
+    }
+
+    const descriptors = Object.getOwnPropertyDescriptors(value);
+    if (Object.hasOwn(descriptors, 'toJSON')) {
+      throw new TypeError('Intent must not define its own toJSON');
+    }
+    for (const key of Reflect.ownKeys(descriptors)) {
+      const descriptor = descriptors[key];
+      if (descriptor.get !== undefined || descriptor.set !== undefined) {
+        throw new TypeError('Intent must not contain an accessor property');
+      }
+      const nested = descriptor.value;
+      if (nested !== null && typeof nested === 'object') pending.push(nested);
+    }
+  }
+}
+
+function deepFreeze(value) {
+  if (value === null || typeof value !== 'object' || Object.isFrozen(value)) {
+    return value;
+  }
+  for (const nested of Object.values(value)) deepFreeze(nested);
+  return Object.freeze(value);
 }
 
 function validateFields(intent) {

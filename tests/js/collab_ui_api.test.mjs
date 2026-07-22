@@ -372,6 +372,150 @@ test('an initial replay failure enters bounded transport recovery', async () => 
   client.stop();
 });
 
+test('a reentrant stop at replaying prevents the fetch from starting', async () => {
+  let client;
+  let fetchCalls = 0;
+  const scheduler = fakeScheduler();
+  const sockets = fakeSockets([]);
+  client = new CollabClient({
+    fetch: async () => {
+      fetchCalls += 1;
+      return response([]);
+    },
+    socketFactory: sockets.factory,
+    setTimeout: scheduler.setTimeout,
+    clearTimeout: scheduler.clearTimeout,
+    onStatus(status) {
+      if (status === 'replaying') client.stop();
+    },
+  });
+
+  await client.start(0);
+
+  assert.equal(fetchCalls, 0);
+  assert.equal(sockets.sockets.length, 0);
+  assert.deepEqual(scheduler.delays, []);
+  assert.equal(client.connectionStatus, 'stopped');
+});
+
+test('a reentrant stop at connecting prevents the socket from being created', async () => {
+  let client;
+  const scheduler = fakeScheduler();
+  const sockets = fakeSockets([]);
+  client = new CollabClient({
+    fetch: async () => response([]),
+    socketFactory: sockets.factory,
+    setTimeout: scheduler.setTimeout,
+    clearTimeout: scheduler.clearTimeout,
+    onStatus(status) {
+      if (status === 'connecting') client.stop();
+    },
+  });
+
+  await client.start(0);
+
+  assert.equal(sockets.sockets.length, 0);
+  assert.deepEqual(scheduler.delays, []);
+  assert.equal(client.connectionStatus, 'stopped');
+});
+
+test('a stop inside socketFactory closes the returned socket without retaining it', async () => {
+  let client;
+  let returnedSocket;
+  client = new CollabClient({
+    fetch: async () => response([]),
+    socketFactory() {
+      client.stop();
+      returnedSocket = new FakeSocket();
+      return returnedSocket;
+    },
+  });
+
+  await client.start(0);
+
+  assert.equal(client.socket, null);
+  assert.equal(returnedSocket.closeCalls, 1);
+  assert.equal(client.connectionStatus, 'stopped');
+});
+
+test('a reentrant stop at reconnecting prevents a timer from being retained', async () => {
+  let client;
+  const scheduler = fakeScheduler();
+  const sockets = fakeSockets([]);
+  client = new CollabClient({
+    fetch: async () => response([]),
+    socketFactory: sockets.factory,
+    setTimeout: scheduler.setTimeout,
+    clearTimeout: scheduler.clearTimeout,
+  });
+  await client.start(0);
+  client.onStatus = (status) => {
+    if (status === 'reconnecting') client.stop();
+  };
+
+  sockets.sockets[0].emitClose();
+
+  assert.deepEqual(scheduler.delays, []);
+  assert.equal(client.reconnectTimer, null);
+  assert.equal(client.connectionStatus, 'stopped');
+});
+
+test('a stop inside setTimeout clears the returned timer without retaining it', async () => {
+  let client;
+  const cleared = [];
+  const timer = { id: 'reentrant-timer' };
+  client = new CollabClient({
+    fetch: async () => {
+      throw new Error('offline');
+    },
+    socketFactory: fakeSockets([]).factory,
+    setTimeout() {
+      client.stop();
+      return timer;
+    },
+    clearTimeout(handle) {
+      cleared.push(handle);
+    },
+  });
+
+  await client.start(0);
+
+  assert.equal(client.reconnectTimer, null);
+  assert.deepEqual(cleared, [timer]);
+  assert.equal(client.connectionStatus, 'stopped');
+});
+
+test('a reentrant stop at reconnect replay prevents another fetch', async () => {
+  let client;
+  let fetchCalls = 0;
+  let reconnectStatuses = 0;
+  const scheduler = fakeScheduler();
+  const sockets = fakeSockets([]);
+  client = new CollabClient({
+    fetch: async () => {
+      fetchCalls += 1;
+      return response([]);
+    },
+    socketFactory: sockets.factory,
+    setTimeout: scheduler.setTimeout,
+    clearTimeout: scheduler.clearTimeout,
+  });
+  await client.start(0);
+  client.onStatus = (status) => {
+    if (status !== 'reconnecting') return;
+    reconnectStatuses += 1;
+    if (reconnectStatuses === 2) client.stop();
+  };
+  sockets.sockets[0].emitClose();
+
+  await scheduler.runNext();
+
+  assert.equal(fetchCalls, 1);
+  assert.equal(sockets.sockets.length, 1);
+  assert.equal(client.reconnectTimer, null);
+  assert.equal(client.connectionStatus, 'stopped');
+});
+
 test('a repeated connect replaces the previous transport without leaking a socket', async () => {
   const scheduler = fakeScheduler();
   const sockets = fakeSockets([]);
@@ -448,7 +592,7 @@ test('HostBridge rejects unknown, malformed, and oversized intentions fail-close
   );
 });
 
-test('HostBridge validates and forwards one immutable serialization snapshot', () => {
+test('HostBridge rejects an accessor without invoking it', () => {
   const forwarded = [];
   let typeReads = 0;
   const intent = { content: 'Message stable' };
@@ -461,11 +605,86 @@ test('HostBridge validates and forwards one immutable serialization snapshot', (
   });
   const bridge = new HostBridge((value) => forwarded.push(value));
 
-  bridge.postIntent(intent);
+  assert.throws(() => bridge.postIntent(intent), /accessor/);
 
-  assert.deepEqual(forwarded, [
-    { content: 'Message stable', type: 'chat.publish' },
-  ]);
+  assert.equal(typeReads, 0);
+  assert.deepEqual(forwarded, []);
+});
+
+test('HostBridge rejects nested accessors and toJSON without invoking callbacks', () => {
+  let accessorCalls = 0;
+  let toJsonCalls = 0;
+  const withAccessor = {};
+  Object.defineProperty(withAccessor, 'secret', {
+    enumerable: true,
+    get() {
+      accessorCalls += 1;
+      return 'never';
+    },
+    set() {
+      accessorCalls += 1;
+    },
+  });
+  const withToJson = {
+    toJSON() {
+      toJsonCalls += 1;
+      return {};
+    },
+  };
+  const bridge = new HostBridge(() => assert.fail('must not forward'));
+
+  assert.throws(
+    () => bridge.postIntent({
+      type: 'action.preview',
+      action: 'service.health',
+      parameters: { nested: withAccessor },
+    }),
+    /accessor/,
+  );
+  assert.throws(
+    () => bridge.postIntent({
+      type: 'action.preview',
+      action: 'service.health',
+      parameters: { nested: withToJson },
+    }),
+    /toJSON/,
+  );
+  assert.equal(accessorCalls, 0);
+  assert.equal(toJsonCalls, 0);
+});
+
+test('HostBridge dispatches a deeply cloned and recursively frozen intent', () => {
+  const original = {
+    type: 'action.preview',
+    action: 'service.health',
+    parameters: {
+      nested: { values: [1, { state: 'safe' }] },
+    },
+  };
+  let dispatched;
+  let mutationError;
+  const bridge = new HostBridge((intent) => {
+    dispatched = intent;
+    try {
+      intent.parameters.nested.values[1].state = 'mutated';
+    } catch (error) {
+      mutationError = error;
+    }
+  });
+
+  bridge.postIntent(original);
+
+  assertDeepFrozen(dispatched);
+  assert.notStrictEqual(dispatched, original);
+  assert.notStrictEqual(dispatched.parameters, original.parameters);
+  assert.notStrictEqual(
+    dispatched.parameters.nested.values,
+    original.parameters.nested.values,
+  );
+  assert.ok(mutationError instanceof TypeError);
+  assert.equal(dispatched.parameters.nested.values[1].state, 'safe');
+  original.parameters.nested.values[1].state = 'changed outside';
+  assert.equal(dispatched.parameters.nested.values[1].state, 'safe');
 });
 
 test('createWebViewBridge delegates to chrome.webview.postMessage', () => {
@@ -537,3 +756,10 @@ test('app isolates subscriber failures from connection lifecycle', async () => {
   assert.ok(observed.includes('connecting'));
   app.stop();
 });
+
+function assertDeepFrozen(value, seen = new Set()) {
+  if (value === null || typeof value !== 'object' || seen.has(value)) return;
+  seen.add(value);
+  assert.equal(Object.isFrozen(value), true);
+  for (const nested of Object.values(value)) assertDeepFrozen(nested, seen);
+}

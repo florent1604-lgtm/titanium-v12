@@ -149,6 +149,7 @@ export class CollabClient {
   async replayAndOpen(generation) {
     if (!this.isCurrent(generation, true)) return;
     this.setStatus(this.reconnectAttempt === 0 ? 'replaying' : 'reconnecting');
+    if (!this.isCurrent(generation, true)) return;
     await this.replay(this.lastConfirmedOffset, {
       generation,
       requireActive: true,
@@ -159,9 +160,14 @@ export class CollabClient {
 
   openSocket(generation) {
     this.setStatus('connecting');
+    if (!this.isCurrent(generation, true)) return;
     const socket = this.socketFactory(
       `/v1/ws?after_offset=${this.lastConfirmedOffset}`,
     );
+    if (!this.isCurrent(generation, true)) {
+      if (socket && typeof socket.close === 'function') socket.close();
+      return;
+    }
     if (!socket || typeof socket !== 'object') {
       throw new TypeError('socketFactory must return a socket');
     }
@@ -182,7 +188,13 @@ export class CollabClient {
         this.reconnectAttempt = 0;
       } catch {
         this.setStatus('error');
-        if (typeof socket.close === 'function') socket.close();
+        if (
+          this.isCurrent(generation, true) &&
+          this.socket === socket &&
+          typeof socket.close === 'function'
+        ) {
+          socket.close();
+        }
         return;
       }
       try {
@@ -194,7 +206,13 @@ export class CollabClient {
     socket.onerror = () => {
       if (this.isCurrent(generation, true)) {
         this.setStatus('error');
-        if (typeof socket.close === 'function') socket.close();
+        if (
+          this.isCurrent(generation, true) &&
+          this.socket === socket &&
+          typeof socket.close === 'function'
+        ) {
+          socket.close();
+        }
       }
     };
     socket.onclose = () => {
@@ -212,7 +230,8 @@ export class CollabClient {
     ];
     this.reconnectAttempt += 1;
     this.setStatus('reconnecting');
-    this.reconnectTimer = this.setTimeout(async () => {
+    if (!this.isCurrent(generation, true)) return;
+    const reconnectTimer = this.setTimeout(async () => {
       this.reconnectTimer = null;
       if (!this.isCurrent(generation, true)) return;
       try {
@@ -220,10 +239,17 @@ export class CollabClient {
       } catch {
         if (this.isCurrent(generation, true)) {
           this.setStatus('error');
-          this.scheduleReconnect(generation);
+          if (this.isCurrent(generation, true)) {
+            this.scheduleReconnect(generation);
+          }
         }
       }
     }, delay);
+    if (!this.isCurrent(generation, true)) {
+      this.clearTimeout(reconnectTimer);
+      return;
+    }
+    this.reconnectTimer = reconnectTimer;
   }
 
   setStatus(status) {
