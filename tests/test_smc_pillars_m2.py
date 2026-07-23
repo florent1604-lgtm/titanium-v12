@@ -93,10 +93,23 @@ def test_liquidity_neutre_si_aucune_fvg_au_contact():
 def test_fvg_actionnable_exige_la_proximite():
     """La même FVG compte au contact du prix et ne compte plus loin d'elle."""
     rows = [(90, 91, 89, 90), (95, 96, 94, 95), (99, 100, 98, 99)]        # bull FVG ~[91,98]
-    rows += [(p, p + 0.3, p - 0.3, p) for p in np.linspace(99, 99, 60)]
+    rows += [(99.0, 99.3, 98.7, 99.0) for _ in range(60)]                 # plat au-dessus → gap non comblé
     df = _rows(rows)
-    assert ca._fvg_actionnable(df, "ACHAT", price=95.0, tol=1.0) is True   # dans la zone
+    assert ca._fvg_actionnable(df, "ACHAT", price=95.0, tol=1.0) is True   # dans la zone, ouverte
     assert ca._fvg_actionnable(df, "ACHAT", price=130.0, tol=1.0) is False  # loin au-dessus
+
+
+def test_fvg_comblee_ne_compte_plus():
+    """Une FVG que le prix a rebouchée n'est plus un signal (le cas M15 réel :
+    dizaines de gaps, presque tous comblés, prix « dans » les deux côtés à la fois)."""
+    rows = [(90, 91, 89, 90), (95, 96, 94, 95), (99, 100, 98, 99)]        # bull FVG [91,98]
+    # le prix redescend SOUS la borne basse (91) → gap comblé, puis revient
+    rows += [(90, 91, 88, 89), (90, 96, 89, 95)]
+    df = _rows(rows)
+    assert smc.detect_fvg(df, "ACHAT"), "detect_fvg brut voit toujours le gap"
+    assert (95.0, 98.0) not in [(b, t) for b, t in smc.detect_fvg_unfilled(df, "ACHAT")]
+    # au contact mais comblée → n'active plus le pilier
+    assert ca._fvg_actionnable(df, "ACHAT", price=95.0, tol=1.0) is False
 
 
 # ── Fix A : sweep normalisé ATR, rétrocompatibilité stricte ───────────────────

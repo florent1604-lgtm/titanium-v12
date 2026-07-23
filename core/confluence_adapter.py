@@ -54,16 +54,19 @@ def _trend(df_htf: pd.DataFrame) -> int:
 
 
 def _fvg_actionnable(df: pd.DataFrame, side: str, price: float, tol: float) -> bool:
-    """Une FVG ne compte que si elle est ACTIVE et PROCHE du prix courant.
+    """Une FVG ne compte que si elle est NON COMBLÉE et au CONTACT du prix.
 
-    Le bug d'origine (revue Codex 22/07) : `bool(detect_fvg(df, side))` était vrai
-    dès qu'UNE FVG existait N'IMPORTE OÙ dans l'historique. Un historique mature en
-    contient des deux sens → bull ET bear vrais → pilier toujours à 0 (0/20 mesuré).
-    Ici, la porte n'est franchie que si le prix INTERAGIT avec la zone maintenant.
+    Deux bugs empilés (revue Codex 22/07, vérifiés sur données réelles) :
+      1. `bool(detect_fvg(df, side))` était vrai dès qu'UNE FVG existait n'importe où
+         → bull ET bear vrais → pilier figé à 0 (0/20 mesuré) ;
+      2. même en filtrant sur la proximité, le M15 a des DIZAINES de FVG rebouchées
+         qui se chevauchent → le prix est « dans » une zone des deux côtés à la fois.
+    On ne retient donc que les FVG ENCORE OUVERTES (déséquilibre non franchi) ET
+    dont la zone est au contact du prix maintenant.
     """
     if not (price > 0) or not (tol > 0):
         return False
-    for bot, top in smc.detect_fvg(df, side):
+    for bot, top in smc.detect_fvg_unfilled(df, side):
         lo, hi = (bot, top) if bot <= top else (top, bot)
         if (lo - tol) <= price <= (hi + tol):
             return True

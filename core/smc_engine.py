@@ -92,6 +92,39 @@ def detect_fvg(df: pd.DataFrame, side: str) -> List[Tuple[float, float]]:
     return zones
 
 
+def detect_fvg_unfilled(df: pd.DataFrame, side: str,
+                        lookback: int = 100) -> List[Tuple[float, float]]:
+    """FVG encore OUVERTES (non comblées) dans la fenêtre récente.
+
+    `detect_fvg` renvoie TOUTES les FVG de l'historique — sur du M15, des dizaines
+    par côté, la plupart déjà rebouchées. Une FVG rebouchée n'est plus un signal :
+    le prix est repassé au travers. Une zone n'est retenue que si sa borne de
+    déséquilibre n'a JAMAIS été franchie par une barre postérieure à sa création :
+      · FVG haussière (support) : aucune clôture/mèche basse sous sa borne basse ;
+      · FVG baissière (résistance) : aucune mèche haute au-dessus de sa borne haute.
+    C'est le « FVG actif/non comblé » demandé par Codex (22/07/2026).
+    """
+    n = len(df)
+    if n < 3:
+        return []
+    debut = max(2, n - lookback)
+    lows = df["low"].to_numpy(dtype=float)
+    highs = df["high"].to_numpy(dtype=float)
+    ouvertes: List[Tuple[float, float]] = []
+    for i in range(debut, n):
+        h0, l0 = highs[i - 2], lows[i - 2]
+        l2, h2 = lows[i], highs[i]
+        if "ACHAT" in side and h0 < l2:
+            # comblée si une barre postérieure redescend sous la borne basse (h0)
+            if i + 1 >= n or lows[i + 1:].min() > h0:
+                ouvertes.append((h0, l2))
+        elif "VENTE" in side and l0 > h2:
+            # comblée si une barre postérieure remonte au-dessus de la borne haute (l0)
+            if i + 1 >= n or highs[i + 1:].max() < l0:
+                ouvertes.append((h2, l0))
+    return ouvertes
+
+
 # ── OB/FVG Alignment ─────────────────────────────────────────────────────────
 
 def has_ob_or_fvg_alignment(
