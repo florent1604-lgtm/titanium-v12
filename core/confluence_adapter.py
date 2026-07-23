@@ -121,6 +121,31 @@ def _ote_ob(df: pd.DataFrame, price: float, fib_ctx: dict) -> int:
         return 0
 
 
+def _geometric(df: pd.DataFrame, symbol: str) -> dict:
+    """Calcule le régime géométrique et le met en cache (_LATEST) pour la PORTE neuronale.
+
+    Câblé sur la démo (décision de Florent 23/07 « câble sans restriction »). Fail-safe
+    STRICT : tout échec retombe sur CLASSIC/available=False et ne casse jamais les feats
+    ni la décision. Le régime lui-même n'agit qu'à travers brain_gate (porte + sizing).
+    """
+    try:
+        from core.geometric_plane import geometric_plane, price_features
+        if df is None or len(df) < 40:
+            return {"branch": "CLASSIC", "available": False}
+        feats, returns = price_features(df["open"], df["high"], df["low"], df["close"], 60)
+        try:
+            from core.signal_engine import get_spectral_state
+            spectral_state = get_spectral_state() or {}
+        except Exception:
+            spectral_state = {}
+        reg = geometric_plane.analyze_with_spectral(symbol, feats, returns, spectral_state, publish=True)
+        return {"branch": reg.branch, "curvature": reg.curvature,
+                "lyapunov": reg.lyapunov_horizon, "fisher": reg.fisher_distance,
+                "topology_alert": reg.topology_alert, "available": True}
+    except Exception:
+        return {"branch": "CLASSIC", "available": False}
+
+
 def _emotion_feats(symbol: str) -> dict:
     try:
         from emotion.market_context import emotion_for
@@ -215,6 +240,9 @@ def build_feats(df_ltf: Optional[pd.DataFrame], df_htf: Optional[pd.DataFrame], 
     # ATR LTF : sert à normaliser le sweep et la tolérance de proximité FVG/OB.
     atr_ltf = smc.compute_atr(ltf)
 
+    # PLAN GÉOMÉTRIQUE : calcule + met en cache le régime (lu ensuite par brain_gate).
+    geometric = _geometric(ltf, symbol)
+
     # OTE (impulsion TF d'entrée) + OB actif requis (le nom « ote_ob » l'exige).
     fib_ctx = fib_ote.entry_context(ltf, ref_price)
     ote_dir = _ote_ob(ltf, ref_price, fib_ctx)
@@ -238,6 +266,7 @@ def build_feats(df_ltf: Optional[pd.DataFrame], df_htf: Optional[pd.DataFrame], 
         "liquidity": liquidity,
         "ote": ote_dir,
         "candle": candle_dir,
+        "geometric": geometric,
         "emotion": emo,
         "cost": {"edge_ok": None,            # ⚠️ INCONNU tant que le LABO n'a pas mesuré (plus de fail-open)
                  "weekend_block": _weekend_block(now, venue)},

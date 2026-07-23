@@ -191,4 +191,22 @@ def gate_entry(symbol: str, proposed_side: int, *,
 
     # 3. Autorisé — l'ÉMOTION pilote la conviction/taille.
     conv, emo_tag = _conviction(cons, side)
+
+    # 4. PLAN GÉOMÉTRIQUE (démo, câblé 23/07 « sans restriction »). Point d'influence
+    #    UNIQUE du régime : il FILTRE (rupture topologique / horizon Lyapunov trop court /
+    #    régime inconnu Fisher / rotation Grassmann trop rapide) et DIMENSIONNE (× sizing).
+    #    Fail-safe STRICT : régime absent ou erreur → aucun changement (identique à avant).
+    #    ⚠️ Proxys NON validés M2 — surveiller la démo ; le compte réel reste intouché.
+    try:
+        from core.geometric_plane import GeometricPlane, get_latest_regime
+        geo = get_latest_regime(symbol)
+        if geo is not None:
+            permitted, reason = GeometricPlane.gate_permitted(geo, "swing")
+            if not permitted:
+                return BrainGate(False, 0, 0.0, "BRAIN", status, (reason, emo_tag))
+            conv = max(_CONV_FLOOR, min(1.0, conv * GeometricPlane.sizing_factor(geo)))
+            return BrainGate(True, side, conv, "BRAIN", status,
+                             ("BRAIN_ALLOW", emo_tag, f"GEOM_{geo.branch}"))
+    except Exception:
+        pass
     return BrainGate(True, side, conv, "BRAIN", status, ("BRAIN_ALLOW", emo_tag))

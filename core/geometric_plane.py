@@ -391,3 +391,36 @@ def get_latest_regime(symbol: str) -> Optional[GeometricRegime]:
 def all_latest_regimes() -> Dict[str, GeometricRegime]:
     """Copie du cache complet (pour la route /geometry/all)."""
     return dict(_LATEST)
+
+
+def price_features(o, h, l, c, window: int = 60):
+    """(open,high,low,close) → (features (W,8), returns (W,1)), sans look-ahead.
+
+    8 descripteurs de STRUCTURE PRIX par barre — partagés par la route observateur
+    et le chemin de décision pour que le régime câblé soit calculé de façon IDENTIQUE :
+      0 log-return   1 amplitude (H-L)/C   2 corps (C-O)/ampl.   3 mèche haute
+      4 mèche basse  5 vol. glissante 5    6 momentum 5          7 vol. glissante 20
+    """
+    o = np.asarray(o, dtype=float); h = np.asarray(h, dtype=float)
+    l = np.asarray(l, dtype=float); c = np.asarray(c, dtype=float)
+    n = len(c); eps = 1e-12
+    logret = np.zeros(n)
+    logret[1:] = np.log(np.clip(c[1:], eps, None) / np.clip(c[:-1], eps, None))
+    ampl = (h - l) / np.clip(c, eps, None)
+    span = np.clip(h - l, eps, None)
+    body = (c - o) / span
+    up_wick = (h - np.maximum(o, c)) / span
+    lo_wick = (np.minimum(o, c) - l) / span
+
+    def _roll_std(x, w):
+        out = np.zeros(n)
+        for i in range(n):
+            j = max(0, i - w + 1)
+            out[i] = float(np.std(x[j:i + 1])) if i > j else 0.0
+        return out
+
+    vol5 = _roll_std(logret, 5); vol20 = _roll_std(logret, 20)
+    mom5 = np.zeros(n)
+    mom5[5:] = np.log(np.clip(c[5:], eps, None) / np.clip(c[:-5], eps, None))
+    feats = np.column_stack([logret, ampl, body, up_wick, lo_wick, vol5, mom5, vol20])
+    return feats[-window:], logret[-window:].reshape(-1, 1)

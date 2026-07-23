@@ -22,54 +22,14 @@ _WINDOW = 60
 _TF = "M15"
 
 
-def _feature_matrix(df) -> tuple:
-    """Construit (features (W,8), returns (W,1)) à partir des bougies.
-
-    8 descripteurs par barre, tous sans look-ahead (bougies clôturées) :
-      0 log-return          1 amplitude (H-L)/C      2 corps (C-O)/amplitude
-      3 mèche haute /ampl.   4 mèche basse /ampl.     5 vol glissante 5 barres
-      6 momentum 5 barres    7 vol glissante 20 barres
-    """
-    o = df["open"].to_numpy(dtype=float)
-    h = df["high"].to_numpy(dtype=float)
-    l = df["low"].to_numpy(dtype=float)
-    c = df["close"].to_numpy(dtype=float)
-    n = len(c)
-    eps = 1e-12
-
-    logret = np.zeros(n)
-    logret[1:] = np.log(np.clip(c[1:], eps, None) / np.clip(c[:-1], eps, None))
-    ampl = (h - l) / np.clip(c, eps, None)
-    span = np.clip(h - l, eps, None)
-    body = (c - o) / span
-    up_wick = (h - np.maximum(o, c)) / span
-    lo_wick = (np.minimum(o, c) - l) / span
-
-    def _roll_std(x, w):
-        out = np.zeros(n)
-        for i in range(n):
-            j = max(0, i - w + 1)
-            out[i] = float(np.std(x[j:i + 1])) if i > j else 0.0
-        return out
-
-    vol5 = _roll_std(logret, 5)
-    vol20 = _roll_std(logret, 20)
-    mom5 = np.zeros(n)
-    mom5[5:] = np.log(np.clip(c[5:], eps, None) / np.clip(c[:-5], eps, None))
-
-    feats = np.column_stack([logret, ampl, body, up_wick, lo_wick, vol5, mom5, vol20])
-    feats = feats[-_WINDOW:]
-    returns = logret[-_WINDOW:].reshape(-1, 1)
-    return feats, returns
-
-
 def _compute_regime(symbol: str):
     """Calcule (et met en cache) le régime d'un symbole depuis MT5. None si indispo."""
     from data.mt5_provider import get_ohlcv
+    from core.geometric_plane import price_features
     df = get_ohlcv(symbol, _TF, _WINDOW + 30)
     if df is None or len(df) < 40:
         return None
-    feats, returns = _feature_matrix(df)
+    feats, returns = price_features(df["open"], df["high"], df["low"], df["close"], _WINDOW)
     # Pont spectral : si un cycle Ehlers existe pour ce symbole, le tore l'utilise.
     try:
         from core.signal_engine import get_spectral_state
