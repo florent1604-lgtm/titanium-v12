@@ -264,6 +264,16 @@ button:hover,button[aria-pressed="true"]{background:rgba(0,229,255,.18);
     <div class="w-title">CERVEAU · DÉCISION <span class="st" id="cerveau-st">—</span></div>
     <div class="w-body" id="cerveau" style="max-height:200px">en attente…</div>
   </div>
+  <!-- RÉGIME GÉOMÉTRIQUE : OBSERVATEUR (proxys heuristiques). Ne décide RIEN — il
+       quantifie la structure du marché. Le sizing affiché est PROPOSÉ, pas appliqué. -->
+  <div class="widget right" id="w-geom" style="top:790px" role="button" tabindex="0">
+    <div class="w-title">RÉGIME GÉOMÉTRIQUE <span class="st" id="geom-st">—</span></div>
+    <div class="w-body" id="geom" style="max-height:210px">
+      <canvas id="geom-canvas" width="300" height="118"
+              style="width:100%;height:104px;background:#000510;border-radius:4px"></canvas>
+      <div id="geom-metrics" style="margin-top:6px;opacity:.85">en attente…</div>
+    </div>
+  </div>
 </div>
 
 <!-- sous-titres -->
@@ -449,9 +459,61 @@ async function tick(){
     pull("crypto","/paper/stats"),pull("cryptoPos","/paper/positions"),
     pull("cryptoTrades","/paper/trades"),pull("risk","/swing/risk/exposure"),
     pull("sante","/health/system"),pull("cortex","/cortex/snapshot"),pull("brain","/brain/master"),
+    pull("geom","/geometry/state/"+GEOM_SYM),
   ]);
-  S.fetching=false; trackActivity(); renderAll(); renderSante(); renderCerveau();
+  S.fetching=false; trackActivity(); renderAll(); renderSante(); renderCerveau(); renderGeom();
 }
+
+/* ════════ RÉGIME GÉOMÉTRIQUE (observateur) ════════
+   Un tore animé + les proxys du régime. Ne DÉCIDE rien : le sizing est PROPOSÉ.
+   Le tore tourne en continu (rAF léger) ; les chiffres se mettent à jour au tick. */
+const GEOM_SYM = "BTCUSD";
+let _geomRot = 0;
+function renderGeom(){
+  const d=S.feeds.geom?.data, st=$("#geom-st"), box=$("#geom-metrics");
+  if(!d){if(st){st.textContent="—";st.className="st";}if(box)box.textContent="observateur injoignable";return;}
+  const br=d.branch, ind=d.indicators||{}, cur=d.clifford?.curvature||0;
+  const bcls={CLIFFORD:"live",GRASSMANN:"warn",CLASSIC:"stale"}[br]||"stale";
+  st.textContent=br; st.className="st "+bcls;
+  const alert=ind.topology_alert;
+  let h='<div style="display:grid;grid-template-columns:1fr auto;gap:1px 8px;font-size:11px">';
+  h+=`<span style="opacity:.7">symbole</span><span>${GEOM_SYM}</span>`;
+  h+=`<span style="opacity:.7">courbure</span><span>${cur.toFixed(3)}</span>`;
+  h+=`<span style="opacity:.7">Fisher (proxy)</span><span>${(ind.fisher_distance||0).toFixed(2)}</span>`;
+  h+=`<span style="opacity:.7">Lyapunov (proxy)</span><span>${ind.lyapunov_horizon||0} j</span>`;
+  h+=`<span style="opacity:.7">confiance</span><span>${((ind.confidence||0)*100).toFixed(0)}%</span>`;
+  h+=`<span style="opacity:.7">sizing proposé</span><span style="color:var(--amber)">×${(d.sizing_factor_propose||1).toFixed(2)}</span>`;
+  h+="</div>";
+  if(alert)h+=`<div style="margin-top:4px;color:var(--red)">▲ RUPTURE TOPOLOGIQUE</div>`;
+  h+=`<div style="margin-top:4px;opacity:.45;font-size:10px">observateur · proxys heuristiques · aucun effet sur les entrées</div>`;
+  box.innerHTML=h;
+}
+function _drawTorus(){
+  const cv=$("#geom-canvas"); if(cv){
+    const ctx=cv.getContext("2d"), W=cv.width, H=cv.height;
+    ctx.clearRect(0,0,W,H); ctx.fillStyle="#000510"; ctx.fillRect(0,0,W,H);
+    const d=S.feeds.geom?.data, br=d?.branch||"CLASSIC", cur=d?.clifford?.curvature||0;
+    const alert=d?.indicators?.topology_alert;
+    const cx=W/2, cy=H/2, R=32, r=12, rot=_geomRot;
+    ctx.strokeStyle="#00e5ff22"; ctx.lineWidth=0.5;
+    for(let i=0;i<=18;i++){const u=i/18*Math.PI*2+rot;ctx.beginPath();
+      for(let j=0;j<=10;j++){const v=j/10*Math.PI*2;
+        const x=(R+r*Math.cos(v))*Math.cos(u), y=(R+r*Math.cos(v))*Math.sin(u)*0.42-r*Math.sin(v)*0.55;
+        j===0?ctx.moveTo(cx+x,cy+y):ctx.lineTo(cx+x,cy+y);}
+      ctx.stroke();}
+    const col=alert?"#ff4444":(br==="CLIFFORD"?"#00e5ff":br==="GRASSMANN"?"#aa66ff":"#8899aa");
+    const pu=rot*1.7+(d?.clifford?.x||0), pv=rot*2.3+(d?.clifford?.z||0);
+    const px=(R+r*Math.cos(pv))*Math.cos(pu), py=(R+r*Math.cos(pv))*Math.sin(pu)*0.42-r*Math.sin(pv)*0.55;
+    const rad=3+cur*5;
+    const g=ctx.createRadialGradient(cx+px,cy+py,0,cx+px,cy+py,rad*3);
+    g.addColorStop(0,col); g.addColorStop(1,col+"00");
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx+px,cy+py,rad*3,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle=col; ctx.beginPath(); ctx.arc(cx+px,cy+py,rad,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle="#00e5ff66"; ctx.font='9px "Courier New"'; ctx.fillText(br,8,H-8);
+  }
+  _geomRot+=0.012; requestAnimationFrame(_drawTorus);
+}
+requestAnimationFrame(_drawTorus);
 
 /* ════════ SANTÉ SYSTÈME ════════
    Source : l'agent INDÉPENDANT. S'il se tait, on l'écrit — un panneau vert alimenté par un
