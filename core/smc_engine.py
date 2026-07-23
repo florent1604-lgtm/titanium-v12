@@ -57,6 +57,7 @@ def ob_status(df_after: pd.DataFrame, ob_top: float, ob_bot: float, side: str) -
     """Analyse le statut d'un OB : 'intact' | 'tested' | 'broken'."""
     if df_after is None or df_after.empty:
         return "intact"
+    tested = False
     for i in range(len(df_after)):
         c  = float(df_after.iloc[i]["close"])
         lo = float(df_after.iloc[i]["low"])
@@ -65,13 +66,13 @@ def ob_status(df_after: pd.DataFrame, ob_top: float, ob_bot: float, side: str) -
             if c < ob_bot:
                 return "broken"
             if lo <= ob_top and hi >= ob_bot:
-                return "tested"
+                tested = True
         else:
             if c > ob_top:
                 return "broken"
             if hi >= ob_bot and lo <= ob_top:
-                return "tested"
-    return "intact"
+                tested = True
+    return "tested" if tested else "intact"
 
 
 # ── FVG Detection ─────────────────────────────────────────────────────────────
@@ -148,26 +149,41 @@ def has_ob_or_fvg_alignment(
 
 # ── Liquidity Sweep ───────────────────────────────────────────────────────────
 
-def detect_liquidity_sweep(df: pd.DataFrame, side: str) -> bool:
+# Repli du sweep exprimé en fraction d'ATR quand un ATR est fourni. Remplace le
+# tampon fixe 0,3 % qui n'a aucun sens transversal : 0,3 % vaut ~9 ATR sur un
+# indice calme et une fraction d'ATR sur une crypto volatile (revue Codex 22/07).
+LIQUIDITY_SWEEP_ATR_MULT = 0.25
+
+
+def detect_liquidity_sweep(df: pd.DataFrame, side: str,
+                           atr: Optional[float] = None,
+                           atr_mult: float = LIQUIDITY_SWEEP_ATR_MULT) -> bool:
     """Détecte un Stop Hunt institutionnel (sweep de liquidité).
 
-    [FIX v9-7] Clôture doit dépasser 0.3% au-dessus/en-dessous du niveau historique.
+    La mèche perce un extrême historique PUIS la clôture revient au-delà d'un
+    tampon de reconquête.
+
+    `atr` : si fourni (> 0), le tampon devient `atr_mult × ATR` — normalisé par
+    la volatilité de l'instrument. Sans `atr`, on garde le tampon historique fixe
+    de 0,3 % (rétrocompatibilité STRICTE : le scorer /16 live ne change pas).
     """
     if df is None or len(df) < LIQUIDITY_LOOKBACK + 5:
         return False
     try:
         tail       = df.tail(5)
         historical = df.iloc[-(LIQUIDITY_LOOKBACK + 5):-5]
+        use_atr = atr is not None and float(atr) > 0
+        buf = float(atr) * atr_mult if use_atr else None
         if "ACHAT" in side:
             lowest_low  = float(historical["low"].min())
-            confirm_lvl = lowest_low * 1.003
+            confirm_lvl = (lowest_low + buf) if use_atr else lowest_low * 1.003
             return (
                 any(float(r) < lowest_low for r in tail["low"])
                 and float(tail["close"].iloc[-1]) > confirm_lvl
             )
         else:
             highest_high = float(historical["high"].max())
-            confirm_lvl  = highest_high * 0.997
+            confirm_lvl  = (highest_high - buf) if use_atr else highest_high * 0.997
             return (
                 any(float(r) > highest_high for r in tail["high"])
                 and float(tail["close"].iloc[-1]) < confirm_lvl
