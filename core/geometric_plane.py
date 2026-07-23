@@ -230,8 +230,8 @@ class GeometricPlane:
         """Proxy de circularité : variance PCA expliquée × autocorrélation lag-1."""
         if data.shape[0] < 20 or self._pca is None:
             return 0.5
-        if float(np.var(data)) < 1e-12:          # entrée plate → pas de structure, pas de PCA
-            return 0.5
+        if float(np.var(data)) < 1e-12:          # entrée plate → AUCUNE structure → CLASSIC
+            return 0.0
         scaled = self._scaler.fit_transform(data)
         proj = self._pca.fit_transform(scaled)
         if proj.shape[0] < 2:
