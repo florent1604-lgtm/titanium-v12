@@ -113,16 +113,28 @@ class GeometricPlane:
         scores_16: NDArray[np.float64],
         returns: NDArray[np.float64],
         spectral_cycle: int = 0,
+        spectral_override: Optional[Dict[str, Any]] = None,
         publish: bool = True,
     ) -> GeometricRegime:
-        """Topologie → branche (tore/Grassmann/classique) → Fisher → Lyapunov → confiance."""
+        """Topologie → branche (tore/Grassmann/classique) → Fisher → Lyapunov → confiance.
+
+        `spectral_override` (pont spectral, optionnel) : quand `use_spectral=True`, le tore
+        prend directement les angles du cycle Ehlers au lieu de la PCA sur les scores.
+        """
         now = time.time()
         scores_16 = np.asarray(scores_16, dtype=np.float64)
         returns = np.asarray(returns, dtype=np.float64)
 
         topo_score = self._topology_score(scores_16)
+        confidence_boost = 0.0
 
-        if topo_score > 0.60 and spectral_cycle > 5:
+        if spectral_override and spectral_override.get("use_spectral"):
+            branch = "CLIFFORD"                       # le cycle spectral fournit le tore
+            clifford_xyz = spectral_override["clifford_xyz"]
+            curvature = float(spectral_override["curvature"])
+            grassmann_rot = 0.0
+            confidence_boost = float(spectral_override.get("confidence", 0.5))
+        elif topo_score > 0.60 and spectral_cycle > 5:
             branch = "CLIFFORD"
             clifford_xyz, curvature = self._compute_clifford(scores_16)
             grassmann_rot = 0.0
@@ -141,6 +153,8 @@ class GeometricPlane:
         horizon = self._lyapunov_horizon(returns)
         poincare_r = self._poincare_radius(scores_16)
         confidence = self._compute_confidence(topo_score, fisher, horizon, spectral_cycle)
+        if confidence_boost:
+            confidence = min(1.0, confidence + confidence_boost * 0.3)
         topology_alert = topo_score < 0.15
 
         regime = GeometricRegime(
@@ -162,6 +176,29 @@ class GeometricPlane:
         if publish:
             _LATEST[symbol] = regime          # cache mémoire (pas d'EventPlane à ce stade)
         return regime
+
+    def analyze_with_spectral(
+        self,
+        symbol: str,
+        scores_16: NDArray[np.float64],
+        returns: NDArray[np.float64],
+        spectral_state: Dict[str, Any],
+        publish: bool = True,
+    ) -> GeometricRegime:
+        """Comme `analyze()`, mais auto-détecte le pont spectral depuis `spectral_state`.
+
+        Si le pont est indisponible ou le cycle invalide, retombe proprement sur la PCA.
+        """
+        spectral_override = None
+        try:
+            from core.spectral_bridge import integrate_with_geometric_plane
+            spectral_override = integrate_with_geometric_plane(self, spectral_state, symbol)
+        except Exception:
+            spectral_override = None
+        spectral_cycle = int((spectral_state.get(symbol, {}) or {}).get("dominant_cycle", 0) or 0)
+        return self.analyze(symbol=symbol, scores_16=scores_16, returns=returns,
+                            spectral_cycle=spectral_cycle, spectral_override=spectral_override,
+                            publish=publish)
 
     # ── Modulateurs statiques (NON câblés — prêts pour l'étape 3, post-M2) ────
 

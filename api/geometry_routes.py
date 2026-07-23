@@ -70,15 +70,15 @@ def _compute_regime(symbol: str):
     if df is None or len(df) < 40:
         return None
     feats, returns = _feature_matrix(df)
+    # Pont spectral : si un cycle Ehlers existe pour ce symbole, le tore l'utilise.
     try:
         from core.signal_engine import get_spectral_state
-        spec = (get_spectral_state() or {}).get(symbol, {})
-        spectral_cycle = int(spec.get("dominant_cycle", 0) or 0)
+        spectral_state = get_spectral_state() or {}
     except Exception:
-        spectral_cycle = 0
-    return geometric_plane.analyze(
+        spectral_state = {}
+    return geometric_plane.analyze_with_spectral(
         symbol=symbol, scores_16=feats, returns=returns,
-        spectral_cycle=spectral_cycle, publish=True,
+        spectral_state=spectral_state, publish=True,
     )
 
 
