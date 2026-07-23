@@ -2,10 +2,16 @@
 from core import cortex
 
 
-def _patch(monkeypatch, conf=None, cons=None, ll=None, evp=None):
+def _patch(monkeypatch, conf=None, cons=None, ll=None, evp=None, emo=None):
     monkeypatch.setattr(cortex, "_confluence", lambda: conf if conf is not None else {})
     monkeypatch.setattr(cortex, "_consensus", lambda: cons if cons is not None else {})
     monkeypatch.setattr(cortex, "_leadlag", lambda: ll if ll is not None else {})
+    monkeypatch.setattr(cortex, "_emotion",
+                        lambda: emo if emo is not None else {
+                            "n_symbols": 2,
+                            "directions": {"long": 0, "short": 0, "neutral": 2},
+                            "confidences": [0.1, 0.2],
+                        })
     monkeypatch.setattr(cortex, "_eventplane",
                         lambda: evp if evp is not None else {
                             "n_events": 0, "last_offset": 0,
@@ -36,12 +42,40 @@ def test_source_en_echec_ne_casse_pas_le_cortex(monkeypatch):
     monkeypatch.setattr(cortex, "_consensus",
                         lambda: {"heartbeat": {"last_cycle_at": "t", "last_cycle_ok": True}})
     monkeypatch.setattr(cortex, "_leadlag", lambda: {"ts": "t", "by_tf": {}})
+    monkeypatch.setattr(cortex, "_emotion",
+                        lambda: {"n_symbols": 1, "directions": {"long": 0, "short": 0, "neutral": 1},
+                                 "confidences": [0.1]})
     monkeypatch.setattr(cortex, "_eventplane",
                         lambda: {"n_events": 0, "last_offset": 0,
                                  "integrity": {"ok": True}})
     snap = cortex.snapshot()
     assert snap["overall_health"] == "degraded"
     assert snap["engines"]["confluence"]["health"] == "down"      # isolé, pas de crash
+
+
+def test_emotion_est_un_organe_du_cortex(monkeypatch):
+    """L'émotion est projetée comme organe (demande Florent). Une émotion NEUTRE n'est pas
+    une panne : l'organe reste `ok`, seul `expressive` dit qu'elle ne porte pas de direction."""
+    _patch(monkeypatch,
+           conf={"heartbeat": {"last_cycle_ok": True, "last_cycle_at": "t"}, "symbols": {}},
+           cons={"heartbeat": {"last_cycle_at": "t", "last_cycle_ok": True}, "symbols": {}},
+           ll={"ts": "t", "by_tf": {}},
+           emo={"n_symbols": 3, "directions": {"long": 2, "short": 0, "neutral": 1},
+                "confidences": [0.6, 0.8, 0.1]})
+    e = cortex.snapshot()["engines"]["emotion"]
+    assert e["health"] == "ok" and e["expressive"] is True
+    assert e["n_directional"] == 2 and e["mean_confidence"] == 0.5
+
+    # émotion muette (100 % neutre, cas observé le 21/07) : organe sain, mais non expressif
+    _patch(monkeypatch,
+           conf={"heartbeat": {"last_cycle_ok": True, "last_cycle_at": "t"}, "symbols": {}},
+           cons={"heartbeat": {"last_cycle_at": "t", "last_cycle_ok": True}, "symbols": {}},
+           ll={"ts": "t", "by_tf": {}},
+           emo={"n_symbols": 5, "directions": {"long": 0, "short": 0, "neutral": 5},
+                "confidences": [0.1] * 5})
+    snap = cortex.snapshot()
+    assert snap["engines"]["emotion"]["expressive"] is False
+    assert snap["overall_health"] == "ok"        # muette ≠ en panne : ne dégrade pas le cortex
 
 
 def test_full_expose_le_detail(monkeypatch):

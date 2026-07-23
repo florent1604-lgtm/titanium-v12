@@ -1,0 +1,129 @@
+{
+  "symbol": "BTC/USDT",
+  "duration_s": 60,
+  "started_at": "2026-07-07T19:54:27.890026+00:00",
+  "grid_ms": 200,
+  "platforms": {
+    "binance": {
+      "ticks": 1592,
+      "ticks_per_sec": 27.89,
+      "transport_ms": {
+        "median": 510.1,
+        "p10": 508.1,
+        "p90": 715.9
+      }
+    },
+    "bybit": {
+      "ticks": 363,
+      "ticks_per_sec": 6.58,
+      "transport_ms": {
+        "median": 416.6,
+        "p10": 414.7,
+        "p90": 513.7
+      }
+    },
+    "okx": {
+      "ticks": 110,
+      "ticks_per_sec": 1.94,
+      "transport_ms": {
+        "median": 430.3,
+        "p10": 427.8,
+        "p90": 593.9
+      }
+    },
+    "coinbase": {
+      "ticks": 617,
+      "ticks_per_sec": 10.45,
+      "transport_ms": {
+        "median": 406.8,
+        "p10": 396.7,
+        "p90": 577.4
+      }
+    },
+    "kraken": {
+      "ticks": 27,
+      "ticks_per_sec": 0.64,
+      "transport_ms": {
+        "median": 361.9,
+        "p10": 355.3,
+        "p90": 567.4
+      }
+    }
+  },
+  "lead_lag": {
+    "matrix": {
+      "binance": {
+        "bybit": {
+          "lag_ms": -200,
+          "corr": 0.724
+        },
+        "coinbase": {
+          "lag_ms": -200,
+          "corr": 0.43
+        },
+        "kraken": {
+          "lag_ms": -800,
+          "corr": 0.364
+        },
+        "okx": {
+          "lag_ms": -200,
+          "corr": 0.597
+        }
+      },
+      "bybit": {
+        "coinbase": {
+          "lag_ms": 0,
+          "corr": 0.345
+        },
+        "kraken": {
+          "lag_ms": -600,
+          "corr": 0.303
+        },
+        "okx": {
+          "lag_ms": 0,
+          "corr": 0.785
+        }
+      },
+      "coinbase": {
+        "kraken": {
+          "lag_ms": -800,
+          "corr": 0.217
+        },
+        "okx": {
+          "lag_ms": 0,
+          "corr": 0.366
+        }
+      },
+      "kraken": {
+        "okx": {
+          "lag_ms": 1400,
+          "corr": 0.218
+        }
+      }
+    },
+    "ranking": [
+      {
+        "platform": "kraken",
+        "lead_score_ms": 900.0
+      },
+      {
+        "platform": "bybit",
+        "lead_score_ms": -100.0
+      },
+      {
+        "platform": "coinbase",
+        "lead_score_ms": -150.0
+      },
+      {
+        "platform": "okx",
+        "lead_score_ms": -300.0
+      },
+      {
+        "platform": "binance",
+        "lead_score_ms": -350.0
+      }
+    ]
+  },
+  "verdict": "kraken imprime les mouvements en premier (avance moyenne +900 ms) ; binance est la plus tardive (-350 ms). Fenêtre d'avance exploitable ≈ 1250 ms.",
+  "note": "lead_score_ms > 0 = la plateforme voit les mouvements avant les autres. transport_ms = réception locale − timestamp exchange (comparatif ; inclut le décalage d'horloge local, commun à toutes)."
+}

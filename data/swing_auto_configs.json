@@ -1,0 +1,40 @@
+{
+ "generated": "2026-07-23T06:02:03.941879+00:00",
+ "note": "Actifs auto-découverts par le scan d'opportunités — paper only.",
+ "assets": {
+  "XAGUSD": {
+   "style": "intraday",
+   "tf": "H1",
+   "sl_atr": 2.0,
+   "tp_ladder": [
+    1.15,
+    2.3,
+    4.02
+   ],
+   "align_ema50": true,
+   "rsi_gate": false,
+   "time_stop_bars": 48,
+   "oos": {
+    "trades": 67,
+    "winrate_pct": 70.1,
+    "expectancy_bps": 25.03,
+    "profit_factor": 1.38,
+    "total_bps": 1677.0,
+    "max_dd_bps": 821.0,
+    "sharpe_trade": 0.13
+   },
+   "potential": 204.88,
+   "category": "ROW_METALS",
+   "recent": {
+    "trades": 6,
+    "winrate_pct": 83.3,
+    "expectancy_bps": 69.04,
+    "profit_factor": 2.8,
+    "total_bps": 414.0,
+    "max_dd_bps": 231.0,
+    "sharpe_trade": 0.416
+   },
+   "discovered": "2026-07-23T06:02:03.941879+00:00"
+  }
+ }
+}

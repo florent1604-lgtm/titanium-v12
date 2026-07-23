@@ -50,3 +50,14 @@ et la spec CommandGateway, qui prévoyait déjà un compte de service dédié).
 
 Le dire. Un « je préfère te demander avant » n'a jamais coûté un projet ; une initiative
 silencieuse sur un compte réel ou des données personnelles, si.
+
+## Verrou technique effectivement posé (21/07/2026)
+
+Florent accorde sa confiance sur le fond **et maintient un verrou** : l'outil `computer_use`
+est **retiré** du canal vocal (`platform_toolsets.api_server`). C'est le seul qui pilote
+l'écran, la souris et le clavier — donc les applications personnelles déjà ouvertes et
+authentifiées. Hermes conserve les 15 autres outils : terminal, fichiers, exécution de code,
+navigateur **isolé**, web, mémoire, compétences, délégation.
+
+Ce verrou n'est pas une défiance : c'est la part de la sécurité qui ne repose pas sur la
+bonne volonté, et qui reste donc en place même quand la confiance est donnée.

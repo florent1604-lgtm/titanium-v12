@@ -714,3 +714,68 @@ Les 97 tests cibles passent. Le repli Ollama est une politique fail-closed, pas
 une promesse de disponibilite : si Ollama est arrete, Claude reste retire au lieu
 d'autoriser une facturation API. Titanium 8090 n'est pas redemarre pendant que la
 DEMO est armee. PAPER/DEMO ONLY ; aucun chemin critique trading modifie.
+
+## 2026-07-20 - Red-team Codex - CommandGateway C1 SHADOW
+
+**REQUEST CHANGES ; TRANSPORT R-2 BLOQUE ; SECTION 7 PRIORITAIRE.** Le noyau
+reste acceptable comme prototype dormant : GitNexus ne trouve aucun appelant ni
+flux runtime, la table de handlers est vide, `resolve_handler` echoue toujours et
+`dispatch_permitted` reste faux. Les 21 tests nominaux passent dans `venv` et
+`.pyembed`, mais la majorite des criteres annonces ne sont couverts que
+partiellement.
+
+Bloquant P0 avant toute activation : `CommandGateway.submit` persiste la
+proposition avant la validation du schema de capacite et avant tout secret gate.
+Un contre-test a prouve qu'un champ `api_key` place dans `params`, ensuite refuse
+par `PARAM_SCHEMA_VIOLATION`, reste tout de meme stocke en clair dans
+`proposal_json`.
+
+Bloquants P1 : course multi-gateway pouvant rendre deux verdicts differents pour
+le meme `decision_id`, TTL maximal de capacite non applique, `projection_as_of`
+ignore, timestamps naifs acceptes, M2/approval valides par simple presence,
+PolicyKernel non pur car le registre est lu paresseusement, journal non
+reconstructible depuis son JSON, et rejeu exact qui recree une reply differente.
+La provenance de `AttestedPrincipal` et `TrustedState`, le lifecycle/concurrence
+SQLite et les tests crash/replay restent aussi a fermer.
+
+Decision d'ordonnancement : fermer d'abord les contournements de la Section 7
+(JARVIS/`ADMIN_TOKEN`/`run_plan`/POST directs/`run_swing_scan`/
+`reset_circuit_breaker`). Aucun named pipe, service Windows, handler, audit
+EventPlane Gateway ni activation avant un lot correctif noyau test-first puis une
+nouvelle revue Codex. Verdict transmis a Claude par ACK
+`783ad742-2895-490e-96eb-9881f4d43a3a`. PAPER/DEMO ONLY.
+
+## 2026-07-21 - Revue Codex - lot MCP singleton et reprise GitNexus
+
+**GO BORNE AU TRANSPORT MCP ET A L'INDEXATION.** Le lot `bc0c364` centralise les
+trois listeners locaux sans modifier la logique de trading. Les 26 tests cibles
+passent, aucun secret n'est present dans les 14 fichiers indexes et les trois
+serveurs MCP repondent sur leurs ports uniques.
+
+GitNexus classe le rayon staged CRITICAL car les wrappers generiques de lecture
+traversent 28 flux `signals`/`positions`/journaux/backtests. La revue detaillee ne
+montre aucun processus d'ordre ou de score affecte. Ce classement n'est donc pas
+ignore : il est accepte uniquement pour ce lot de transport read-only/signe.
+
+La reconstruction finale est fraiche avec PDG et FTS actifs. Le refus d'arret
+gracieux 4747 a ete ferme dans `b204777` : fallback uniquement sur route absente,
+identite PID/CLI/host/port verifiee, verification WAL et redemarrage garanti.
+Aucun relachement des garde-fous : PAPER/DEMO ONLY, compte reel 60261188 interdit.
+
+## 2026-07-21 - Revue Codex CollabHub C1
+
+**Verdict : GO technique C1 shadow / HOLD pour toute elevation.** Le service est
+local, durable, rejouable et idempotent. Les cinq outils MCP ne peuvent ni
+approuver une permission, ni ecrire le code, ni dispatcher une commande, ni
+trader. Les approbations GitNexus signees restent separees. Impact GitNexus de
+l'importeur LOW : un appelant direct et un flux operateur. Suite ciblee : 21/21.
+Claude doit encore rendre son arbitrage H0-H4 avant modification des droits
+Hermes au-dela de la collaboration C1. PAPER/DEMO ONLY ; reel interdit.
+
+### Addendum 2026-07-22 - arbitrage Claude
+
+Claude rend **ACCEPT H0, ACCEPT H1, AMEND H2, ACCEPT H3, ACCEPT H4**. H2 reste
+sous double signature obligatoire Florent + superviseur ; l'indisponibilite de
+l'un differe l'operation et ne permet pas de basculer sur une seule signature.
+Hermes est reconnu cerveau principal de confiance **C1 shadow uniquement** :
+perception, analyse, proposition et coordination, sans autorite d'action.

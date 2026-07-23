@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>TITANIUM — 4 modèles visuels (proposition avant production)</title>
+<link href="https://fonts.googleapis.com/css2?family=Michroma&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@300;400;500;600;700&family=Exo+2:wght@300;500;600;700&family=Share+Tech+Mono&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#07090d;color:#cdd7e1;font-family:'IBM Plex Sans',sans-serif;}
+
+/* ══ CHROME DE COMPARAISON ══ */
+#picker{
+  position:sticky;top:0;z-index:50;display:flex;gap:8px;align-items:center;
+  background:#0c0f14;border-bottom:1px solid #232a33;padding:10px 18px;
+  font-family:'IBM Plex Mono',monospace;font-size:12px;
+}
+#picker a{color:#cdd7e1;text-decoration:none;border:1px solid #2c3540;padding:5px 14px;border-radius:3px;letter-spacing:.06em;}
+#picker a:hover{border-color:#8aa3b8;}
+#picker .t{color:#68788a;margin-right:8px;letter-spacing:.1em;}
+.caption{
+  max-width:1240px;margin:0 auto;padding:26px 20px 10px;
+  font-family:'IBM Plex Mono',monospace;
+}
+.caption h2{font-size:15px;letter-spacing:.14em;color:#e8eef4;}
+.caption p{font-size:12px;color:#8494a5;margin-top:6px;line-height:1.6;max-width:900px;}
+.chips{display:flex;gap:6px;margin-top:10px;align-items:center;flex-wrap:wrap;}
+.chip{width:18px;height:18px;border-radius:3px;border:1px solid rgba(255,255,255,.15);}
+.chips span{font-size:10px;color:#68788a;margin-right:10px;margin-left:2px;}
+.frame{max-width:1240px;margin:14px auto 60px;border:1px solid #232a33;border-radius:6px;overflow:hidden;}
+
+/* ══ SQUELETTE COMMUN DES MAQUETTES ══ */
+.model{--r:3px;background:var(--bg);color:var(--text);font-family:var(--ui);}
+.m-head{height:50px;display:flex;align-items:center;gap:14px;padding:0 18px;background:var(--bg2);border-bottom:1px solid var(--line);position:relative;}
+.m-logo{font-family:var(--display);font-size:13px;letter-spacing:.2em;color:var(--text);}
+.m-logo b{color:var(--accent);font-weight:400;}
+.m-pill{display:flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:var(--r);padding:3px 10px;font-family:var(--mono);font-size:10px;color:var(--text2);}
+.m-pill i{width:6px;height:6px;border-radius:50%;background:var(--up);font-style:normal;}
+.m-clock{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--accent);letter-spacing:.08em;}
+.m-body{padding:16px;display:flex;flex-direction:column;gap:12px;background:var(--bg);}
+.m-ticker{display:flex;gap:26px;border:1px solid var(--line);border-radius:var(--r);padding:9px 16px;background:var(--panel);font-family:var(--mono);}
+.m-tick .s{font-size:9px;color:var(--text3);letter-spacing:.1em;display:block;}
+.m-tick .p{font-size:15px;font-weight:600;color:var(--text);}
+.m-tick .c{font-size:10px;margin-left:6px;}
+.up{color:var(--up)!important;}.dn{color:var(--dn)!important;}
+.m-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.m-kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;position:relative;overflow:hidden;}
+.m-kpi .k{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--text3);text-transform:uppercase;}
+.m-kpi .v{font-family:var(--mono);font-size:24px;font-weight:700;margin-top:5px;color:var(--text);}
+.m-kpi .sub{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:3px;}
+.m-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.m-panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px;position:relative;overflow:hidden;}
+.m-ptitle{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--text3);text-transform:uppercase;display:flex;gap:8px;align-items:center;margin-bottom:12px;}
+.m-ptitle em{margin-left:auto;font-style:normal;border:1px solid var(--accent-soft);color:var(--accent);border-radius:var(--r);font-size:9px;padding:1px 8px;}
+.m-sym{font-family:var(--mono);font-size:17px;font-weight:600;}
+.m-sym small{color:var(--text3);font-weight:400;}
+.m-side{float:right;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--dn);border:1px solid var(--dn);border-radius:var(--r);padding:2px 10px;}
+.m-price{font-family:var(--mono);font-size:26px;font-weight:600;margin:8px 0 2px;}
+.m-ema{font-family:var(--mono);font-size:10px;color:var(--text3);}
+.m-score{display:flex;align-items:center;gap:12px;margin:12px 0;}
+.m-gauge{width:58px;height:58px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  background:conic-gradient(var(--accent) 0 112deg,var(--gauge-track) 112deg 360deg);position:relative;}
+.m-gauge::before{content:'';position:absolute;inset:6px;background:var(--panel);border-radius:50%;}
+.m-gauge b{position:relative;font-family:var(--mono);font-size:15px;}
+.m-gauge b small{font-size:8px;color:var(--text3);display:block;text-align:center;}
+.m-bar{flex:1;}
+.m-bar .lab{font-family:var(--mono);font-size:10px;color:var(--accent);margin-bottom:5px;letter-spacing:.08em;}
+.m-bar .track{height:6px;background:var(--gauge-track);border-radius:2px;overflow:hidden;}
+.m-bar .fill{height:100%;width:31%;background:var(--accent);}
+.m-levels{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px;}
+.m-level{background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:6px 8px;font-family:var(--mono);}
+.m-level .l{font-size:8px;color:var(--text3);letter-spacing:.1em;}
+.m-level .n{font-size:12px;font-weight:600;margin-top:2px;}
+.m-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;}
+.m-tag{font-family:var(--mono);font-size:8.5px;letter-spacing:.04em;border:1px solid var(--up-soft);color:var(--up);background:var(--up-bg);border-radius:var(--r);padding:2px 7px;}
+.m-tag.off{color:var(--text3);border-color:var(--line);background:transparent;}
+table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:10px;}
+th{color:var(--text3);letter-spacing:.1em;text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);font-weight:400;font-size:9px;text-transform:uppercase;}
+td{padding:7px 8px;border-bottom:1px solid var(--line-soft);color:var(--text);}
+.m-spark{width:100%;height:74px;display:block;margin-top:2px;}
+.m-spark path{fill:none;stroke:var(--accent);stroke-width:1.5;}
+.m-spark .area{fill:var(--accent-soft);stroke:none;}
+
+/* ═════════ MODÈLE A · OBSERVATOIRE (ambre / encre) ═════════ */
+.model-a{
+  --bg:#0b1118;--bg2:#0d141c;--panel:#101923;--line:#24384a;--line-soft:rgba(36,56,74,.45);
+  --text:#dce8f2;--text2:#8aa3b8;--text3:#62809a;
+  --accent:#ffb454;--accent-soft:rgba(255,180,84,.25);
+  --up:#3ecf8e;--up-soft:rgba(62,207,142,.3);--up-bg:rgba(62,207,142,.08);--dn:#ff5d5d;
+  --gauge-track:rgba(255,255,255,.07);
+  --display:'Michroma';--ui:'IBM Plex Sans';--mono:'IBM Plex Mono';
+}
+.model-a .m-head::after{content:'';position:absolute;bottom:0;left:0;right:0;height:7px;
+  background:repeating-linear-gradient(90deg,var(--line) 0 1px,transparent 1px 8px),
+             repeating-linear-gradient(90deg,var(--text3) 0 1px,transparent 1px 40px);
+  background-size:100% 3px,100% 7px;background-position:bottom left;background-repeat:no-repeat;opacity:.55;}
+.model-a .m-body{background-image:linear-gradient(rgba(138,163,184,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(138,163,184,.03) 1px,transparent 1px);background-size:28px 28px;}
+.model-a .m-panel::before,.model-a .m-kpi::before{content:'';position:absolute;top:0;left:14px;width:26px;height:2px;background:var(--accent);opacity:.75;}
+
+/* ═════════ MODÈLE B · HUD HOLOGRAPHIQUE (verre / cyan-bleu) ═════════ */
+.model-b{
+  --bg:#050a14;--bg2:rgba(10,18,32,.85);--panel:rgba(16,28,48,.55);--line:rgba(64,144,208,.35);--line-soft:rgba(64,144,208,.15);
+  --text:#dff0ff;--text2:#8fb4d4;--text3:#5d80a0;
+  --accent:#4dd8ff;--accent-soft:rgba(77,216,255,.22);
+  --up:#41e6a8;--up-soft:rgba(65,230,168,.35);--up-bg:rgba(65,230,168,.08);--dn:#ff6584;
+  --gauge-track:rgba(255,255,255,.08);
+  --display:'Exo 2';--ui:'Exo 2';--mono:'IBM Plex Mono';
+}
+.model-b{background:radial-gradient(1200px 500px at 70% -10%,rgba(38,90,160,.35),transparent),radial-gradient(900px 400px at 10% 110%,rgba(20,60,120,.3),transparent),#050a14;}
+.model-b .m-logo{font-weight:600;letter-spacing:.28em;text-shadow:0 0 18px rgba(77,216,255,.5);}
+.model-b .m-panel,.model-b .m-kpi{backdrop-filter:blur(6px);box-shadow:inset 0 0 24px rgba(38,90,160,.12);}
+.model-b .m-panel{clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px);}
+.model-b .m-kpi .v{text-shadow:0 0 14px var(--accent-soft);}
+.model-b .m-head{border-bottom:1px solid var(--line);}
+.model-b .m-head::after{content:'';position:absolute;bottom:-1px;left:18px;width:180px;height:2px;background:linear-gradient(90deg,var(--accent),transparent);box-shadow:0 0 12px var(--accent);}
+.model-b .m-ptitle::before{content:'▸';color:var(--accent);}
+
+/* ═════════ MODÈLE C · PHOSPHORE (oscilloscope monochrome) ═════════ */
+.model-c{
+  --bg:#040a06;--bg2:#061008;--panel:#07130a;--line:#143a20;--line-soft:rgba(20,58,32,.5);
+  --text:#b6f0c4;--text2:#63c07a;--text3:#3f8a52;
+  --accent:#33ff88;--accent-soft:rgba(51,255,136,.22);
+  --up:#33ff88;--up-soft:rgba(51,255,136,.35);--up-bg:rgba(51,255,136,.07);--dn:#ffd24d;
+  --gauge-track:rgba(51,255,136,.1);
+  --display:'Share Tech Mono';--ui:'Share Tech Mono';--mono:'Share Tech Mono';
+}
+.model-c{position:relative;}
+.model-c::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.18) 3px 4px);}
+.model-c .m-logo,.model-c .m-kpi .v,.model-c .m-price{text-shadow:0 0 10px rgba(51,255,136,.45);}
+.model-c .m-body{background-image:linear-gradient(rgba(51,255,136,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(51,255,136,.05) 1px,transparent 1px);background-size:22px 22px;}
+.model-c .m-side{color:var(--dn);border-color:var(--dn);text-shadow:0 0 8px rgba(255,210,77,.4);}
+.model-c td,.model-c th{border-bottom-color:var(--line-soft);}
+
+/* ═════════ MODÈLE D · SALLE BLANCHE (papier technique clair) ═════════ */
+.model-d{
+  --bg:#eef1f4;--bg2:#e5eaef;--panel:#ffffff;--line:#c6d0da;--line-soft:#e2e8ee;
+  --text:#16232e;--text2:#44586a;--text3:#7b8ea0;
+  --accent:#1d4ed8;--accent-soft:rgba(29,78,216,.18);
+  --up:#0e9f6e;--up-soft:rgba(14,159,110,.35);--up-bg:rgba(14,159,110,.07);--dn:#d92d20;
+  --gauge-track:#dfe6ec;
+  --display:'Archivo';--ui:'Archivo';--mono:'IBM Plex Mono';
+}
+.model-d .m-logo{font-weight:700;letter-spacing:.16em;}
+.model-d .m-body{background-image:linear-gradient(rgba(29,78,216,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(29,78,216,.05) 1px,transparent 1px);background-size:26px 26px;}
+.model-d .m-panel,.model-d .m-kpi{box-shadow:0 1px 2px rgba(22,35,46,.07);}
+.model-d .m-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent);}
+.model-d .m-kpi .v{color:var(--text);}
+.model-d .m-clock{color:var(--accent);}
+</style>
+</head>
+<body>
+
+<nav id="picker">
+  <span class="t">MODÈLES :</span>
+  <a href="#model-a">A · OBSERVATOIRE</a>
+  <a href="#model-b">B · HUD HOLOGRAPHIQUE</a>
+  <a href="#model-c">C · PHOSPHORE</a>
+  <a href="#model-d">D · SALLE BLANCHE</a>
+</nav>
+
+<!-- ════════════ A ════════════ -->
+<div class="caption" id="model-a">
+  <h2>A · OBSERVATOIRE</h2>
+  <p>Instrument de métrologie : encre bleu-noir, ambre phosphore, plaques gravées, règle graduée
+     sous le header dont le balayage suit la boucle de scan (5 s). Typo : Michroma + IBM Plex Mono.
+     Sobre, technique, zéro néon — le design s'efface derrière la donnée.</p>
+  <div class="chips"><div class="chip" style="background:#0b1118"></div><div class="chip" style="background:#101923"></div><div class="chip" style="background:#ffb454"></div><div class="chip" style="background:#3ecf8e"></div><div class="chip" style="background:#ff5d5d"></div><span>encre · plaque · ambre · long · short</span></div>
+</div>
+<div class="frame"><div class="model model-a">
+  <div class="m-head">
+    <div class="m-logo">TITANIUM<b>.v12</b></div>
+    <div class="m-pill"><i></i>WS LIVE</div><div class="m-pill"><i></i>API OK</div><div class="m-pill"><i style="background:var(--accent)"></i>SCAN #11</div>
+    <div class="m-clock">18:56:48 UTC</div>
+  </div>
+  <div class="m-body">
+    <div class="m-ticker">
+      <div class="m-tick"><span class="s">BTC/USDT</span><span class="p">63 747,26</span><span class="c up">+0.4%</span></div>
+      <div class="m-tick"><span class="s">PAXG/USDT</span><span class="p">4 124,97</span><span class="c up">+0.3%</span></div>
+      <div class="m-tick"><span class="s">XAU/USD</span><span class="p">2 342,10</span><span class="c dn">−0.1%</span></div>
+    </div>
+    <div class="m-kpis">
+      <div class="m-kpi"><div class="k">Equity paper</div><div class="v">980,15 $</div><div class="sub dn">−1.98% depuis départ</div></div>
+      <div class="m-kpi"><div class="k">Win rate</div><div class="v dn">26.9%</div><div class="sub">26 trades · 7W/19L</div></div>
+      <div class="m-kpi"><div class="k">P&L net</div><div class="v dn">−19,85 $</div><div class="sub">Sharpe −15.55</div></div>
+      <div class="m-kpi"><div class="k">Positions</div><div class="v">1</div><div class="sub">expectancy −0.73 $</div></div>
+    </div>
+    <div class="m-cols">
+      <div class="m-panel">
+        <div class="m-ptitle">Signal · BTC/USDT <em>EN ATTENTE</em></div>
+        <span class="m-side">VENTE</span>
+        <div class="m-sym">BTC/USDT <small>· Futures</small></div>
+        <div class="m-price">63 747,26</div>
+        <div class="m-ema">EMA200·H4 64 077 · EMA200·1D 75 522</div>
+        <div class="m-score">
+          <div class="m-gauge"><b>5<small>/16</small></b></div>
+          <div class="m-bar"><div class="lab">SURVEILLANCE · RSI 36.9 · ADX 19.3</div><div class="track"><div class="fill"></div></div></div>
+        </div>
+        <div class="m-levels">
+          <div class="m-level"><div class="l">SL</div><div class="n dn">64 320</div></div>
+          <div class="m-level"><div class="l">TP1</div><div class="n up">63 100</div></div>
+          <div class="m-level"><div class="l">TP2</div><div class="n up">62 480</div></div>
+          <div class="m-level"><div class="l">TP3</div><div class="n up">61 750</div></div>
+        </div>
+        <div class="m-tags">
+          <span class="m-tag">EMA200-H4 baissier</span><span class="m-tag">OB/FVG 30m</span><span class="m-tag">Delta volume</span><span class="m-tag off">TRIX 5m</span><span class="m-tag off">Sweep</span>
+        </div>
+      </div>
+      <div class="m-panel">
+        <div class="m-ptitle">Equity curve · Portfolio <em>300 PTS</em></div>
+        <svg class="m-spark" viewBox="0 0 400 74" preserveAspectRatio="none">
+          <path class="area" d="M0,50 L40,48 L80,52 L120,46 L160,50 L200,38 L240,44 L280,30 L320,16 L360,20 L400,24 L400,74 L0,74 Z"/>
+          <path d="M0,50 L40,48 L80,52 L120,46 L160,50 L200,38 L240,44 L280,30 L320,16 L360,20 L400,24"/>
+        </svg>
+        <table>
+          <tr><th>Date</th><th>Sym</th><th>Side</th><th>Score</th><th>PnL</th></tr>
+          <tr><td>07/07 19:20</td><td>PAXG</td><td class="dn">SHORT</td><td>7/16</td><td class="dn">−1,38 $</td></tr>
+          <tr><td>07/07 17:54</td><td>PAXG</td><td class="dn">SHORT</td><td>7/16</td><td class="up">+1,39 $</td></tr>
+          <tr><td>07/07 16:46</td><td>BTC</td><td class="dn">SHORT</td><td>7/16</td><td class="up">+0,18 $</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- ════════════ B ════════════ -->
+<div class="caption" id="model-b">
+  <h2>B · HUD HOLOGRAPHIQUE</h2>
+  <p>L'esprit JARVIS assumé : verre dépoli, cyan électrique, coins biseautés, halos lumineux,
+     nappes de lumière bleue en fond. Typo : Exo 2 + IBM Plex Mono. Le plus « film de
+     science-fiction » des quatre — spectaculaire, au prix d'un peu de lisibilité.</p>
+  <div class="chips"><div class="chip" style="background:#050a14"></div><div class="chip" style="background:#101c30"></div><div class="chip" style="background:#4dd8ff"></div><div class="chip" style="background:#41e6a8"></div><div class="chip" style="background:#ff6584"></div><span>abysse · verre · cyan · long · short</span></div>
+</div>
+<div class="frame"><div class="model model-b">
+  <div class="m-head">
+    <div class="m-logo">TITANIUM<b>.v12</b></div>
+    <div class="m-pill"><i></i>WS LIVE</div><div class="m-pill"><i></i>API OK</div><div class="m-pill"><i style="background:var(--accent)"></i>SCAN #11</div>
+    <div class="m-clock">18:56:48 UTC</div>
+  </div>
+  <div class="m-body">
+    <div class="m-ticker">
+      <div class="m-tick"><span class="s">BTC/USDT</span><span class="p">63 747,26</span><span class="c up">+0.4%</span></div>
+      <div class="m-tick"><span class="s">PAXG/USDT</span><span class="p">4 124,97</span><span class="c up">+0.3%</span></div>
+      <div class="m-tick"><span class="s">XAU/USD</span><span class="p">2 342,10</span><span class="c dn">−0.1%</span></div>
+    </div>
+    <div class="m-kpis">
+      <div class="m-kpi"><div class="k">Equity paper</div><div class="v">980,15 $</div><div class="sub dn">−1.98% depuis départ</div></div>
+      <div class="m-kpi"><div class="k">Win rate</div><div class="v dn">26.9%</div><div class="sub">26 trades · 7W/19L</div></div>
+      <div class="m-kpi"><div class="k">P&L net</div><div class="v dn">−19,85 $</div><div class="sub">Sharpe −15.55</div></div>
+      <div class="m-kpi"><div class="k">Positions</div><div class="v">1</div><div class="sub">expectancy −0.73 $</div></div>
+    </div>
+    <div class="m-cols">
+      <div class="m-panel">
+        <div class="m-ptitle">Signal · BTC/USDT <em>EN ATTENTE</em></div>
+        <span class="m-side">VENTE</span>
+        <div class="m-sym">BTC/USDT <small>· Futures</small></div>
+        <div class="m-price">63 747,26</div>
+        <div class="m-ema">EMA200·H4 64 077 · EMA200·1D 75 522</div>
+        <div class="m-score">
+          <div class="m-gauge"><b>5<small>/16</small></b></div>
+          <div class="m-bar"><div class="lab">SURVEILLANCE · RSI 36.9 · ADX 19.3</div><div class="track"><div class="fill"></div></div></div>
+        </div>
+        <div class="m-levels">
+          <div class="m-level"><div class="l">SL</div><div class="n dn">64 320</div></div>
+          <div class="m-level"><div class="l">TP1</div><div class="n up">63 100</div></div>
+          <div class="m-level"><div class="l">TP2</div><div class="n up">62 480</div></div>
+          <div class="m-level"><div class="l">TP3</div><div class="n up">61 750</div></div>
+        </div>
+        <div class="m-tags">
+          <span class="m-tag">EMA200-H4 baissier</span><span class="m-tag">OB/FVG 30m</span><span class="m-tag">Delta volume</span><span class="m-tag off">TRIX 5m</span><span class="m-tag off">Sweep</span>
+        </div>
+      </div>
+      <div class="m-panel">
+        <div class="m-ptitle">Equity curve · Portfolio <em>300 PTS</em></div>
+        <svg class="m-spark" viewBox="0 0 400 74" preserveAspectRatio="none">
+          <path class="area" d="M0,50 L40,48 L80,52 L120,46 L160,50 L200,38 L240,44 L280,30 L320,16 L360,20 L400,24 L400,74 L0,74 Z"/>
+          <path d="M0,50 L40,48 L80,52 L120,46 L160,50 L200,38 L240,44 L280,30 L320,16 L360,20 L400,24"/>
+        </svg>
+        <table>
+          <tr><th>Date</th><th>Sym</th><th>Side</th><th>Score</th><th>PnL</th></tr>
+          <tr><td>07/07 19:20</td><td>PAXG</td><td class="dn">SHORT</td><td>7/16</td><td class="dn">−1,38 $</td></tr>
+          <tr><td>07/07 17:54</td><td>PAXG</td><td class="dn">SHORT</td><td>7/16</td><td class="up">+1,39 $</td></tr>
+          <tr><td>07/07 16:46</td><td>BTC</td><td class="dn">SHORT</td><td>7/16</td><td class="up">+0,18 $</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- ════════════ C ════════════ -->
+<div class="caption" id="model-c">
+  <h2>C · PHOSPHORE</h2>
+  <p>Oscilloscope de laboratoire : monochrome vert P1 sur noir-vert, balayage CRT, tout en
+     Share Tech Mono. Radical et immédiatement identifiable — les alertes short passent en
+     ambre (seule seconde couleur). Le plus typé des quatre : on aime ou on déteste.</p>
+  <div class="chips"><div class="chip" style="background:#040a06"></div><div class="chip" style="background:#07130a"></div><div class="chip" style="background:#33ff88"></div><div class="chip" style="background:#ffd24d"></div><span>noir-vert · plaque · phosphore · alerte</span></div>
+</div>
+<div class="frame"><div class="model model-c">
+  <div class="m-head">
+    <div class="m-logo">TITANIUM<b>.v12</b></div>
+    <div class="m-pill"><i></i>WS LIVE</div><div class="m-pill"><i></i>API OK</div><div class="m-pill"><i style="background:var(--accent)"></i>SCAN #11</div>
+    <div class="m-clock">18:56:48 UTC</div>
+  </div>
+  <div class="m-body">
+    <div class="m-ticker">
+      <div class="m-tick"><span class="s">BTC/USDT</span><span class="p">63 747,26</span><span class="c up">+0.4%</span></div>
+      <div class="m-tick"><span class="s">PAXG/USDT</span><span class="p">4 124,97</span><span class="c up">+0.3%</span></div>
+      <div class="m-tick"><span class="s">XAU/USD</span><span class="p">2 342,10</span><span class="c dn">−0.1%</span></div>
+    </div>
+    <div class="m-kpis">
+      <div class="m-kpi"><div class="k">Equity paper</div><div class="v">980,15 $</div><div class="sub dn">−1.98% depuis départ</div></div>
+      <div class="m-kpi"><div class="k">Win rate</div><div class="v dn">26.9%</div><div class="sub">26 trades · 7W/19L</div></div>
+      <div class="m-kpi"><div class="k">P&L net</div><div class="v dn">−19,85 $</div><div class="sub">Sharpe −15.55</div></div>
+      <div class="m-kpi"><div class="k">Positions</div><div class="v">1</div><div class="sub">expectancy −0.73 $</div></div>
+    </div>
+    <div class="m-cols">
+      <div class="m-panel">
+        <div class="m-ptitle">Signal · BTC/USDT <em>EN ATTENTE</em></div>
+        <span class="m-side">VENTE</span>
+        <div class="m-sym">BTC/USDT <small>· Futures</small></div>
+        <div class="m-price">63 747,26</div>
+        <div class="m-ema">EMA200·H4 64 077 · EMA200·1D 75 522</div>
+        <div class="m-score">
+          <div class="m-gauge"><b>5<small>/16</small></b></div>
+          <div class="m-bar"><div class="lab">SURVEILLANCE · RSI 36.9 · ADX 19.3</div><div class="track"><div class="fill"></div></div></div>
+        </div>
+        <div class="m-levels">
+          <div class="m-level"><div class="l">SL</div><div class="n dn">64 320</div></div>
+          <div class="m-level"><div class="l">TP1</div><div class="n up">63 100</div></div>
+          <div class="m-level"><div class="l">TP2</div><div class="n up">62 480</div></div>
+          <div class="m-level"><div class="l">TP3</div><div class="n up">61 750</div></div>
+        </div>
+        <div class="m-tags">
+          <span class="m-tag">EMA200-H4 baissier</span><span class="m-tag">OB/FVG 30m</span><span class="m-tag">Delta volume</span><span class="m-tag off">TRIX 5m</span><span class="m-tag off">Sweep</span>
+        </div>
+      </div>
+      <div class="m-panel">
+        <div class="m-ptitle">Equity curve · Portfolio <em>300 PTS</em></div>
+        <svg class="m-spark" viewBox="0 0 400 74" preserveAspectRatio="none">
+          <path class="area" d="M0,50 L40,48 L80,52 L120,46 L160,50 L200,38 L240,44 L280,30 L320,16 L360,20 L400,24 L400,74 L0,74 Z"/>
+          <path d="M0,50 L40,48 L80,52 L120,46 L160,50 L200,38 L240,44 L280,30 L320,16 L360,20 L400,24"/>
+        </svg>
+        <table>
+          <tr><th>Date</th><th>Sym</th><th>Side</th><th>Score</th><th>PnL</th></tr>
+          <tr><td>07/07 19:20</td><td>PAXG</td><td class="dn">SHORT</td><td>7/16</td><td class="dn">−1,38 $</td></tr>
+          <tr><td>07/07 17:54</td><td>PAXG</td><td class="dn">SHORT</td><td>7/16</td><td class="up">+1,39 $</td></tr>
+          <tr><td>07/07 16:46</td><td>BTC</td><td class="dn">SHORT</td><td>7/16</td><td class="up">+0,18 $</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- ════════════ D ════════════ -->
+<div class="caption" id="model-d">
+  <h2>D · SALLE BLANCHE</h2>
+  <p>Publication scientifique : fond gris technique clair, plaques blanches, encre cobalt,
+     grille millimétrée imprimée. Typo : Archivo + IBM Plex Mono. Personne ne fait de
+     terminal de trading clair — c'est le pari le plus audacieux, et le plus reposant en
+     usage diurne prolongé.</p>
+  <div class="chips"><div class="chip" style="background:#eef1f4"></div><div class="chip" style="background:#ffffff;border-color:#c6d0da"></div><div class="chip" style="background:#1d4ed8"></div><div class="chip" style="background:#0e9f6e"></div><div class="chip" style="background:#d92d20"></div><span>papier · plaque · cobalt · long · short</span></div>
+</div>
+<div class="frame"><div class="model model-d">
+  <div class="m-head">
+    <div class="m-logo">TITANIUM<b>.v12</b></div>
+    <div class="m-pill"><i></i>WS LIVE</div><div class="m-pill"><i></i>API OK</div><div class="m-pill"><i style="background:var(--accent)"></i>SCAN #11</div>
+    <div class="m-clock">18:56:48 UTC</div>
+  </div>
+  <div class="m-body">
+    <div class="m-ticker">
+      <div class="m-tick"><span class="s">BTC/USDT</span><span class="p">63 747,26</span><span class="c up">+0.4%</span></div>
+      <div class="m-tick"><span class="s">PAXG/USDT</span><span class="p">4 124,97</span><span class="c up">+0.3%</span></div>
+      <div class="m-tick"><span class="s">XAU/USD</span><span class="p">2 342,10</span><span class="c dn">−0.1%</span></div>
+    </div>
+    <div class="m-kpis">
+      <div class="m-kpi"><div class="k">Equity paper</div><div class="v">980,15 $</div><div class="sub dn">−1.98% depuis départ</div></div>
+      <div class="m-kpi"><div class="k">Win rate</div><div class="v dn">26.9%</div><div class="sub">26 trades · 7W/19L</div></div>
+      <div class="m-kpi"><div class="k">P&L net</div><div class="v dn">−19,85 $</div><div class="sub">Sharpe −15.55</div></div>
+      <div class="m-kpi"><div class="k">Positions</div><div class="v">1</div><div class="sub">expectancy −0.73 $</div></div>
+    </div>
+    <div class="m-cols">
+      <div class="m-panel">
+        <div class="m-ptitle">Signal · BTC/USDT <em>EN ATTENTE</em></div>
+        <span class="m-side">VENTE</span>
+        <div class="m-sym">BTC/USDT <small>· Futures</small></div>
+        <div class="m-price">63 747,26</div>
+        <div class="m-ema">EMA200·H4 64 077 · EMA200·1D 75 522</div>
+        <div class="m-score">
+          <div class="m-gauge"><b>5<small>/16</small></b></div>
+          <div class="m-bar"><div class="lab">SURVEILLANCE · RSI 36.9 · ADX 19.3</div><div class="track"><div class="fill"></div></div></div>
+        </div>
+        <div class="m-levels">
+          <div class="m-level"><div class="l">SL</div><div class="n dn">64 320</div></div>
+          <div class="m-level"><div class="l">TP1</div><div class="n up">63 100</div></div>
+          <div class="m-level"><div class="l">TP2</div><div class="n up">62 480</div></div>
+          <div class="m-level"><div class="l">TP3</div><div class="n up">61 750</div></div>
+        </div>
+        <div class="m-tags">
+          <span class="m-tag">EMA200-H4 baissier</span><span class="m-tag">OB/FVG 30m</span><span class="m-tag">Delta volume</span><span class="m-tag off">TRIX 5m</span><span class="m-tag off">Sweep</span>
+        </div>
+      </div>
+      <div class="m-panel">
+        <div class="m-ptitle">Equity curve · Portfolio <em>300 PTS</em></div>
+        <svg class="m-spark" viewBox="0 0 400 74" preserveAspectRatio="none">
+          <path class="area" d="M0,50 L40,48 L80,52 L120,46 L160,50 L200,38 L240,44 L280,30 L320,16 L360,20 L400,24 L400,74 L0,74 Z"/>
+          <path d="M0,50 L40,48 L80,52 L120,46 L160,50 L200,38 L240,44 L280,30 L320,16 L360,20 L400,24"/>
+        </svg>
+        <table>
+          <tr><th>Date</th><th>Sym</th><th>Side</th><th>Score</th><th>PnL</th></tr>
+          <tr><td>07/07 19:20</td><td>PAXG</td><td class="dn">SHORT</td><td>7/16</td><td class="dn">−1,38 $</td></tr>
+          <tr><td>07/07 17:54</td><td>PAXG</td><td class="dn">SHORT</td><td>7/16</td><td class="up">+1,39 $</td></tr>
+          <tr><td>07/07 16:46</td><td>BTC</td><td class="dn">SHORT</td><td>7/16</td><td class="up">+0,18 $</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+</body>
+</html>

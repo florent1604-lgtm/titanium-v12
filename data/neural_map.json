@@ -1,0 +1,2455 @@
+{
+ "source": "gitnexus",
+ "nodes": [
+  {
+   "id": "Class:assistant/avatar_renderer.py:AvatarWindow",
+   "group": "INTERFACE",
+   "kind": "class",
+   "name": "AvatarWindow",
+   "file": "assistant/avatar_renderer.py",
+   "mod": "assistant.avatar_renderer",
+   "deg": 8
+  },
+  {
+   "id": "Class:assistant/plugins/base.py:TitanPlugin",
+   "group": "INTERFACE",
+   "kind": "class",
+   "name": "TitanPlugin",
+   "file": "assistant/plugins/base.py",
+   "mod": "assistant.plugins.base",
+   "deg": 7
+  },
+  {
+   "id": "Class:assistant/plugins/trading_plugin.py:TradingPlugin",
+   "group": "INTERFACE",
+   "kind": "class",
+   "name": "TradingPlugin",
+   "file": "assistant/plugins/trading_plugin.py",
+   "mod": "assistant.plugins.trading_plugin",
+   "deg": 7
+  },
+  {
+   "id": "Class:assistant/popup_manager.py:PopupManager",
+   "group": "INTERFACE",
+   "kind": "class",
+   "name": "PopupManager",
+   "file": "assistant/popup_manager.py",
+   "mod": "assistant.popup_manager",
+   "deg": 6
+  },
+  {
+   "id": "Class:assistant/signal_alert.py:SignalAlertEngine",
+   "group": "INTERFACE",
+   "kind": "class",
+   "name": "SignalAlertEngine",
+   "file": "assistant/signal_alert.py",
+   "mod": "assistant.signal_alert",
+   "deg": 9
+  },
+  {
+   "id": "Class:assistant/tts_engine.py:PiperTTS",
+   "group": "INTERFACE",
+   "kind": "class",
+   "name": "PiperTTS",
+   "file": "assistant/tts_engine.py",
+   "mod": "assistant.tts_engine",
+   "deg": 9
+  },
+  {
+   "id": "Class:assistant/voice_engine.py:VoiceEngine",
+   "group": "INTERFACE",
+   "kind": "class",
+   "name": "VoiceEngine",
+   "file": "assistant/voice_engine.py",
+   "mod": "assistant.voice_engine",
+   "deg": 12
+  },
+  {
+   "id": "Class:data/orderbook_ws.py:OrderBookState",
+   "group": "DONNÉES",
+   "kind": "class",
+   "name": "OrderBookState",
+   "file": "data/orderbook_ws.py",
+   "mod": "data.orderbook_ws",
+   "deg": 3
+  },
+  {
+   "id": "Class:data/spread_tracker.py:SpreadTracker",
+   "group": "DONNÉES",
+   "kind": "class",
+   "name": "SpreadTracker",
+   "file": "data/spread_tracker.py",
+   "mod": "data.spread_tracker",
+   "deg": 6
+  },
+  {
+   "id": "Class:execution/executor.py:BaseExecutor",
+   "group": "EXÉCUTION",
+   "kind": "class",
+   "name": "BaseExecutor",
+   "file": "execution/executor.py",
+   "mod": "execution.executor",
+   "deg": 5
+  },
+  {
+   "id": "Class:execution/executor.py:DisabledExecutor",
+   "group": "EXÉCUTION",
+   "kind": "class",
+   "name": "DisabledExecutor",
+   "file": "execution/executor.py",
+   "mod": "execution.executor",
+   "deg": 5
+  },
+  {
+   "id": "Class:execution/executor.py:PaperExecutor",
+   "group": "EXÉCUTION",
+   "kind": "class",
+   "name": "PaperExecutor",
+   "file": "execution/executor.py",
+   "mod": "execution.executor",
+   "deg": 8
+  },
+  {
+   "id": "Class:execution/paper_trading.py:PaperEngine",
+   "group": "EXÉCUTION",
+   "kind": "class",
+   "name": "PaperEngine",
+   "file": "execution/paper_trading.py",
+   "mod": "execution.paper_trading",
+   "deg": 21
+  },
+  {
+   "id": "Class:execution/paper_trading.py:PaperPosition",
+   "group": "EXÉCUTION",
+   "kind": "class",
+   "name": "PaperPosition",
+   "file": "execution/paper_trading.py",
+   "mod": "execution.paper_trading",
+   "deg": 6
+  },
+  {
+   "id": "Class:utils/cache.py:TTLCache",
+   "group": "SOCLE",
+   "kind": "class",
+   "name": "TTLCache",
+   "file": "utils/cache.py",
+   "mod": "utils.cache",
+   "deg": 6
+  },
+  {
+   "id": "Function:api/api_server.py:_seed_candle_store",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "_seed_candle_store",
+   "file": "api/api_server.py",
+   "mod": "api.api_server",
+   "deg": 3
+  },
+  {
+   "id": "Function:api/api_server.py:api_state",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "api_state",
+   "file": "api/api_server.py",
+   "mod": "api.api_server",
+   "deg": 5
+  },
+  {
+   "id": "Function:api/api_server.py:lifespan",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "lifespan",
+   "file": "api/api_server.py",
+   "mod": "api.api_server",
+   "deg": 19
+  },
+  {
+   "id": "Function:api/api_server.py:websocket_endpoint",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "websocket_endpoint",
+   "file": "api/api_server.py",
+   "mod": "api.api_server",
+   "deg": 3
+  },
+  {
+   "id": "Function:api/fundamentals_routes.py:api_fundamentals_reload",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "api_fundamentals_reload",
+   "file": "api/fundamentals_routes.py",
+   "mod": "api.fundamentals_routes",
+   "deg": 4
+  },
+  {
+   "id": "Function:api/fundamentals_routes.py:api_fundamentals_score",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "api_fundamentals_score",
+   "file": "api/fundamentals_routes.py",
+   "mod": "api.fundamentals_routes",
+   "deg": 3
+  },
+  {
+   "id": "Function:api/paper_routes.py:_exec",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "_exec",
+   "file": "api/paper_routes.py",
+   "mod": "api.paper_routes",
+   "deg": 7
+  },
+  {
+   "id": "Function:api/paper_routes.py:reset_circuit_breaker",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "reset_circuit_breaker",
+   "file": "api/paper_routes.py",
+   "mod": "api.paper_routes",
+   "deg": 3
+  },
+  {
+   "id": "Function:api/services_routes.py:services_status",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "services_status",
+   "file": "api/services_routes.py",
+   "mod": "api.services_routes",
+   "deg": 4
+  },
+  {
+   "id": "Function:api/webhook_routes.py:positions_for_tv",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "positions_for_tv",
+   "file": "api/webhook_routes.py",
+   "mod": "api.webhook_routes",
+   "deg": 3
+  },
+  {
+   "id": "Function:api/webhook_routes.py:tradingview_webhook",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "tradingview_webhook",
+   "file": "api/webhook_routes.py",
+   "mod": "api.webhook_routes",
+   "deg": 8
+  },
+  {
+   "id": "Function:assistant/alexa_connector.py:_alexa_error",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "_alexa_error",
+   "file": "assistant/alexa_connector.py",
+   "mod": "assistant.alexa_connector",
+   "deg": 4
+  },
+  {
+   "id": "Function:assistant/alexa_connector.py:_alexa_response",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "_alexa_response",
+   "file": "assistant/alexa_connector.py",
+   "mod": "assistant.alexa_connector",
+   "deg": 8
+  },
+  {
+   "id": "Function:assistant/alexa_connector.py:_handle_report_intent",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "_handle_report_intent",
+   "file": "assistant/alexa_connector.py",
+   "mod": "assistant.alexa_connector",
+   "deg": 3
+  },
+  {
+   "id": "Function:assistant/alexa_connector.py:_handle_signal_intent",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "_handle_signal_intent",
+   "file": "assistant/alexa_connector.py",
+   "mod": "assistant.alexa_connector",
+   "deg": 3
+  },
+  {
+   "id": "Function:assistant/alexa_connector.py:_handle_status_intent",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "_handle_status_intent",
+   "file": "assistant/alexa_connector.py",
+   "mod": "assistant.alexa_connector",
+   "deg": 3
+  },
+  {
+   "id": "Function:assistant/avatar_renderer.py:get_avatar_window",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "get_avatar_window",
+   "file": "assistant/avatar_renderer.py",
+   "mod": "assistant.avatar_renderer",
+   "deg": 5
+  },
+  {
+   "id": "Function:assistant/avatar_renderer.py:play_lip_frames",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "play_lip_frames",
+   "file": "assistant/avatar_renderer.py",
+   "mod": "assistant.avatar_renderer",
+   "deg": 4
+  },
+  {
+   "id": "Function:assistant/avatar_renderer.py:send_reset",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "send_reset",
+   "file": "assistant/avatar_renderer.py",
+   "mod": "assistant.avatar_renderer",
+   "deg": 3
+  },
+  {
+   "id": "Function:assistant/avatar_renderer.py:ws_titan_broadcast",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "ws_titan_broadcast",
+   "file": "assistant/avatar_renderer.py",
+   "mod": "assistant.avatar_renderer",
+   "deg": 8
+  },
+  {
+   "id": "Function:assistant/browser_agent.py:search",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "search",
+   "file": "assistant/browser_agent.py",
+   "mod": "assistant.browser_agent",
+   "deg": 6
+  },
+  {
+   "id": "Function:assistant/daily_report.py:build_daily_report",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "build_daily_report",
+   "file": "assistant/daily_report.py",
+   "mod": "assistant.daily_report",
+   "deg": 4
+  },
+  {
+   "id": "Function:assistant/daily_report.py:daily_report_loop",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "daily_report_loop",
+   "file": "assistant/daily_report.py",
+   "mod": "assistant.daily_report",
+   "deg": 4
+  },
+  {
+   "id": "Function:assistant/hotkey_manager.py:_handle_command",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "_handle_command",
+   "file": "assistant/hotkey_manager.py",
+   "mod": "assistant.hotkey_manager",
+   "deg": 3
+  },
+  {
+   "id": "Function:assistant/hotkey_manager.py:_record_and_respond",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "_record_and_respond",
+   "file": "assistant/hotkey_manager.py",
+   "mod": "assistant.hotkey_manager",
+   "deg": 5
+  },
+  {
+   "id": "Function:assistant/hotkey_manager.py:_set_state",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "_set_state",
+   "file": "assistant/hotkey_manager.py",
+   "mod": "assistant.hotkey_manager",
+   "deg": 3
+  },
+  {
+   "id": "Function:assistant/hotkey_manager.py:_trigger",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "_trigger",
+   "file": "assistant/hotkey_manager.py",
+   "mod": "assistant.hotkey_manager",
+   "deg": 3
+  },
+  {
+   "id": "Function:assistant/install_titan.py:section",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "section",
+   "file": "assistant/install_titan.py",
+   "mod": "assistant.install_titan",
+   "deg": 7
+  },
+  {
+   "id": "Function:assistant/intent_classifier.py:classify",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "classify",
+   "file": "assistant/intent_classifier.py",
+   "mod": "assistant.intent_classifier",
+   "deg": 4
+  },
+  {
+   "id": "Function:assistant/knowledge/__init__.py:get_context_for_intent",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "get_context_for_intent",
+   "file": "assistant/knowledge/__init__.py",
+   "mod": "assistant.knowledge.__init__",
+   "deg": 3
+  },
+  {
+   "id": "Function:assistant/lip_sync.py:generate_lip_frames",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "generate_lip_frames",
+   "file": "assistant/lip_sync.py",
+   "mod": "assistant.lip_sync",
+   "deg": 3
+  },
+  {
+   "id": "Function:assistant/memory_store.py:_load",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "_load",
+   "file": "assistant/memory_store.py",
+   "mod": "assistant.memory_store",
+   "deg": 8
+  },
+  {
+   "id": "Function:assistant/memory_store.py:_save",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "_save",
+   "file": "assistant/memory_store.py",
+   "mod": "assistant.memory_store",
+   "deg": 4
+  },
+  {
+   "id": "Function:assistant/memory_store.py:add_note",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "add_note",
+   "file": "assistant/memory_store.py",
+   "mod": "assistant.memory_store",
+   "deg": 3
+  },
+  {
+   "id": "Function:assistant/memory_store.py:clear_category",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "clear_category",
+   "file": "assistant/memory_store.py",
+   "mod": "assistant.memory_store",
+   "deg": 3
+  },
+  {
+   "id": "Function:assistant/memory_store.py:forget",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "forget",
+   "file": "assistant/memory_store.py",
+   "mod": "assistant.memory_store",
+   "deg": 3
+  },
+  {
+   "id": "Function:assistant/memory_store.py:get",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "get",
+   "file": "assistant/memory_store.py",
+   "mod": "assistant.memory_store",
+   "deg": 3
+  },
+  {
+   "id": "Function:assistant/memory_store.py:get_context_summary",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "get_context_summary",
+   "file": "assistant/memory_store.py",
+   "mod": "assistant.memory_store",
+   "deg": 5
+  },
+  {
+   "id": "Function:assistant/memory_store.py:get_notes",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "get_notes",
+   "file": "assistant/memory_store.py",
+   "mod": "assistant.memory_store",
+   "deg": 3
+  },
+  {
+   "id": "Function:assistant/memory_store.py:remember",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "remember",
+   "file": "assistant/memory_store.py",
+   "mod": "assistant.memory_store",
+   "deg": 3
+  },
+  {
+   "id": "Function:assistant/plugins/__init__.py:dispatch",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "dispatch",
+   "file": "assistant/plugins/__init__.py",
+   "mod": "assistant.plugins.__init__",
+   "deg": 5
+  },
+  {
+   "id": "Function:assistant/popup_manager.py:get_popup_manager",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "get_popup_manager",
+   "file": "assistant/popup_manager.py",
+   "mod": "assistant.popup_manager",
+   "deg": 4
+  },
+  {
+   "id": "Function:assistant/popup_manager.py:titan_speak",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "titan_speak",
+   "file": "assistant/popup_manager.py",
+   "mod": "assistant.popup_manager",
+   "deg": 8
+  },
+  {
+   "id": "Function:assistant/titan_agent.py:_get_trading_context",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "_get_trading_context",
+   "file": "assistant/titan_agent.py",
+   "mod": "assistant.titan_agent",
+   "deg": 4
+  },
+  {
+   "id": "Function:assistant/titan_agent.py:ask_titan",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "ask_titan",
+   "file": "assistant/titan_agent.py",
+   "mod": "assistant.titan_agent",
+   "deg": 15
+  },
+  {
+   "id": "Function:assistant/titan_agent.py:ask_titan_stream",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "ask_titan_stream",
+   "file": "assistant/titan_agent.py",
+   "mod": "assistant.titan_agent",
+   "deg": 9
+  },
+  {
+   "id": "Function:assistant/titan_core.py:_handle_voice_command",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "_handle_voice_command",
+   "file": "assistant/titan_core.py",
+   "mod": "assistant.titan_core",
+   "deg": 3
+  },
+  {
+   "id": "Function:assistant/titan_core.py:start_titan",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "start_titan",
+   "file": "assistant/titan_core.py",
+   "mod": "assistant.titan_core",
+   "deg": 9
+  },
+  {
+   "id": "Function:assistant/web/avatar.js:applyShape",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "applyShape",
+   "file": "assistant/web/avatar.js",
+   "mod": "assistant.web.avatar.js",
+   "deg": 3
+  },
+  {
+   "id": "Function:assistant/web/avatar.js:handleWsMessage",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "handleWsMessage",
+   "file": "assistant/web/avatar.js",
+   "mod": "assistant.web.avatar.js",
+   "deg": 4
+  },
+  {
+   "id": "Function:assistant/web/avatar.js:performBlink",
+   "group": "INTERFACE",
+   "kind": "function",
+   "name": "performBlink",
+   "file": "assistant/web/avatar.js",
+   "mod": "assistant.web.avatar.js",
+   "deg": 3
+  },
+  {
+   "id": "Function:core/scoring_engine.py:score_setup",
+   "group": "CERVEAU",
+   "kind": "function",
+   "name": "score_setup",
+   "file": "core/scoring_engine.py",
+   "mod": "core.scoring_engine",
+   "deg": 16
+  },
+  {
+   "id": "Function:core/signal_engine.py:scan_symbol",
+   "group": "CERVEAU",
+   "kind": "function",
+   "name": "scan_symbol",
+   "file": "core/signal_engine.py",
+   "mod": "core.signal_engine",
+   "deg": 20
+  },
+  {
+   "id": "Function:core/smc_engine.py:detect_sweep_with_displacement",
+   "group": "CERVEAU",
+   "kind": "function",
+   "name": "detect_sweep_with_displacement",
+   "file": "core/smc_engine.py",
+   "mod": "core.smc_engine",
+   "deg": 3
+  },
+  {
+   "id": "Function:core/smc_engine.py:has_ob_or_fvg_alignment",
+   "group": "CERVEAU",
+   "kind": "function",
+   "name": "has_ob_or_fvg_alignment",
+   "file": "core/smc_engine.py",
+   "mod": "core.smc_engine",
+   "deg": 5
+  },
+  {
+   "id": "Function:data/binance_rest.py:fetch_klines",
+   "group": "DONNÉES",
+   "kind": "function",
+   "name": "fetch_klines",
+   "file": "data/binance_rest.py",
+   "mod": "data.binance_rest",
+   "deg": 5
+  },
+  {
+   "id": "Function:data/binance_rest.py:fetch_klines_history",
+   "group": "DONNÉES",
+   "kind": "function",
+   "name": "fetch_klines_history",
+   "file": "data/binance_rest.py",
+   "mod": "data.binance_rest",
+   "deg": 3
+  },
+  {
+   "id": "Function:data/binance_ws.py:_handle_agg_trade",
+   "group": "DONNÉES",
+   "kind": "function",
+   "name": "_handle_agg_trade",
+   "file": "data/binance_ws.py",
+   "mod": "data.binance_ws",
+   "deg": 3
+  },
+  {
+   "id": "Function:data/gold_provider.py:fetch_gold_candles",
+   "group": "DONNÉES",
+   "kind": "function",
+   "name": "fetch_gold_candles",
+   "file": "data/gold_provider.py",
+   "mod": "data.gold_provider",
+   "deg": 7
+  },
+  {
+   "id": "Function:data/orderbook_ws.py:_fetch_futures_snapshot",
+   "group": "DONNÉES",
+   "kind": "function",
+   "name": "_fetch_futures_snapshot",
+   "file": "data/orderbook_ws.py",
+   "mod": "data.orderbook_ws",
+   "deg": 3
+  },
+  {
+   "id": "Function:data/orderbook_ws.py:_fetch_spot_snapshot",
+   "group": "DONNÉES",
+   "kind": "function",
+   "name": "_fetch_spot_snapshot",
+   "file": "data/orderbook_ws.py",
+   "mod": "data.orderbook_ws",
+   "deg": 3
+  },
+  {
+   "id": "Function:data/orderbook_ws.py:_rest_polling_loop",
+   "group": "DONNÉES",
+   "kind": "function",
+   "name": "_rest_polling_loop",
+   "file": "data/orderbook_ws.py",
+   "mod": "data.orderbook_ws",
+   "deg": 3
+  },
+  {
+   "id": "Function:data/orderbook_ws.py:_ws_futures_depth",
+   "group": "DONNÉES",
+   "kind": "function",
+   "name": "_ws_futures_depth",
+   "file": "data/orderbook_ws.py",
+   "mod": "data.orderbook_ws",
+   "deg": 3
+  },
+  {
+   "id": "Function:data/orderbook_ws.py:_ws_spot_depth",
+   "group": "DONNÉES",
+   "kind": "function",
+   "name": "_ws_spot_depth",
+   "file": "data/orderbook_ws.py",
+   "mod": "data.orderbook_ws",
+   "deg": 3
+  },
+  {
+   "id": "Function:data/orderbook_ws.py:start_orderbook_streams",
+   "group": "DONNÉES",
+   "kind": "function",
+   "name": "start_orderbook_streams",
+   "file": "data/orderbook_ws.py",
+   "mod": "data.orderbook_ws",
+   "deg": 4
+  },
+  {
+   "id": "Function:engine/learning_engine.py:_adapt_weights",
+   "group": "CERVEAU",
+   "kind": "function",
+   "name": "_adapt_weights",
+   "file": "engine/learning_engine.py",
+   "mod": "engine.learning_engine",
+   "deg": 4
+  },
+  {
+   "id": "Function:engine/learning_engine.py:_check_circuit_breaker",
+   "group": "CERVEAU",
+   "kind": "function",
+   "name": "_check_circuit_breaker",
+   "file": "engine/learning_engine.py",
+   "mod": "engine.learning_engine",
+   "deg": 5
+  },
+  {
+   "id": "Function:engine/learning_engine.py:learning_report_loop",
+   "group": "CERVEAU",
+   "kind": "function",
+   "name": "learning_report_loop",
+   "file": "engine/learning_engine.py",
+   "mod": "engine.learning_engine",
+   "deg": 4
+  },
+  {
+   "id": "Function:engine/learning_engine.py:record_signal",
+   "group": "CERVEAU",
+   "kind": "function",
+   "name": "record_signal",
+   "file": "engine/learning_engine.py",
+   "mod": "engine.learning_engine",
+   "deg": 4
+  },
+  {
+   "id": "Function:engine/learning_engine.py:save_state",
+   "group": "CERVEAU",
+   "kind": "function",
+   "name": "save_state",
+   "file": "engine/learning_engine.py",
+   "mod": "engine.learning_engine",
+   "deg": 3
+  },
+  {
+   "id": "Function:engine/optimizer.py:get_opt_results",
+   "group": "CERVEAU",
+   "kind": "function",
+   "name": "get_opt_results",
+   "file": "engine/optimizer.py",
+   "mod": "engine.optimizer",
+   "deg": 3
+  },
+  {
+   "id": "Function:engine/optimizer.py:optimisation_loop",
+   "group": "CERVEAU",
+   "kind": "function",
+   "name": "optimisation_loop",
+   "file": "engine/optimizer.py",
+   "mod": "engine.optimizer",
+   "deg": 4
+  },
+  {
+   "id": "Function:engine/optimizer.py:run_optimization",
+   "group": "CERVEAU",
+   "kind": "function",
+   "name": "run_optimization",
+   "file": "engine/optimizer.py",
+   "mod": "engine.optimizer",
+   "deg": 3
+  },
+  {
+   "id": "Function:engine/strict_engine.py:_sharpe_trix",
+   "group": "CERVEAU",
+   "kind": "function",
+   "name": "_sharpe_trix",
+   "file": "engine/strict_engine.py",
+   "mod": "engine.strict_engine",
+   "deg": 3
+  },
+  {
+   "id": "Function:engine/strict_engine.py:optimize_trix_strict",
+   "group": "CERVEAU",
+   "kind": "function",
+   "name": "optimize_trix_strict",
+   "file": "engine/strict_engine.py",
+   "mod": "engine.strict_engine",
+   "deg": 3
+  },
+  {
+   "id": "Function:engine/strict_engine.py:strict_recalib_loop",
+   "group": "CERVEAU",
+   "kind": "function",
+   "name": "strict_recalib_loop",
+   "file": "engine/strict_engine.py",
+   "mod": "engine.strict_engine",
+   "deg": 3
+  },
+  {
+   "id": "Function:execution/risk_manager.py:circuit_breaker_loop",
+   "group": "EXÉCUTION",
+   "kind": "function",
+   "name": "circuit_breaker_loop",
+   "file": "execution/risk_manager.py",
+   "mod": "execution.risk_manager",
+   "deg": 4
+  },
+  {
+   "id": "Function:execution/risk_manager.py:compute_adaptive_levels",
+   "group": "EXÉCUTION",
+   "kind": "function",
+   "name": "compute_adaptive_levels",
+   "file": "execution/risk_manager.py",
+   "mod": "execution.risk_manager",
+   "deg": 3
+  },
+  {
+   "id": "Function:execution/signal_manager.py:emit_signal",
+   "group": "EXÉCUTION",
+   "kind": "function",
+   "name": "emit_signal",
+   "file": "execution/signal_manager.py",
+   "mod": "execution.signal_manager",
+   "deg": 3
+  },
+  {
+   "id": "Function:execution/signal_manager.py:get_all_signals",
+   "group": "EXÉCUTION",
+   "kind": "function",
+   "name": "get_all_signals",
+   "file": "execution/signal_manager.py",
+   "mod": "execution.signal_manager",
+   "deg": 3
+  },
+  {
+   "id": "Function:execution/signal_manager.py:is_circuit_breaker_active",
+   "group": "EXÉCUTION",
+   "kind": "function",
+   "name": "is_circuit_breaker_active",
+   "file": "execution/signal_manager.py",
+   "mod": "execution.signal_manager",
+   "deg": 4
+  },
+  {
+   "id": "Function:execution/signal_manager.py:set_circuit_breaker",
+   "group": "EXÉCUTION",
+   "kind": "function",
+   "name": "set_circuit_breaker",
+   "file": "execution/signal_manager.py",
+   "mod": "execution.signal_manager",
+   "deg": 4
+  },
+  {
+   "id": "Function:fundamentals/fetcher_loop.py:fundamentals_loop",
+   "group": "CERVEAU",
+   "kind": "function",
+   "name": "fundamentals_loop",
+   "file": "fundamentals/fetcher_loop.py",
+   "mod": "fundamentals.fetcher_loop",
+   "deg": 5
+  },
+  {
+   "id": "Function:fundamentals/news_fetcher.py:_normalize_article",
+   "group": "CERVEAU",
+   "kind": "function",
+   "name": "_normalize_article",
+   "file": "fundamentals/news_fetcher.py",
+   "mod": "fundamentals.news_fetcher",
+   "deg": 3
+  },
+  {
+   "id": "Function:fundamentals/news_fetcher.py:fetch_all_news",
+   "group": "CERVEAU",
+   "kind": "function",
+   "name": "fetch_all_news",
+   "file": "fundamentals/news_fetcher.py",
+   "mod": "fundamentals.news_fetcher",
+   "deg": 5
+  },
+  {
+   "id": "Function:fundamentals/news_fetcher.py:get_all_text",
+   "group": "CERVEAU",
+   "kind": "function",
+   "name": "get_all_text",
+   "file": "fundamentals/news_fetcher.py",
+   "mod": "fundamentals.news_fetcher",
+   "deg": 3
+  },
+  {
+   "id": "Function:fundamentals/risk_scorer.py:compute_score",
+   "group": "CERVEAU",
+   "kind": "function",
+   "name": "compute_score",
+   "file": "fundamentals/risk_scorer.py",
+   "mod": "fundamentals.risk_scorer",
+   "deg": 7
+  },
+  {
+   "id": "Function:fundamentals/risk_scorer.py:get_current_score",
+   "group": "CERVEAU",
+   "kind": "function",
+   "name": "get_current_score",
+   "file": "fundamentals/risk_scorer.py",
+   "mod": "fundamentals.risk_scorer",
+   "deg": 3
+  },
+  {
+   "id": "Function:fundamentals/signal_modulator.py:force_disable",
+   "group": "CERVEAU",
+   "kind": "function",
+   "name": "force_disable",
+   "file": "fundamentals/signal_modulator.py",
+   "mod": "fundamentals.signal_modulator",
+   "deg": 3
+  },
+  {
+   "id": "Function:fundamentals/signal_modulator.py:is_active",
+   "group": "CERVEAU",
+   "kind": "function",
+   "name": "is_active",
+   "file": "fundamentals/signal_modulator.py",
+   "mod": "fundamentals.signal_modulator",
+   "deg": 3
+  },
+  {
+   "id": "Function:fundamentals/signal_modulator.py:modulate",
+   "group": "CERVEAU",
+   "kind": "function",
+   "name": "modulate",
+   "file": "fundamentals/signal_modulator.py",
+   "mod": "fundamentals.signal_modulator",
+   "deg": 4
+  },
+  {
+   "id": "Function:indicators/orderbook.py:analyze_orderbook_l2",
+   "group": "DONNÉES",
+   "kind": "function",
+   "name": "analyze_orderbook_l2",
+   "file": "indicators/orderbook.py",
+   "mod": "indicators.orderbook",
+   "deg": 7
+  },
+  {
+   "id": "Function:utils/config.py:get_sym_override",
+   "group": "SOCLE",
+   "kind": "function",
+   "name": "get_sym_override",
+   "file": "utils/config.py",
+   "mod": "utils.config",
+   "deg": 4
+  },
+  {
+   "id": "Method:assistant/avatar_renderer.py:AvatarWindow.show#0",
+   "group": "INTERFACE",
+   "kind": "method",
+   "name": "show",
+   "file": "assistant/avatar_renderer.py",
+   "mod": "assistant.avatar_renderer",
+   "deg": 4
+  },
+  {
+   "id": "Method:assistant/plugins/diagnostic_plugin.py:DiagnosticPlugin.handle#3",
+   "group": "INTERFACE",
+   "kind": "method",
+   "name": "handle",
+   "file": "assistant/plugins/diagnostic_plugin.py",
+   "mod": "assistant.plugins.diagnostic_plugin",
+   "deg": 5
+  },
+  {
+   "id": "Method:assistant/plugins/memory_plugin.py:MemoryPlugin.handle#3",
+   "group": "INTERFACE",
+   "kind": "method",
+   "name": "handle",
+   "file": "assistant/plugins/memory_plugin.py",
+   "mod": "assistant.plugins.memory_plugin",
+   "deg": 7
+  },
+  {
+   "id": "Method:assistant/plugins/trading_plugin.py:TradingPlugin._get#1",
+   "group": "INTERFACE",
+   "kind": "method",
+   "name": "_get",
+   "file": "assistant/plugins/trading_plugin.py",
+   "mod": "assistant.plugins.trading_plugin",
+   "deg": 5
+  },
+  {
+   "id": "Method:assistant/plugins/trading_plugin.py:TradingPlugin.handle#3",
+   "group": "INTERFACE",
+   "kind": "method",
+   "name": "handle",
+   "file": "assistant/plugins/trading_plugin.py",
+   "mod": "assistant.plugins.trading_plugin",
+   "deg": 5
+  },
+  {
+   "id": "Method:assistant/plugins/web_search_plugin.py:WebSearchPlugin.handle#3",
+   "group": "INTERFACE",
+   "kind": "method",
+   "name": "handle",
+   "file": "assistant/plugins/web_search_plugin.py",
+   "mod": "assistant.plugins.web_search_plugin",
+   "deg": 5
+  },
+  {
+   "id": "Method:assistant/popup_manager.py:PopupManager.speak#3",
+   "group": "INTERFACE",
+   "kind": "method",
+   "name": "speak",
+   "file": "assistant/popup_manager.py",
+   "mod": "assistant.popup_manager",
+   "deg": 16
+  },
+  {
+   "id": "Method:assistant/signal_alert.py:SignalAlertEngine._check_signals#0",
+   "group": "INTERFACE",
+   "kind": "method",
+   "name": "_check_signals",
+   "file": "assistant/signal_alert.py",
+   "mod": "assistant.signal_alert",
+   "deg": 4
+  },
+  {
+   "id": "Method:assistant/signal_alert.py:SignalAlertEngine._trigger_alert#2",
+   "group": "INTERFACE",
+   "kind": "method",
+   "name": "_trigger_alert",
+   "file": "assistant/signal_alert.py",
+   "mod": "assistant.signal_alert",
+   "deg": 4
+  },
+  {
+   "id": "Method:assistant/voice_engine.py:VoiceEngine._listen_loop#0",
+   "group": "INTERFACE",
+   "kind": "method",
+   "name": "_listen_loop",
+   "file": "assistant/voice_engine.py",
+   "mod": "assistant.voice_engine",
+   "deg": 5
+  },
+  {
+   "id": "Method:assistant/voice_engine.py:VoiceEngine._record_until_silence#0",
+   "group": "INTERFACE",
+   "kind": "method",
+   "name": "_record_until_silence",
+   "file": "assistant/voice_engine.py",
+   "mod": "assistant.voice_engine",
+   "deg": 5
+  },
+  {
+   "id": "Method:assistant/voice_engine.py:VoiceEngine.transcribe#2",
+   "group": "INTERFACE",
+   "kind": "method",
+   "name": "transcribe",
+   "file": "assistant/voice_engine.py",
+   "mod": "assistant.voice_engine",
+   "deg": 6
+  },
+  {
+   "id": "Method:execution/executor.py:BaseExecutor.execute#1",
+   "group": "EXÉCUTION",
+   "kind": "method",
+   "name": "execute",
+   "file": "execution/executor.py",
+   "mod": "execution.executor",
+   "deg": 3
+  },
+  {
+   "id": "Method:execution/executor.py:BaseExecutor.get_state#0",
+   "group": "EXÉCUTION",
+   "kind": "method",
+   "name": "get_state",
+   "file": "execution/executor.py",
+   "mod": "execution.executor",
+   "deg": 4
+  },
+  {
+   "id": "Method:execution/paper_trading.py:PaperEngine._append_csv#1",
+   "group": "EXÉCUTION",
+   "kind": "method",
+   "name": "_append_csv",
+   "file": "execution/paper_trading.py",
+   "mod": "execution.paper_trading",
+   "deg": 4
+  },
+  {
+   "id": "Method:execution/paper_trading.py:PaperEngine._apply_slippage#5",
+   "group": "EXÉCUTION",
+   "kind": "method",
+   "name": "_apply_slippage",
+   "file": "execution/paper_trading.py",
+   "mod": "execution.paper_trading",
+   "deg": 4
+  },
+  {
+   "id": "Method:execution/paper_trading.py:PaperEngine._close_partial_unsafe#4",
+   "group": "EXÉCUTION",
+   "kind": "method",
+   "name": "_close_partial_unsafe",
+   "file": "execution/paper_trading.py",
+   "mod": "execution.paper_trading",
+   "deg": 6
+  },
+  {
+   "id": "Method:execution/paper_trading.py:PaperEngine._fee#1",
+   "group": "EXÉCUTION",
+   "kind": "method",
+   "name": "_fee",
+   "file": "execution/paper_trading.py",
+   "mod": "execution.paper_trading",
+   "deg": 4
+  },
+  {
+   "id": "Method:execution/paper_trading.py:PaperEngine._finalize_position_unsafe#2",
+   "group": "EXÉCUTION",
+   "kind": "method",
+   "name": "_finalize_position_unsafe",
+   "file": "execution/paper_trading.py",
+   "mod": "execution.paper_trading",
+   "deg": 5
+  },
+  {
+   "id": "Method:execution/paper_trading.py:PaperEngine._save_state_unsafe#0",
+   "group": "EXÉCUTION",
+   "kind": "method",
+   "name": "_save_state_unsafe",
+   "file": "execution/paper_trading.py",
+   "mod": "execution.paper_trading",
+   "deg": 5
+  },
+  {
+   "id": "Method:execution/paper_trading.py:PaperEngine._update_equity_curve#0",
+   "group": "EXÉCUTION",
+   "kind": "method",
+   "name": "_update_equity_curve",
+   "file": "execution/paper_trading.py",
+   "mod": "execution.paper_trading",
+   "deg": 5
+  },
+  {
+   "id": "Method:execution/paper_trading.py:PaperEngine._update_realtime_drawdown#0",
+   "group": "EXÉCUTION",
+   "kind": "method",
+   "name": "_update_realtime_drawdown",
+   "file": "execution/paper_trading.py",
+   "mod": "execution.paper_trading",
+   "deg": 5
+  },
+  {
+   "id": "Method:execution/paper_trading.py:PaperEngine.close_position_manual#2",
+   "group": "EXÉCUTION",
+   "kind": "method",
+   "name": "close_position_manual",
+   "file": "execution/paper_trading.py",
+   "mod": "execution.paper_trading",
+   "deg": 6
+  },
+  {
+   "id": "Method:execution/paper_trading.py:PaperEngine.equity_with_unrealized#0",
+   "group": "EXÉCUTION",
+   "kind": "method",
+   "name": "equity_with_unrealized",
+   "file": "execution/paper_trading.py",
+   "mod": "execution.paper_trading",
+   "deg": 5
+  },
+  {
+   "id": "Method:execution/paper_trading.py:PaperEngine.get_stats#0",
+   "group": "EXÉCUTION",
+   "kind": "method",
+   "name": "get_stats",
+   "file": "execution/paper_trading.py",
+   "mod": "execution.paper_trading",
+   "deg": 3
+  },
+  {
+   "id": "Method:execution/paper_trading.py:PaperEngine.open_position#1",
+   "group": "EXÉCUTION",
+   "kind": "method",
+   "name": "open_position",
+   "file": "execution/paper_trading.py",
+   "mod": "execution.paper_trading",
+   "deg": 7
+  },
+  {
+   "id": "Method:execution/paper_trading.py:PaperEngine.update_price#2",
+   "group": "EXÉCUTION",
+   "kind": "method",
+   "name": "update_price",
+   "file": "execution/paper_trading.py",
+   "mod": "execution.paper_trading",
+   "deg": 7
+  },
+  {
+   "id": "Method:execution/paper_trading.py:PaperPosition.to_dict#1",
+   "group": "EXÉCUTION",
+   "kind": "method",
+   "name": "to_dict",
+   "file": "execution/paper_trading.py",
+   "mod": "execution.paper_trading",
+   "deg": 4
+  },
+  {
+   "id": "Method:execution/paper_trading.py:PaperPosition.unrealized_pct#1",
+   "group": "EXÉCUTION",
+   "kind": "method",
+   "name": "unrealized_pct",
+   "file": "execution/paper_trading.py",
+   "mod": "execution.paper_trading",
+   "deg": 3
+  },
+  {
+   "id": "Method:execution/paper_trading.py:PaperPosition.unrealized_pnl#1",
+   "group": "EXÉCUTION",
+   "kind": "method",
+   "name": "unrealized_pnl",
+   "file": "execution/paper_trading.py",
+   "mod": "execution.paper_trading",
+   "deg": 4
+  },
+  {
+   "id": "Method:utils/cache.py:TTLCache.get#1",
+   "group": "SOCLE",
+   "kind": "method",
+   "name": "get",
+   "file": "utils/cache.py",
+   "mod": "utils.cache",
+   "deg": 3
+  },
+  {
+   "id": "Method:utils/cache.py:TTLCache.set#3",
+   "group": "SOCLE",
+   "kind": "method",
+   "name": "set",
+   "file": "utils/cache.py",
+   "mod": "utils.cache",
+   "deg": 3
+  },
+  {
+   "id": "Route:/",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "",
+   "file": "api/api_server.py",
+   "mod": "api.api_server",
+   "deg": 0
+  },
+  {
+   "id": "Route:/api/chat",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "chat",
+   "file": "api/api_server.py",
+   "mod": "api.api_server",
+   "deg": 0
+  },
+  {
+   "id": "Route:/api/delta-vol",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "delta-vol",
+   "file": "api/api_server.py",
+   "mod": "api.api_server",
+   "deg": 0
+  },
+  {
+   "id": "Route:/api/futures/{symbol}",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "{symbol}",
+   "file": "api/api_server.py",
+   "mod": "api.api_server",
+   "deg": 0
+  },
+  {
+   "id": "Route:/api/metrics",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "metrics",
+   "file": "api/api_server.py",
+   "mod": "api.api_server",
+   "deg": 0
+  },
+  {
+   "id": "Route:/api/optim/results",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "results",
+   "file": "api/api_server.py",
+   "mod": "api.api_server",
+   "deg": 0
+  },
+  {
+   "id": "Route:/api/optim/run",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "run",
+   "file": "api/api_server.py",
+   "mod": "api.api_server",
+   "deg": 0
+  },
+  {
+   "id": "Route:/api/state",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "state",
+   "file": "api/api_server.py",
+   "mod": "api.api_server",
+   "deg": 0
+  },
+  {
+   "id": "Route:/assistant/",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "",
+   "file": "api/titan_routes.py",
+   "mod": "api.titan_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/assistant/{file_path:path}",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "{file_path:path}",
+   "file": "api/titan_routes.py",
+   "mod": "api.titan_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/close/{symbol}",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "{symbol}",
+   "file": "api/paper_routes.py",
+   "mod": "api.paper_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/disable",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "disable",
+   "file": "api/fundamentals_routes.py",
+   "mod": "api.fundamentals_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/enable",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "enable",
+   "file": "api/fundamentals_routes.py",
+   "mod": "api.fundamentals_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/equity-curve",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "equity-curve",
+   "file": "api/paper_routes.py",
+   "mod": "api.paper_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/github/push",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "push",
+   "file": "api/services_routes.py",
+   "mod": "api.services_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/github/status",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "status",
+   "file": "api/services_routes.py",
+   "mod": "api.services_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/gitnexus/start",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "start",
+   "file": "api/services_routes.py",
+   "mod": "api.services_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/gitnexus/stop",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "stop",
+   "file": "api/services_routes.py",
+   "mod": "api.services_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/history",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "history",
+   "file": "api/fundamentals_routes.py",
+   "mod": "api.fundamentals_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/news",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "news",
+   "file": "api/fundamentals_routes.py",
+   "mod": "api.fundamentals_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/ollama/start",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "start",
+   "file": "api/services_routes.py",
+   "mod": "api.services_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/ollama/stop",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "stop",
+   "file": "api/services_routes.py",
+   "mod": "api.services_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/positions",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "positions",
+   "file": "api/paper_routes.py",
+   "mod": "api.paper_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/positions-for-tv",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "positions-for-tv",
+   "file": "api/webhook_routes.py",
+   "mod": "api.webhook_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/reload",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "reload",
+   "file": "api/fundamentals_routes.py",
+   "mod": "api.fundamentals_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/reset",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "reset",
+   "file": "api/paper_routes.py",
+   "mod": "api.paper_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/reset-circuit-breaker",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "reset-circuit-breaker",
+   "file": "api/paper_routes.py",
+   "mod": "api.paper_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/score",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "score",
+   "file": "api/fundamentals_routes.py",
+   "mod": "api.fundamentals_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/state",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "state",
+   "file": "api/paper_routes.py",
+   "mod": "api.paper_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/stats",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "stats",
+   "file": "api/paper_routes.py",
+   "mod": "api.paper_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/status",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "status",
+   "file": "assistant/alexa_connector.py",
+   "mod": "assistant.alexa_connector",
+   "deg": 0
+  },
+  {
+   "id": "Route:/titan/clear-history",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "clear-history",
+   "file": "api/titan_routes.py",
+   "mod": "api.titan_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/titan/command",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "command",
+   "file": "api/titan_routes.py",
+   "mod": "api.titan_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/titan/speak",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "speak",
+   "file": "api/titan_routes.py",
+   "mod": "api.titan_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/titan/start",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "start",
+   "file": "api/services_routes.py",
+   "mod": "api.services_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/titan/status",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "status",
+   "file": "api/titan_routes.py",
+   "mod": "api.titan_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/titan/stop",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "stop",
+   "file": "api/services_routes.py",
+   "mod": "api.services_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/trades",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "trades",
+   "file": "api/paper_routes.py",
+   "mod": "api.paper_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/tradingview",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "tradingview",
+   "file": "api/webhook_routes.py",
+   "mod": "api.webhook_routes",
+   "deg": 0
+  },
+  {
+   "id": "Route:/webhook",
+   "group": "INTERFACE",
+   "kind": "route",
+   "name": "webhook",
+   "file": "assistant/alexa_connector.py",
+   "mod": "assistant.alexa_connector",
+   "deg": 0
+  }
+ ],
+ "edges": [
+  [
+   "Class:assistant/avatar_renderer.py:AvatarWindow",
+   "Method:assistant/avatar_renderer.py:AvatarWindow.show#0"
+  ],
+  [
+   "Class:assistant/plugins/trading_plugin.py:TradingPlugin",
+   "Class:assistant/plugins/base.py:TitanPlugin"
+  ],
+  [
+   "Class:assistant/plugins/trading_plugin.py:TradingPlugin",
+   "Method:assistant/plugins/trading_plugin.py:TradingPlugin._get#1"
+  ],
+  [
+   "Class:assistant/plugins/trading_plugin.py:TradingPlugin",
+   "Method:assistant/plugins/trading_plugin.py:TradingPlugin.handle#3"
+  ],
+  [
+   "Class:assistant/popup_manager.py:PopupManager",
+   "Method:assistant/popup_manager.py:PopupManager.speak#3"
+  ],
+  [
+   "Class:assistant/signal_alert.py:SignalAlertEngine",
+   "Method:assistant/signal_alert.py:SignalAlertEngine._check_signals#0"
+  ],
+  [
+   "Class:assistant/signal_alert.py:SignalAlertEngine",
+   "Method:assistant/signal_alert.py:SignalAlertEngine._trigger_alert#2"
+  ],
+  [
+   "Class:assistant/voice_engine.py:VoiceEngine",
+   "Method:assistant/voice_engine.py:VoiceEngine._listen_loop#0"
+  ],
+  [
+   "Class:assistant/voice_engine.py:VoiceEngine",
+   "Method:assistant/voice_engine.py:VoiceEngine._record_until_silence#0"
+  ],
+  [
+   "Class:assistant/voice_engine.py:VoiceEngine",
+   "Method:assistant/voice_engine.py:VoiceEngine.transcribe#2"
+  ],
+  [
+   "Class:execution/executor.py:BaseExecutor",
+   "Method:execution/executor.py:BaseExecutor.execute#1"
+  ],
+  [
+   "Class:execution/executor.py:BaseExecutor",
+   "Method:execution/executor.py:BaseExecutor.get_state#0"
+  ],
+  [
+   "Class:execution/executor.py:DisabledExecutor",
+   "Class:execution/executor.py:BaseExecutor"
+  ],
+  [
+   "Class:execution/executor.py:PaperExecutor",
+   "Class:execution/executor.py:BaseExecutor"
+  ],
+  [
+   "Class:execution/paper_trading.py:PaperEngine",
+   "Method:execution/paper_trading.py:PaperEngine._append_csv#1"
+  ],
+  [
+   "Class:execution/paper_trading.py:PaperEngine",
+   "Method:execution/paper_trading.py:PaperEngine._apply_slippage#5"
+  ],
+  [
+   "Class:execution/paper_trading.py:PaperEngine",
+   "Method:execution/paper_trading.py:PaperEngine._close_partial_unsafe#4"
+  ],
+  [
+   "Class:execution/paper_trading.py:PaperEngine",
+   "Method:execution/paper_trading.py:PaperEngine._fee#1"
+  ],
+  [
+   "Class:execution/paper_trading.py:PaperEngine",
+   "Method:execution/paper_trading.py:PaperEngine._finalize_position_unsafe#2"
+  ],
+  [
+   "Class:execution/paper_trading.py:PaperEngine",
+   "Method:execution/paper_trading.py:PaperEngine._save_state_unsafe#0"
+  ],
+  [
+   "Class:execution/paper_trading.py:PaperEngine",
+   "Method:execution/paper_trading.py:PaperEngine._update_equity_curve#0"
+  ],
+  [
+   "Class:execution/paper_trading.py:PaperEngine",
+   "Method:execution/paper_trading.py:PaperEngine._update_realtime_drawdown#0"
+  ],
+  [
+   "Class:execution/paper_trading.py:PaperEngine",
+   "Method:execution/paper_trading.py:PaperEngine.close_position_manual#2"
+  ],
+  [
+   "Class:execution/paper_trading.py:PaperEngine",
+   "Method:execution/paper_trading.py:PaperEngine.equity_with_unrealized#0"
+  ],
+  [
+   "Class:execution/paper_trading.py:PaperEngine",
+   "Method:execution/paper_trading.py:PaperEngine.get_stats#0"
+  ],
+  [
+   "Class:execution/paper_trading.py:PaperEngine",
+   "Method:execution/paper_trading.py:PaperEngine.open_position#1"
+  ],
+  [
+   "Class:execution/paper_trading.py:PaperEngine",
+   "Method:execution/paper_trading.py:PaperEngine.update_price#2"
+  ],
+  [
+   "Class:execution/paper_trading.py:PaperPosition",
+   "Method:execution/paper_trading.py:PaperPosition.to_dict#1"
+  ],
+  [
+   "Class:execution/paper_trading.py:PaperPosition",
+   "Method:execution/paper_trading.py:PaperPosition.unrealized_pct#1"
+  ],
+  [
+   "Class:execution/paper_trading.py:PaperPosition",
+   "Method:execution/paper_trading.py:PaperPosition.unrealized_pnl#1"
+  ],
+  [
+   "Class:utils/cache.py:TTLCache",
+   "Method:utils/cache.py:TTLCache.get#1"
+  ],
+  [
+   "Class:utils/cache.py:TTLCache",
+   "Method:utils/cache.py:TTLCache.set#3"
+  ],
+  [
+   "Function:api/api_server.py:_seed_candle_store",
+   "Function:data/binance_rest.py:fetch_klines"
+  ],
+  [
+   "Function:api/api_server.py:_seed_candle_store",
+   "Function:data/gold_provider.py:fetch_gold_candles"
+  ],
+  [
+   "Function:api/api_server.py:api_state",
+   "Function:engine/optimizer.py:get_opt_results"
+  ],
+  [
+   "Function:api/api_server.py:api_state",
+   "Function:execution/signal_manager.py:get_all_signals"
+  ],
+  [
+   "Function:api/api_server.py:api_state",
+   "Method:execution/executor.py:BaseExecutor.get_state#0"
+  ],
+  [
+   "Function:api/api_server.py:lifespan",
+   "Function:api/api_server.py:_seed_candle_store"
+  ],
+  [
+   "Function:api/api_server.py:lifespan",
+   "Function:assistant/titan_core.py:start_titan"
+  ],
+  [
+   "Function:api/api_server.py:lifespan",
+   "Function:data/orderbook_ws.py:start_orderbook_streams"
+  ],
+  [
+   "Function:api/api_server.py:lifespan",
+   "Function:engine/learning_engine.py:learning_report_loop"
+  ],
+  [
+   "Function:api/api_server.py:lifespan",
+   "Function:engine/optimizer.py:get_opt_results"
+  ],
+  [
+   "Function:api/api_server.py:lifespan",
+   "Function:engine/optimizer.py:optimisation_loop"
+  ],
+  [
+   "Function:api/api_server.py:lifespan",
+   "Function:engine/strict_engine.py:strict_recalib_loop"
+  ],
+  [
+   "Function:api/api_server.py:lifespan",
+   "Function:execution/risk_manager.py:circuit_breaker_loop"
+  ],
+  [
+   "Function:api/api_server.py:lifespan",
+   "Function:fundamentals/fetcher_loop.py:fundamentals_loop"
+  ],
+  [
+   "Function:api/api_server.py:websocket_endpoint",
+   "Function:execution/signal_manager.py:get_all_signals"
+  ],
+  [
+   "Function:api/fundamentals_routes.py:api_fundamentals_reload",
+   "Function:fundamentals/news_fetcher.py:fetch_all_news"
+  ],
+  [
+   "Function:api/fundamentals_routes.py:api_fundamentals_reload",
+   "Function:fundamentals/news_fetcher.py:get_all_text"
+  ],
+  [
+   "Function:api/fundamentals_routes.py:api_fundamentals_reload",
+   "Function:fundamentals/risk_scorer.py:compute_score"
+  ],
+  [
+   "Function:api/fundamentals_routes.py:api_fundamentals_reload",
+   "Function:fundamentals/risk_scorer.py:get_current_score"
+  ],
+  [
+   "Function:api/fundamentals_routes.py:api_fundamentals_score",
+   "Function:fundamentals/signal_modulator.py:is_active"
+  ],
+  [
+   "Function:api/paper_routes.py:reset_circuit_breaker",
+   "Function:engine/learning_engine.py:save_state"
+  ],
+  [
+   "Function:api/paper_routes.py:reset_circuit_breaker",
+   "Function:execution/signal_manager.py:is_circuit_breaker_active"
+  ],
+  [
+   "Function:api/paper_routes.py:reset_circuit_breaker",
+   "Function:execution/signal_manager.py:set_circuit_breaker"
+  ],
+  [
+   "Function:api/services_routes.py:services_status",
+   "Function:assistant/popup_manager.py:get_popup_manager"
+  ],
+  [
+   "Function:api/webhook_routes.py:positions_for_tv",
+   "Method:execution/executor.py:BaseExecutor.get_state#0"
+  ],
+  [
+   "Function:api/webhook_routes.py:tradingview_webhook",
+   "Function:execution/risk_manager.py:compute_adaptive_levels"
+  ],
+  [
+   "Function:api/webhook_routes.py:tradingview_webhook",
+   "Function:fundamentals/risk_scorer.py:get_current_score"
+  ],
+  [
+   "Function:api/webhook_routes.py:tradingview_webhook",
+   "Function:fundamentals/signal_modulator.py:is_active"
+  ],
+  [
+   "Function:api/webhook_routes.py:tradingview_webhook",
+   "Function:fundamentals/signal_modulator.py:modulate"
+  ],
+  [
+   "Function:api/webhook_routes.py:tradingview_webhook",
+   "Method:execution/executor.py:BaseExecutor.execute#1"
+  ],
+  [
+   "Function:assistant/alexa_connector.py:_alexa_error",
+   "Function:assistant/alexa_connector.py:_alexa_response"
+  ],
+  [
+   "Function:assistant/alexa_connector.py:_handle_report_intent",
+   "Function:assistant/alexa_connector.py:_alexa_error"
+  ],
+  [
+   "Function:assistant/alexa_connector.py:_handle_report_intent",
+   "Function:assistant/alexa_connector.py:_alexa_response"
+  ],
+  [
+   "Function:assistant/alexa_connector.py:_handle_report_intent",
+   "Function:assistant/daily_report.py:build_daily_report"
+  ],
+  [
+   "Function:assistant/alexa_connector.py:_handle_signal_intent",
+   "Function:assistant/alexa_connector.py:_alexa_error"
+  ],
+  [
+   "Function:assistant/alexa_connector.py:_handle_signal_intent",
+   "Function:assistant/alexa_connector.py:_alexa_response"
+  ],
+  [
+   "Function:assistant/alexa_connector.py:_handle_signal_intent",
+   "Function:assistant/titan_agent.py:ask_titan"
+  ],
+  [
+   "Function:assistant/alexa_connector.py:_handle_status_intent",
+   "Function:assistant/alexa_connector.py:_alexa_error"
+  ],
+  [
+   "Function:assistant/alexa_connector.py:_handle_status_intent",
+   "Function:assistant/alexa_connector.py:_alexa_response"
+  ],
+  [
+   "Function:assistant/alexa_connector.py:_handle_status_intent",
+   "Function:assistant/titan_agent.py:ask_titan"
+  ],
+  [
+   "Function:assistant/avatar_renderer.py:play_lip_frames",
+   "Function:assistant/avatar_renderer.py:send_reset"
+  ],
+  [
+   "Function:assistant/avatar_renderer.py:send_reset",
+   "Function:assistant/avatar_renderer.py:ws_titan_broadcast"
+  ],
+  [
+   "Function:assistant/daily_report.py:daily_report_loop",
+   "Function:assistant/daily_report.py:build_daily_report"
+  ],
+  [
+   "Function:assistant/daily_report.py:daily_report_loop",
+   "Function:assistant/popup_manager.py:titan_speak"
+  ],
+  [
+   "Function:assistant/hotkey_manager.py:_handle_command",
+   "Function:assistant/hotkey_manager.py:_set_state"
+  ],
+  [
+   "Function:assistant/hotkey_manager.py:_handle_command",
+   "Function:assistant/titan_agent.py:ask_titan_stream"
+  ],
+  [
+   "Function:assistant/hotkey_manager.py:_record_and_respond",
+   "Function:assistant/hotkey_manager.py:_handle_command"
+  ],
+  [
+   "Function:assistant/hotkey_manager.py:_record_and_respond",
+   "Method:assistant/voice_engine.py:VoiceEngine._record_until_silence#0"
+  ],
+  [
+   "Function:assistant/hotkey_manager.py:_record_and_respond",
+   "Method:assistant/voice_engine.py:VoiceEngine.transcribe#2"
+  ],
+  [
+   "Function:assistant/hotkey_manager.py:_set_state",
+   "Function:assistant/avatar_renderer.py:ws_titan_broadcast"
+  ],
+  [
+   "Function:assistant/hotkey_manager.py:_trigger",
+   "Function:assistant/avatar_renderer.py:get_avatar_window"
+  ],
+  [
+   "Function:assistant/hotkey_manager.py:_trigger",
+   "Method:assistant/avatar_renderer.py:AvatarWindow.show#0"
+  ],
+  [
+   "Function:assistant/memory_store.py:add_note",
+   "Function:assistant/memory_store.py:_load"
+  ],
+  [
+   "Function:assistant/memory_store.py:add_note",
+   "Function:assistant/memory_store.py:_save"
+  ],
+  [
+   "Function:assistant/memory_store.py:clear_category",
+   "Function:assistant/memory_store.py:_load"
+  ],
+  [
+   "Function:assistant/memory_store.py:clear_category",
+   "Function:assistant/memory_store.py:_save"
+  ],
+  [
+   "Function:assistant/memory_store.py:forget",
+   "Function:assistant/memory_store.py:_load"
+  ],
+  [
+   "Function:assistant/memory_store.py:forget",
+   "Function:assistant/memory_store.py:_save"
+  ],
+  [
+   "Function:assistant/memory_store.py:get",
+   "Function:assistant/memory_store.py:_load"
+  ],
+  [
+   "Function:assistant/memory_store.py:get_context_summary",
+   "Function:assistant/memory_store.py:_load"
+  ],
+  [
+   "Function:assistant/memory_store.py:get_context_summary",
+   "Function:assistant/memory_store.py:get"
+  ],
+  [
+   "Function:assistant/memory_store.py:get_notes",
+   "Function:assistant/memory_store.py:_load"
+  ],
+  [
+   "Function:assistant/memory_store.py:get_notes",
+   "Function:assistant/memory_store.py:get"
+  ],
+  [
+   "Function:assistant/memory_store.py:remember",
+   "Function:assistant/memory_store.py:_load"
+  ],
+  [
+   "Function:assistant/memory_store.py:remember",
+   "Function:assistant/memory_store.py:_save"
+  ],
+  [
+   "Function:assistant/popup_manager.py:titan_speak",
+   "Function:assistant/popup_manager.py:get_popup_manager"
+  ],
+  [
+   "Function:assistant/popup_manager.py:titan_speak",
+   "Method:assistant/popup_manager.py:PopupManager.speak#3"
+  ],
+  [
+   "Function:assistant/titan_agent.py:ask_titan",
+   "Function:assistant/intent_classifier.py:classify"
+  ],
+  [
+   "Function:assistant/titan_agent.py:ask_titan",
+   "Function:assistant/knowledge/__init__.py:get_context_for_intent"
+  ],
+  [
+   "Function:assistant/titan_agent.py:ask_titan",
+   "Function:assistant/memory_store.py:get_context_summary"
+  ],
+  [
+   "Function:assistant/titan_agent.py:ask_titan",
+   "Function:assistant/plugins/__init__.py:dispatch"
+  ],
+  [
+   "Function:assistant/titan_agent.py:ask_titan",
+   "Function:assistant/titan_agent.py:_get_trading_context"
+  ],
+  [
+   "Function:assistant/titan_agent.py:ask_titan_stream",
+   "Function:assistant/intent_classifier.py:classify"
+  ],
+  [
+   "Function:assistant/titan_agent.py:ask_titan_stream",
+   "Function:assistant/knowledge/__init__.py:get_context_for_intent"
+  ],
+  [
+   "Function:assistant/titan_agent.py:ask_titan_stream",
+   "Function:assistant/memory_store.py:get_context_summary"
+  ],
+  [
+   "Function:assistant/titan_agent.py:ask_titan_stream",
+   "Function:assistant/plugins/__init__.py:dispatch"
+  ],
+  [
+   "Function:assistant/titan_agent.py:ask_titan_stream",
+   "Function:assistant/titan_agent.py:_get_trading_context"
+  ],
+  [
+   "Function:assistant/titan_agent.py:ask_titan_stream",
+   "Function:assistant/titan_agent.py:ask_titan"
+  ],
+  [
+   "Function:assistant/titan_core.py:_handle_voice_command",
+   "Function:assistant/avatar_renderer.py:ws_titan_broadcast"
+  ],
+  [
+   "Function:assistant/titan_core.py:_handle_voice_command",
+   "Function:assistant/popup_manager.py:titan_speak"
+  ],
+  [
+   "Function:assistant/titan_core.py:_handle_voice_command",
+   "Function:assistant/titan_agent.py:ask_titan"
+  ],
+  [
+   "Function:assistant/titan_core.py:start_titan",
+   "Function:assistant/avatar_renderer.py:get_avatar_window"
+  ],
+  [
+   "Function:assistant/titan_core.py:start_titan",
+   "Function:assistant/daily_report.py:daily_report_loop"
+  ],
+  [
+   "Function:core/scoring_engine.py:score_setup",
+   "Function:core/smc_engine.py:detect_sweep_with_displacement"
+  ],
+  [
+   "Function:core/scoring_engine.py:score_setup",
+   "Function:core/smc_engine.py:has_ob_or_fvg_alignment"
+  ],
+  [
+   "Function:core/scoring_engine.py:score_setup",
+   "Function:utils/config.py:get_sym_override"
+  ],
+  [
+   "Function:core/signal_engine.py:scan_symbol",
+   "Function:core/scoring_engine.py:score_setup"
+  ],
+  [
+   "Function:core/signal_engine.py:scan_symbol",
+   "Function:data/binance_rest.py:fetch_klines"
+  ],
+  [
+   "Function:core/signal_engine.py:scan_symbol",
+   "Function:engine/learning_engine.py:record_signal"
+  ],
+  [
+   "Function:core/signal_engine.py:scan_symbol",
+   "Function:execution/risk_manager.py:compute_adaptive_levels"
+  ],
+  [
+   "Function:core/signal_engine.py:scan_symbol",
+   "Function:execution/signal_manager.py:emit_signal"
+  ],
+  [
+   "Function:core/signal_engine.py:scan_symbol",
+   "Function:fundamentals/risk_scorer.py:get_current_score"
+  ],
+  [
+   "Function:core/signal_engine.py:scan_symbol",
+   "Function:fundamentals/signal_modulator.py:is_active"
+  ],
+  [
+   "Function:core/signal_engine.py:scan_symbol",
+   "Function:fundamentals/signal_modulator.py:modulate"
+  ],
+  [
+   "Function:core/signal_engine.py:scan_symbol",
+   "Function:indicators/orderbook.py:analyze_orderbook_l2"
+  ],
+  [
+   "Function:core/signal_engine.py:scan_symbol",
+   "Method:execution/executor.py:BaseExecutor.execute#1"
+  ],
+  [
+   "Function:data/binance_rest.py:fetch_klines",
+   "Method:utils/cache.py:TTLCache.get#1"
+  ],
+  [
+   "Function:data/binance_rest.py:fetch_klines",
+   "Method:utils/cache.py:TTLCache.set#3"
+  ],
+  [
+   "Function:data/gold_provider.py:fetch_gold_candles",
+   "Method:utils/cache.py:TTLCache.get#1"
+  ],
+  [
+   "Function:data/gold_provider.py:fetch_gold_candles",
+   "Method:utils/cache.py:TTLCache.set#3"
+  ],
+  [
+   "Function:data/orderbook_ws.py:_rest_polling_loop",
+   "Function:data/orderbook_ws.py:_fetch_futures_snapshot"
+  ],
+  [
+   "Function:data/orderbook_ws.py:_rest_polling_loop",
+   "Function:data/orderbook_ws.py:_fetch_spot_snapshot"
+  ],
+  [
+   "Function:data/orderbook_ws.py:_ws_futures_depth",
+   "Function:data/orderbook_ws.py:_fetch_futures_snapshot"
+  ],
+  [
+   "Function:data/orderbook_ws.py:_ws_spot_depth",
+   "Function:data/orderbook_ws.py:_fetch_spot_snapshot"
+  ],
+  [
+   "Function:data/orderbook_ws.py:start_orderbook_streams",
+   "Function:data/orderbook_ws.py:_rest_polling_loop"
+  ],
+  [
+   "Function:data/orderbook_ws.py:start_orderbook_streams",
+   "Function:data/orderbook_ws.py:_ws_futures_depth"
+  ],
+  [
+   "Function:data/orderbook_ws.py:start_orderbook_streams",
+   "Function:data/orderbook_ws.py:_ws_spot_depth"
+  ],
+  [
+   "Function:engine/learning_engine.py:_check_circuit_breaker",
+   "Function:execution/signal_manager.py:is_circuit_breaker_active"
+  ],
+  [
+   "Function:engine/learning_engine.py:_check_circuit_breaker",
+   "Function:execution/signal_manager.py:set_circuit_breaker"
+  ],
+  [
+   "Function:engine/learning_engine.py:learning_report_loop",
+   "Function:engine/learning_engine.py:_adapt_weights"
+  ],
+  [
+   "Function:engine/learning_engine.py:learning_report_loop",
+   "Function:engine/learning_engine.py:_check_circuit_breaker"
+  ],
+  [
+   "Function:engine/learning_engine.py:learning_report_loop",
+   "Function:engine/learning_engine.py:save_state"
+  ],
+  [
+   "Function:engine/learning_engine.py:record_signal",
+   "Function:engine/learning_engine.py:_adapt_weights"
+  ],
+  [
+   "Function:engine/learning_engine.py:record_signal",
+   "Function:engine/learning_engine.py:_check_circuit_breaker"
+  ],
+  [
+   "Function:engine/learning_engine.py:record_signal",
+   "Function:engine/learning_engine.py:save_state"
+  ],
+  [
+   "Function:engine/optimizer.py:optimisation_loop",
+   "Function:data/binance_rest.py:fetch_klines_history"
+  ],
+  [
+   "Function:engine/optimizer.py:optimisation_loop",
+   "Function:engine/optimizer.py:run_optimization"
+  ],
+  [
+   "Function:engine/strict_engine.py:optimize_trix_strict",
+   "Function:engine/strict_engine.py:_sharpe_trix"
+  ],
+  [
+   "Function:engine/strict_engine.py:strict_recalib_loop",
+   "Function:data/binance_rest.py:fetch_klines_history"
+  ],
+  [
+   "Function:engine/strict_engine.py:strict_recalib_loop",
+   "Function:engine/strict_engine.py:optimize_trix_strict"
+  ],
+  [
+   "Function:execution/risk_manager.py:circuit_breaker_loop",
+   "Function:execution/signal_manager.py:is_circuit_breaker_active"
+  ],
+  [
+   "Function:execution/risk_manager.py:circuit_breaker_loop",
+   "Function:execution/signal_manager.py:set_circuit_breaker"
+  ],
+  [
+   "Function:execution/risk_manager.py:circuit_breaker_loop",
+   "Method:execution/executor.py:BaseExecutor.get_state#0"
+  ],
+  [
+   "Function:execution/risk_manager.py:compute_adaptive_levels",
+   "Function:utils/config.py:get_sym_override"
+  ],
+  [
+   "Function:execution/signal_manager.py:emit_signal",
+   "Function:utils/config.py:get_sym_override"
+  ],
+  [
+   "Function:fundamentals/fetcher_loop.py:fundamentals_loop",
+   "Function:fundamentals/news_fetcher.py:fetch_all_news"
+  ],
+  [
+   "Function:fundamentals/fetcher_loop.py:fundamentals_loop",
+   "Function:fundamentals/news_fetcher.py:get_all_text"
+  ],
+  [
+   "Function:fundamentals/fetcher_loop.py:fundamentals_loop",
+   "Function:fundamentals/risk_scorer.py:compute_score"
+  ],
+  [
+   "Function:fundamentals/risk_scorer.py:compute_score",
+   "Function:fundamentals/news_fetcher.py:get_all_text"
+  ],
+  [
+   "Method:assistant/plugins/memory_plugin.py:MemoryPlugin.handle#3",
+   "Function:assistant/memory_store.py:add_note"
+  ],
+  [
+   "Method:assistant/plugins/memory_plugin.py:MemoryPlugin.handle#3",
+   "Function:assistant/memory_store.py:clear_category"
+  ],
+  [
+   "Method:assistant/plugins/memory_plugin.py:MemoryPlugin.handle#3",
+   "Function:assistant/memory_store.py:forget"
+  ],
+  [
+   "Method:assistant/plugins/memory_plugin.py:MemoryPlugin.handle#3",
+   "Function:assistant/memory_store.py:get_context_summary"
+  ],
+  [
+   "Method:assistant/plugins/memory_plugin.py:MemoryPlugin.handle#3",
+   "Function:assistant/memory_store.py:get_notes"
+  ],
+  [
+   "Method:assistant/plugins/memory_plugin.py:MemoryPlugin.handle#3",
+   "Function:assistant/memory_store.py:remember"
+  ],
+  [
+   "Method:assistant/plugins/web_search_plugin.py:WebSearchPlugin.handle#3",
+   "Function:assistant/browser_agent.py:search"
+  ],
+  [
+   "Method:assistant/popup_manager.py:PopupManager.speak#3",
+   "Function:assistant/avatar_renderer.py:get_avatar_window"
+  ],
+  [
+   "Method:assistant/popup_manager.py:PopupManager.speak#3",
+   "Function:assistant/avatar_renderer.py:play_lip_frames"
+  ],
+  [
+   "Method:assistant/popup_manager.py:PopupManager.speak#3",
+   "Function:assistant/avatar_renderer.py:send_reset"
+  ],
+  [
+   "Method:assistant/popup_manager.py:PopupManager.speak#3",
+   "Function:assistant/avatar_renderer.py:ws_titan_broadcast"
+  ],
+  [
+   "Method:assistant/popup_manager.py:PopupManager.speak#3",
+   "Function:assistant/lip_sync.py:generate_lip_frames"
+  ],
+  [
+   "Method:assistant/popup_manager.py:PopupManager.speak#3",
+   "Method:assistant/avatar_renderer.py:AvatarWindow.show#0"
+  ],
+  [
+   "Method:assistant/signal_alert.py:SignalAlertEngine._check_signals#0",
+   "Method:assistant/signal_alert.py:SignalAlertEngine._trigger_alert#2"
+  ],
+  [
+   "Method:assistant/voice_engine.py:VoiceEngine._listen_loop#0",
+   "Method:assistant/voice_engine.py:VoiceEngine._record_until_silence#0"
+  ],
+  [
+   "Method:assistant/voice_engine.py:VoiceEngine._listen_loop#0",
+   "Method:assistant/voice_engine.py:VoiceEngine.transcribe#2"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperEngine._close_partial_unsafe#4",
+   "Method:execution/paper_trading.py:PaperEngine._apply_slippage#5"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperEngine._close_partial_unsafe#4",
+   "Method:execution/paper_trading.py:PaperEngine._fee#1"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperEngine._finalize_position_unsafe#2",
+   "Method:execution/paper_trading.py:PaperEngine._close_partial_unsafe#4"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperEngine._finalize_position_unsafe#2",
+   "Method:execution/paper_trading.py:PaperEngine._fee#1"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperEngine._update_equity_curve#0",
+   "Method:execution/paper_trading.py:PaperEngine.equity_with_unrealized#0"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperEngine._update_realtime_drawdown#0",
+   "Function:execution/signal_manager.py:is_circuit_breaker_active"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperEngine._update_realtime_drawdown#0",
+   "Function:execution/signal_manager.py:set_circuit_breaker"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperEngine._update_realtime_drawdown#0",
+   "Method:execution/paper_trading.py:PaperEngine.equity_with_unrealized#0"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperEngine.close_position_manual#2",
+   "Method:execution/paper_trading.py:PaperEngine._append_csv#1"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperEngine.close_position_manual#2",
+   "Method:execution/paper_trading.py:PaperEngine._close_partial_unsafe#4"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperEngine.close_position_manual#2",
+   "Method:execution/paper_trading.py:PaperEngine._finalize_position_unsafe#2"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperEngine.close_position_manual#2",
+   "Method:execution/paper_trading.py:PaperEngine._save_state_unsafe#0"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperEngine.close_position_manual#2",
+   "Method:execution/paper_trading.py:PaperEngine._update_equity_curve#0"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperEngine.get_stats#0",
+   "Method:execution/paper_trading.py:PaperEngine.equity_with_unrealized#0"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperEngine.open_position#1",
+   "Method:execution/paper_trading.py:PaperEngine._apply_slippage#5"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperEngine.open_position#1",
+   "Method:execution/paper_trading.py:PaperEngine._fee#1"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperEngine.open_position#1",
+   "Method:execution/paper_trading.py:PaperEngine._save_state_unsafe#0"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperEngine.open_position#1",
+   "Method:execution/paper_trading.py:PaperEngine._update_equity_curve#0"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperEngine.open_position#1",
+   "Method:execution/paper_trading.py:PaperEngine.equity_with_unrealized#0"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperEngine.update_price#2",
+   "Method:execution/paper_trading.py:PaperEngine._append_csv#1"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperEngine.update_price#2",
+   "Method:execution/paper_trading.py:PaperEngine._close_partial_unsafe#4"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperEngine.update_price#2",
+   "Method:execution/paper_trading.py:PaperEngine._finalize_position_unsafe#2"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperEngine.update_price#2",
+   "Method:execution/paper_trading.py:PaperEngine._save_state_unsafe#0"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperEngine.update_price#2",
+   "Method:execution/paper_trading.py:PaperEngine._update_equity_curve#0"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperEngine.update_price#2",
+   "Method:execution/paper_trading.py:PaperEngine._update_realtime_drawdown#0"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperPosition.to_dict#1",
+   "Method:execution/paper_trading.py:PaperPosition.unrealized_pct#1"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperPosition.to_dict#1",
+   "Method:execution/paper_trading.py:PaperPosition.unrealized_pnl#1"
+  ],
+  [
+   "Method:execution/paper_trading.py:PaperPosition.unrealized_pct#1",
+   "Method:execution/paper_trading.py:PaperPosition.unrealized_pnl#1"
+  ]
+ ],
+ "generated": "2026-07-11T13:02:18.121690+00:00",
+ "groups": [
+  "CERVEAU",
+  "DONNÉES",
+  "EXÉCUTION",
+  "INTERFACE",
+  "SOCLE"
+ ]
+}

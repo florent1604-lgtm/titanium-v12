@@ -57,7 +57,13 @@ def _normalize_symbol(raw: str) -> str:
 
 
 def _validate_secret(payload: Dict[str, Any]) -> None:
-    if WEBHOOK_SECRET and payload.get("secret") != WEBHOOK_SECRET:
+    # Fail-closed (revue Codex 10/07/2026) : un webhook peut ouvrir une position,
+    # donc un secret VIDE doit tout refuser (avant : secret vide = tout accepté).
+    import secrets as _secrets
+    if not WEBHOOK_SECRET:
+        raise HTTPException(403, "Webhook refusé : WEBHOOK_SECRET non configuré côté serveur.")
+    provided = str(payload.get("secret") or "")
+    if not _secrets.compare_digest(provided, str(WEBHOOK_SECRET)):
         raise HTTPException(401, "Secret invalide")
 
 

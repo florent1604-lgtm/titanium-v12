@@ -8,3 +8,164 @@ Chaque reconfiguration automatique ou manuelle est enregistrée ici.
 ---
 
 - `2026-04-05T00:00:00+00:00` — INIT: Module Fundamentals créé (v12)
+- `2026-07-07T11:02:18.606801+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 31% > seuil 30%
+- `2026-07-07T17:02:25.214472+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 31% > seuil 30%
+- `2026-07-07T17:51:31.055720+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-07T18:27:27.945980+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 31% > seuil 30%
+- `2026-07-07T21:58:10.438381+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-08T06:42:00.026244+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-08T06:42:00.029259+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-08T06:42:00.030267+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-08T06:42:00.031273+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-08T06:42:00.033490+00:00` — AUTO-DISABLE: test
+- `2026-07-08T06:42:00.033490+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-08T06:42:00.035508+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-08T06:42:00.039888+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-08T06:42:00.041413+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-08T06:42:00.044229+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-08T06:42:00.046230+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-08T06:42:48.908743+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-08T06:42:48.910751+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-08T06:42:48.911751+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-08T06:42:48.912256+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-08T06:42:48.914264+00:00` — AUTO-DISABLE: test
+- `2026-07-08T06:42:48.914769+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-08T06:42:48.914769+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-08T06:42:48.916275+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-08T06:42:48.918292+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-08T06:42:48.919292+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-08T06:42:48.920292+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-08T07:15:25.121950+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-08T10:37:01.445104+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-08T11:22:09.694111+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-08T16:51:38.260381+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-08T21:25:39.503800+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-08T22:11:19.894132+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 31% > seuil 30%
+- `2026-07-09T05:55:43.601071+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 31% > seuil 30%
+- `2026-07-09T14:18:57.482005+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-09T17:48:06.648690+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 31% > seuil 30%
+- `2026-07-09T18:55:52.633865+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-10T08:01:09.767987+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-10T08:50:57.914562+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-10T12:34:52.900430+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 31% > seuil 30%
+- `2026-07-10T17:25:12.266967+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-10T17:25:12.267978+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-10T17:25:12.269176+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-10T17:25:12.270322+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-10T17:25:12.272850+00:00` — AUTO-DISABLE: test
+- `2026-07-10T17:25:12.272850+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-10T17:25:12.274015+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-10T17:25:12.276491+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-10T17:25:12.276491+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-10T17:25:12.277942+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-10T17:25:12.279248+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-10T21:49:57.551383+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 34% > seuil 30%
+- `2026-07-11T08:14:31.584303+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-11T09:00:46.037576+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-11T17:56:27.822350+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-11T20:05:09.605840+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 31% > seuil 30%
+- `2026-07-13T06:02:30.859586+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 31% > seuil 30%
+- `2026-07-13T07:26:09.197152+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 31% > seuil 30%
+- `2026-07-13T16:28:16.486634+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-13T19:00:51.719284+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-15T18:37:12.372003+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 32% > seuil 30%
+- `2026-07-16T03:58:15.341622+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-16T16:49:50.300639+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 31% > seuil 30%
+- `2026-07-17T11:03:39.982971+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-17T11:03:39.985166+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-17T11:03:39.986164+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-17T11:03:39.988164+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-17T11:03:39.990164+00:00` — AUTO-DISABLE: test
+- `2026-07-17T11:03:39.990164+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-17T11:03:39.992165+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-17T11:03:39.994164+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-17T11:03:39.996182+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-17T11:03:39.997191+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-17T11:03:39.999511+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-17T13:31:11.821974+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-17T20:06:29.285812+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-18T06:40:59.422728+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 43% > seuil 30%
+- `2026-07-18T07:10:10.348605+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 41% > seuil 30%
+- `2026-07-18T07:12:00.188525+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-18T07:12:00.190550+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-18T07:12:00.192790+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-18T07:12:00.193790+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-18T07:12:00.195793+00:00` — AUTO-DISABLE: test
+- `2026-07-18T07:12:00.195793+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-18T07:12:00.198098+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-18T07:12:00.199389+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-18T07:12:00.200889+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-18T07:12:00.202895+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-18T07:12:00.203890+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-18T07:28:39.772664+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 50% > seuil 30%
+- `2026-07-18T08:25:09.424558+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 44% > seuil 30%
+- `2026-07-18T15:46:12.611071+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-18T16:46:26.071640+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 41% > seuil 30%
+- `2026-07-18T17:14:22.220348+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 33% > seuil 30%
+- `2026-07-18T21:19:15.651388+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 31% > seuil 30%
+- `2026-07-19T06:34:28.676551+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-19T07:30:30.528258+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-19T11:24:29.256012+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-20T05:45:13.039710+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 31% > seuil 30%
+- `2026-07-20T18:44:10.416086+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 33% > seuil 30%
+- `2026-07-21T06:05:30.449591+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T06:05:30.451544+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T06:05:30.452573+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T06:05:30.453573+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T06:05:30.454825+00:00` — AUTO-DISABLE: test
+- `2026-07-21T06:05:30.454825+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T06:05:30.456827+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T06:05:30.458337+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T06:05:30.459361+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T06:05:30.460687+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T06:05:30.461687+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T06:19:10.236262+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 50% > seuil 30%
+- `2026-07-21T06:52:16.921202+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T06:52:16.922717+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T06:52:16.924728+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T06:52:16.927023+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T06:52:16.928246+00:00` — AUTO-DISABLE: test
+- `2026-07-21T06:52:16.929755+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T06:52:16.931766+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T06:52:16.932774+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T06:52:16.935026+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T06:52:16.936091+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T06:52:16.938413+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T07:16:06.558302+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T07:16:06.559806+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T07:16:06.562370+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T07:16:06.564371+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T07:16:06.567790+00:00` — AUTO-DISABLE: test
+- `2026-07-21T07:16:06.567790+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T07:16:06.568974+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T07:16:06.571468+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T07:16:06.572466+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T07:16:06.575117+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T07:16:06.576636+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T07:33:03.613950+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 33% > seuil 30%
+- `2026-07-21T07:42:57.778236+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T07:42:57.779743+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T07:42:57.780751+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T07:42:57.782857+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T07:42:57.785617+00:00` — AUTO-DISABLE: test
+- `2026-07-21T07:42:57.786624+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T07:42:57.787629+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T07:42:57.789640+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T07:42:57.791640+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T07:42:57.792638+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T07:42:57.794622+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-21T07:59:28.573173+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 50% > seuil 30%
+- `2026-07-21T18:58:08.587392+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-22T06:23:51.964306+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 43% > seuil 30%
+- `2026-07-23T05:43:50.656912+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-23T05:43:50.660429+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-23T05:43:50.662429+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-23T05:43:50.663429+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-23T05:43:50.666429+00:00` — AUTO-DISABLE: test
+- `2026-07-23T05:43:50.667429+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-23T05:43:50.668429+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-23T05:43:50.670429+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-23T05:43:50.672429+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-23T05:43:50.673429+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-23T05:43:50.674439+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-23T06:29:49.614240+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 54% > seuil 30%

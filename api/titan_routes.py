@@ -14,14 +14,17 @@ import logging
 import mimetypes
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi import Request as FARequest
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
+
+from api.auth import require_admin
 
 from assistant.config import TITAN_WEB_DIR, TITAN_ASSISTANT_DIR, TITAN_ENABLED
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["titan"])
+_ADMIN = [Depends(require_admin)]
 
 # Ajouter le type MIME pour les fichiers VRM
 mimetypes.add_type("model/gltf-binary", ".vrm")
@@ -95,7 +98,7 @@ async def titan_ws(ws: WebSocket):
 
 # ── API Titan ─────────────────────────────────────────────────────────────────
 
-@router.post("/titan/speak")
+@router.post("/titan/speak", dependencies=_ADMIN)
 async def titan_speak_api(request: FARequest):
     """Fait parler Titan avec un texte arbitraire.
 
@@ -125,7 +128,7 @@ async def titan_speak_api(request: FARequest):
         raise HTTPException(500, str(e))
 
 
-@router.post("/titan/command")
+@router.post("/titan/command", dependencies=_ADMIN)
 async def titan_command_api(request: FARequest):
     """Envoie une commande textuelle à Titan et retourne la réponse.
 
@@ -178,7 +181,7 @@ async def titan_status():
     })
 
 
-@router.post("/titan/clear-history")
+@router.post("/titan/clear-history", dependencies=_ADMIN)
 async def titan_clear_history():
     """Efface l'historique de conversation de Titan."""
     from assistant.titan_agent import clear_history

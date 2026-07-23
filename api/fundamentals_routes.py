@@ -13,8 +13,9 @@ import asyncio
 import json
 from pathlib import Path
 from datetime import datetime, timezone
-from fastapi import APIRouter, Request as FARequest, HTTPException
+from fastapi import APIRouter, Depends, Request as FARequest, HTTPException
 from fastapi.responses import JSONResponse
+from api.auth import require_admin
 from utils.config import FUNDAMENTALS_HISTORY_FILE
 from utils.logger import get_logger
 from fundamentals.risk_scorer import get_current_score, get_score_history
@@ -25,6 +26,7 @@ from fundamentals.fetcher_loop import get_cached_articles, get_cached_score
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/fundamentals", tags=["fundamentals"])
+_ADMIN = [Depends(require_admin)]
 
 
 @router.get("/score")
@@ -70,7 +72,7 @@ async def api_fundamentals_history():
     return JSONResponse({"history": history[-200:], "total": len(history)})
 
 
-@router.post("/reload")
+@router.post("/reload", dependencies=_ADMIN)
 async def api_fundamentals_reload(request: FARequest):
     """Force un refresh immédiat des actualités."""
     session = request.app.state.http
@@ -90,14 +92,14 @@ async def api_fundamentals_reload(request: FARequest):
         raise HTTPException(500, str(e))
 
 
-@router.post("/enable")
+@router.post("/enable", dependencies=_ADMIN)
 async def api_fundamentals_enable():
     """Active le module Fundamentals (sans redémarrage)."""
     force_enable()
     return JSONResponse({"status": "enabled", "active": True})
 
 
-@router.post("/disable")
+@router.post("/disable", dependencies=_ADMIN)
 async def api_fundamentals_disable():
     """Désactive le module Fundamentals (sans redémarrage)."""
     force_disable("désactivé via API")

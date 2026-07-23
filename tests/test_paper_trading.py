@@ -65,7 +65,7 @@ def _signal(
 
 
 def run(coro):
-    return asyncio.get_event_loop().run_until_complete(coro)
+    return asyncio.run(coro)
 
 
 # ── Tests ouverture de position ───────────────────────────────────────────────
@@ -88,6 +88,30 @@ class TestOpenPosition:
         pos = run(eng.open_position(sig))
         assert pos is not None
         assert pos.side == "SHORT"
+
+    def test_ouverture_crypto_refusee_par_risque_portefeuille_est_sans_effet(self, monkeypatch):
+        """Le garde R3 central doit précéder toute mutation du portefeuille crypto."""
+        import core.portfolio_risk as pr
+        from core.forex_engine import forex_state
+        from core.swing_engine import swing_state
+
+        eng = _make_engine()
+        monkeypatch.setitem(swing_state, "positions", {})
+        monkeypatch.setitem(swing_state, "equity", 10_000.0)
+        monkeypatch.setitem(forex_state, "positions", {})
+        monkeypatch.setitem(forex_state, "equity", 10_000.0)
+        monkeypatch.setattr(pr, "RISK_MAX_STRATEGY_PCT", 1.0)
+        monkeypatch.setattr(pr, "RISK_MAX_CLUSTER_PCT", 5_000.0)
+        monkeypatch.setattr(pr, "RISK_MAX_GROSS_PCT", 5_000.0)
+        monkeypatch.setattr(pr, "RISK_MAX_NET_PCT", 5_000.0)
+
+        cash_before = eng.cash
+        pos = run(eng.open_position(_signal()))
+
+        assert pos is None
+        assert eng.cash == cash_before
+        assert eng.positions == {}
+        assert eng._last_prices == {}
 
     def test_double_position_meme_symbole_refusee(self):
         eng = _make_engine()
@@ -133,16 +157,16 @@ class TestOpenPosition:
         run(eng.open_position(_signal()))
         assert eng.cash < cash_avant
 
-    def test_max_positions(self):
-        import utils.config as cfg
+    def test_max_positions(self, monkeypatch):
+        import execution.paper_trading as paper_trading
+
         eng = _make_engine()
-        cfg.PAPER_MAX_POSITIONS = 2  # Écraser APRÈS _make_engine
+        monkeypatch.setattr(paper_trading, "PAPER_MAX_POSITIONS", 2)
         run(eng.open_position(_signal(sym="BTC/USDT")))
         run(eng.open_position(_signal(sym="ETH/USDT", sl=3_900.0, price=4_000.0, tp1=4_100.0, tp2=4_200.0, tp3=4_300.0)))
         # 3ème position → refusée
         pos3 = run(eng.open_position(_signal(sym="SOL/USDT", price=100.0, sl=95.0, tp1=105.0, tp2=110.0, tp3=115.0)))
         assert pos3 is None
-        cfg.PAPER_MAX_POSITIONS = 5  # restaurer
 
 
 # ── Tests SL / TP ─────────────────────────────────────────────────────────────

@@ -1,0 +1,2166 @@
+{
+ "target_winrate_pct": 65.0,
+ "days": 180,
+ "time_stop_bars_5m": 96,
+ "generated": "2026-07-08T11:11:21.472368+00:00",
+ "assets": {
+  "BTC": {
+   "bars_5m": 17262,
+   "fees_bps": 11.0,
+   "history": [
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 1.5,
+     "tp_ladder": [
+      1.5,
+      2.5,
+      4.0
+     ],
+     "is": {
+      "trades": 170,
+      "winrate_pct": 46.5,
+      "expectancy_bps": -10.2,
+      "profit_factor": 0.65,
+      "total_bps": -1738.0,
+      "max_dd_bps": 1951.0,
+      "sharpe_trade": -0.175
+     },
+     "oos": {
+      "trades": 77,
+      "winrate_pct": 46.8,
+      "expectancy_bps": -11.9,
+      "profit_factor": 0.57,
+      "total_bps": -920.0,
+      "max_dd_bps": 979.0,
+      "sharpe_trade": -0.24
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 1.0,
+     "tp_ladder": [
+      1.0,
+      1.5,
+      2.0
+     ],
+     "is": {
+      "trades": 177,
+      "winrate_pct": 41.2,
+      "expectancy_bps": -10.5,
+      "profit_factor": 0.51,
+      "total_bps": -1864.0,
+      "max_dd_bps": 1863.0,
+      "sharpe_trade": -0.279
+     },
+     "oos": {
+      "trades": 78,
+      "winrate_pct": 44.9,
+      "expectancy_bps": -6.6,
+      "profit_factor": 0.66,
+      "total_bps": -515.0,
+      "max_dd_bps": 578.0,
+      "sharpe_trade": -0.174
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": true,
+     "sl_atr": 1.0,
+     "tp_ladder": [
+      1.0,
+      1.5,
+      2.0
+     ],
+     "is": {
+      "trades": 83,
+      "winrate_pct": 42.2,
+      "expectancy_bps": -11.5,
+      "profit_factor": 0.49,
+      "total_bps": -952.0,
+      "max_dd_bps": 970.0,
+      "sharpe_trade": -0.301
+     },
+     "oos": {
+      "trades": 42,
+      "winrate_pct": 45.2,
+      "expectancy_bps": -6.7,
+      "profit_factor": 0.68,
+      "total_bps": -281.0,
+      "max_dd_bps": 337.0,
+      "sharpe_trade": -0.162
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 1.5,
+     "tp_ladder": [
+      1.0,
+      1.5,
+      2.5
+     ],
+     "is": {
+      "trades": 173,
+      "winrate_pct": 47.4,
+      "expectancy_bps": -12.2,
+      "profit_factor": 0.51,
+      "total_bps": -2117.0,
+      "max_dd_bps": 2134.0,
+      "sharpe_trade": -0.263
+     },
+     "oos": {
+      "trades": 78,
+      "winrate_pct": 47.4,
+      "expectancy_bps": -8.7,
+      "profit_factor": 0.6,
+      "total_bps": -679.0,
+      "max_dd_bps": 727.0,
+      "sharpe_trade": -0.2
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      1.0,
+      1.5,
+      2.5
+     ],
+     "is": {
+      "trades": 171,
+      "winrate_pct": 53.2,
+      "expectancy_bps": -12.2,
+      "profit_factor": 0.54,
+      "total_bps": -2085.0,
+      "max_dd_bps": 2102.0,
+      "sharpe_trade": -0.226
+     },
+     "oos": {
+      "trades": 74,
+      "winrate_pct": 58.1,
+      "expectancy_bps": -2.5,
+      "profit_factor": 0.87,
+      "total_bps": -187.0,
+      "max_dd_bps": 513.0,
+      "sharpe_trade": -0.054
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      1.5,
+      2.5,
+      4.0
+     ],
+     "is": {
+      "trades": 167,
+      "winrate_pct": 51.5,
+      "expectancy_bps": -12.3,
+      "profit_factor": 0.63,
+      "total_bps": -2055.0,
+      "max_dd_bps": 2155.0,
+      "sharpe_trade": -0.184
+     },
+     "oos": {
+      "trades": 71,
+      "winrate_pct": 59.2,
+      "expectancy_bps": -5.3,
+      "profit_factor": 0.8,
+      "total_bps": -375.0,
+      "max_dd_bps": 610.0,
+      "sharpe_trade": -0.093
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      0.6,
+      1.2,
+      2.0
+     ],
+     "is": {
+      "trades": 177,
+      "winrate_pct": 44.1,
+      "expectancy_bps": -12.3,
+      "profit_factor": 0.43,
+      "total_bps": -2178.0,
+      "max_dd_bps": 2192.0,
+      "sharpe_trade": -0.279
+     },
+     "oos": {
+      "trades": 77,
+      "winrate_pct": 48.1,
+      "expectancy_bps": -5.0,
+      "profit_factor": 0.65,
+      "total_bps": -389.0,
+      "max_dd_bps": 492.0,
+      "sharpe_trade": -0.142
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      0.8,
+      1.5,
+      2.5
+     ],
+     "is": {
+      "trades": 169,
+      "winrate_pct": 47.3,
+      "expectancy_bps": -14.3,
+      "profit_factor": 0.47,
+      "total_bps": -2415.0,
+      "max_dd_bps": 2526.0,
+      "sharpe_trade": -0.252
+     },
+     "oos": {
+      "trades": 75,
+      "winrate_pct": 54.7,
+      "expectancy_bps": -3.6,
+      "profit_factor": 0.79,
+      "total_bps": -272.0,
+      "max_dd_bps": 558.0,
+      "sharpe_trade": -0.079
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 3.0,
+     "tp_ladder": [
+      0.8,
+      1.5,
+      2.5
+     ],
+     "is": {
+      "trades": 162,
+      "winrate_pct": 49.4,
+      "expectancy_bps": -14.5,
+      "profit_factor": 0.48,
+      "total_bps": -2343.0,
+      "max_dd_bps": 2436.0,
+      "sharpe_trade": -0.231
+     },
+     "oos": {
+      "trades": 71,
+      "winrate_pct": 54.9,
+      "expectancy_bps": -3.7,
+      "profit_factor": 0.79,
+      "total_bps": -260.0,
+      "max_dd_bps": 606.0,
+      "sharpe_trade": -0.08
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 3.0,
+     "tp_ladder": [
+      0.6,
+      1.2,
+      2.0
+     ],
+     "is": {
+      "trades": 167,
+      "winrate_pct": 47.3,
+      "expectancy_bps": -14.9,
+      "profit_factor": 0.4,
+      "total_bps": -2491.0,
+      "max_dd_bps": 2505.0,
+      "sharpe_trade": -0.264
+     },
+     "oos": {
+      "trades": 74,
+      "winrate_pct": 50.0,
+      "expectancy_bps": -7.4,
+      "profit_factor": 0.56,
+      "total_bps": -547.0,
+      "max_dd_bps": 662.0,
+      "sharpe_trade": -0.181
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      0.6,
+      1.2,
+      2.0
+     ],
+     "is": {
+      "trades": 173,
+      "winrate_pct": 45.7,
+      "expectancy_bps": -15.0,
+      "profit_factor": 0.39,
+      "total_bps": -2594.0,
+      "max_dd_bps": 2608.0,
+      "sharpe_trade": -0.29
+     },
+     "oos": {
+      "trades": 77,
+      "winrate_pct": 49.4,
+      "expectancy_bps": -6.9,
+      "profit_factor": 0.58,
+      "total_bps": -529.0,
+      "max_dd_bps": 663.0,
+      "sharpe_trade": -0.169
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E2",
+     "align_ema50": true,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      0.6,
+      1.2,
+      2.0
+     ],
+     "is": {
+      "trades": 84,
+      "winrate_pct": 38.1,
+      "expectancy_bps": -15.9,
+      "profit_factor": 0.35,
+      "total_bps": -1337.0,
+      "max_dd_bps": 1356.0,
+      "sharpe_trade": -0.332
+     },
+     "oos": {
+      "trades": 41,
+      "winrate_pct": 51.2,
+      "expectancy_bps": -2.2,
+      "profit_factor": 0.82,
+      "total_bps": -91.0,
+      "max_dd_bps": 261.0,
+      "sharpe_trade": -0.062
+     }
+    }
+   ],
+   "validated": null,
+   "best_effort": {
+    "stage": 1,
+    "entry": "E2",
+    "align_ema50": false,
+    "sl_atr": 1.5,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "is": {
+     "trades": 170,
+     "winrate_pct": 46.5,
+     "expectancy_bps": -10.2,
+     "profit_factor": 0.65,
+     "total_bps": -1738.0,
+     "max_dd_bps": 1951.0,
+     "sharpe_trade": -0.175
+    },
+    "oos": {
+     "trades": 77,
+     "winrate_pct": 46.8,
+     "expectancy_bps": -11.9,
+     "profit_factor": 0.57,
+     "total_bps": -920.0,
+     "max_dd_bps": 979.0,
+     "sharpe_trade": -0.24
+    }
+   }
+  },
+  "ETH": {
+   "bars_5m": 17262,
+   "fees_bps": 11.0,
+   "history": [
+    {
+     "stage": 1,
+     "entry": "E1",
+     "align_ema50": false,
+     "sl_atr": 1.5,
+     "tp_ladder": [
+      1.5,
+      2.5,
+      4.0
+     ],
+     "is": {
+      "trades": 50,
+      "winrate_pct": 52.0,
+      "expectancy_bps": -3.6,
+      "profit_factor": 0.91,
+      "total_bps": -179.0,
+      "max_dd_bps": 1145.0,
+      "sharpe_trade": -0.037
+     },
+     "oos": {
+      "trades": 25,
+      "winrate_pct": 36.0,
+      "expectancy_bps": -15.0,
+      "profit_factor": 0.62,
+      "total_bps": -375.0,
+      "max_dd_bps": 542.0,
+      "sharpe_trade": -0.221
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": true,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      1.0,
+      1.5,
+      2.5
+     ],
+     "is": {
+      "trades": 84,
+      "winrate_pct": 61.9,
+      "expectancy_bps": -9.3,
+      "profit_factor": 0.68,
+      "total_bps": -785.0,
+      "max_dd_bps": 1222.0,
+      "sharpe_trade": -0.139
+     },
+     "oos": {
+      "trades": 32,
+      "winrate_pct": 56.2,
+      "expectancy_bps": -11.5,
+      "profit_factor": 0.64,
+      "total_bps": -368.0,
+      "max_dd_bps": 542.0,
+      "sharpe_trade": -0.169
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": true,
+     "sl_atr": 1.0,
+     "tp_ladder": [
+      1.0,
+      1.5,
+      2.0
+     ],
+     "is": {
+      "trades": 92,
+      "winrate_pct": 41.3,
+      "expectancy_bps": -11.2,
+      "profit_factor": 0.58,
+      "total_bps": -1034.0,
+      "max_dd_bps": 1270.0,
+      "sharpe_trade": -0.225
+     },
+     "oos": {
+      "trades": 35,
+      "winrate_pct": 37.1,
+      "expectancy_bps": -19.0,
+      "profit_factor": 0.39,
+      "total_bps": -664.0,
+      "max_dd_bps": 710.0,
+      "sharpe_trade": -0.387
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E1",
+     "align_ema50": false,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      1.5,
+      2.5,
+      4.0
+     ],
+     "is": {
+      "trades": 50,
+      "winrate_pct": 56.0,
+      "expectancy_bps": -11.7,
+      "profit_factor": 0.75,
+      "total_bps": -583.0,
+      "max_dd_bps": 1414.0,
+      "sharpe_trade": -0.108
+     },
+     "oos": {
+      "trades": 24,
+      "winrate_pct": 37.5,
+      "expectancy_bps": -26.6,
+      "profit_factor": 0.45,
+      "total_bps": -638.0,
+      "max_dd_bps": 723.0,
+      "sharpe_trade": -0.357
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      1.0,
+      1.5,
+      2.5
+     ],
+     "is": {
+      "trades": 156,
+      "winrate_pct": 62.8,
+      "expectancy_bps": -11.7,
+      "profit_factor": 0.62,
+      "total_bps": -1822.0,
+      "max_dd_bps": 1975.0,
+      "sharpe_trade": -0.177
+     },
+     "oos": {
+      "trades": 73,
+      "winrate_pct": 68.5,
+      "expectancy_bps": 0.4,
+      "profit_factor": 1.02,
+      "total_bps": 29.0,
+      "max_dd_bps": 578.0,
+      "sharpe_trade": 0.007
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 1.0,
+     "tp_ladder": [
+      1.0,
+      1.5,
+      2.0
+     ],
+     "is": {
+      "trades": 168,
+      "winrate_pct": 43.5,
+      "expectancy_bps": -13.0,
+      "profit_factor": 0.52,
+      "total_bps": -2188.0,
+      "max_dd_bps": 2140.0,
+      "sharpe_trade": -0.276
+     },
+     "oos": {
+      "trades": 77,
+      "winrate_pct": 51.9,
+      "expectancy_bps": -3.1,
+      "profit_factor": 0.86,
+      "total_bps": -240.0,
+      "max_dd_bps": 485.0,
+      "sharpe_trade": -0.066
+     }
+    }
+   ],
+   "validated": {
+    "stage": 1,
+    "entry": "E2",
+    "align_ema50": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.0,
+     1.5,
+     2.5
+    ],
+    "is": {
+     "trades": 156,
+     "winrate_pct": 62.8,
+     "expectancy_bps": -11.7,
+     "profit_factor": 0.62,
+     "total_bps": -1822.0,
+     "max_dd_bps": 1975.0,
+     "sharpe_trade": -0.177
+    },
+    "oos": {
+     "trades": 73,
+     "winrate_pct": 68.5,
+     "expectancy_bps": 0.4,
+     "profit_factor": 1.02,
+     "total_bps": 29.0,
+     "max_dd_bps": 578.0,
+     "sharpe_trade": 0.007
+    }
+   },
+   "best_effort": {
+    "stage": 1,
+    "entry": "E2",
+    "align_ema50": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.0,
+     1.5,
+     2.5
+    ],
+    "is": {
+     "trades": 156,
+     "winrate_pct": 62.8,
+     "expectancy_bps": -11.7,
+     "profit_factor": 0.62,
+     "total_bps": -1822.0,
+     "max_dd_bps": 1975.0,
+     "sharpe_trade": -0.177
+    },
+    "oos": {
+     "trades": 73,
+     "winrate_pct": 68.5,
+     "expectancy_bps": 0.4,
+     "profit_factor": 1.02,
+     "total_bps": 29.0,
+     "max_dd_bps": 578.0,
+     "sharpe_trade": 0.007
+    }
+   }
+  },
+  "PAXG": {
+   "bars_5m": 17262,
+   "fees_bps": 11.0,
+   "history": [
+    {
+     "stage": 1,
+     "entry": "E1",
+     "align_ema50": false,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      1.5,
+      2.5,
+      4.0
+     ],
+     "is": {
+      "trades": 52,
+      "winrate_pct": 36.5,
+      "expectancy_bps": -2.5,
+      "profit_factor": 0.87,
+      "total_bps": -131.0,
+      "max_dd_bps": 624.0,
+      "sharpe_trade": -0.054
+     },
+     "oos": {
+      "trades": 28,
+      "winrate_pct": 21.4,
+      "expectancy_bps": -26.0,
+      "profit_factor": 0.09,
+      "total_bps": -729.0,
+      "max_dd_bps": 728.0,
+      "sharpe_trade": -0.816
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E1",
+     "align_ema50": false,
+     "sl_atr": 1.5,
+     "tp_ladder": [
+      1.5,
+      2.5,
+      4.0
+     ],
+     "is": {
+      "trades": 55,
+      "winrate_pct": 32.7,
+      "expectancy_bps": -5.0,
+      "profit_factor": 0.75,
+      "total_bps": -277.0,
+      "max_dd_bps": 609.0,
+      "sharpe_trade": -0.113
+     },
+     "oos": {
+      "trades": 30,
+      "winrate_pct": 26.7,
+      "expectancy_bps": -20.7,
+      "profit_factor": 0.11,
+      "total_bps": -620.0,
+      "max_dd_bps": 619.0,
+      "sharpe_trade": -0.802
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E1",
+     "align_ema50": false,
+     "sl_atr": 1.0,
+     "tp_ladder": [
+      1.0,
+      1.5,
+      2.0
+     ],
+     "is": {
+      "trades": 62,
+      "winrate_pct": 30.6,
+      "expectancy_bps": -6.5,
+      "profit_factor": 0.57,
+      "total_bps": -403.0,
+      "max_dd_bps": 571.0,
+      "sharpe_trade": -0.22
+     },
+     "oos": {
+      "trades": 32,
+      "winrate_pct": 12.5,
+      "expectancy_bps": -15.3,
+      "profit_factor": 0.11,
+      "total_bps": -488.0,
+      "max_dd_bps": 482.0,
+      "sharpe_trade": -0.834
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E1",
+     "align_ema50": false,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      1.0,
+      1.5,
+      2.5
+     ],
+     "is": {
+      "trades": 56,
+      "winrate_pct": 35.7,
+      "expectancy_bps": -7.2,
+      "profit_factor": 0.58,
+      "total_bps": -404.0,
+      "max_dd_bps": 677.0,
+      "sharpe_trade": -0.203
+     },
+     "oos": {
+      "trades": 28,
+      "winrate_pct": 17.9,
+      "expectancy_bps": -23.8,
+      "profit_factor": 0.06,
+      "total_bps": -667.0,
+      "max_dd_bps": 662.0,
+      "sharpe_trade": -0.802
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": true,
+     "sl_atr": 1.5,
+     "tp_ladder": [
+      1.5,
+      2.5,
+      4.0
+     ],
+     "is": {
+      "trades": 77,
+      "winrate_pct": 36.4,
+      "expectancy_bps": -7.7,
+      "profit_factor": 0.57,
+      "total_bps": -595.0,
+      "max_dd_bps": 720.0,
+      "sharpe_trade": -0.22
+     },
+     "oos": {
+      "trades": 44,
+      "winrate_pct": 25.0,
+      "expectancy_bps": -8.1,
+      "profit_factor": 0.51,
+      "total_bps": -357.0,
+      "max_dd_bps": 377.0,
+      "sharpe_trade": -0.268
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 1.5,
+     "tp_ladder": [
+      1.5,
+      2.5,
+      4.0
+     ],
+     "is": {
+      "trades": 159,
+      "winrate_pct": 39.0,
+      "expectancy_bps": -8.4,
+      "profit_factor": 0.57,
+      "total_bps": -1338.0,
+      "max_dd_bps": 1479.0,
+      "sharpe_trade": -0.211
+     },
+     "oos": {
+      "trades": 70,
+      "winrate_pct": 28.6,
+      "expectancy_bps": -6.5,
+      "profit_factor": 0.59,
+      "total_bps": -453.0,
+      "max_dd_bps": 520.0,
+      "sharpe_trade": -0.213
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E1",
+     "align_ema50": false,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      0.8,
+      1.5,
+      2.5
+     ],
+     "is": {
+      "trades": 55,
+      "winrate_pct": 34.5,
+      "expectancy_bps": -8.9,
+      "profit_factor": 0.5,
+      "total_bps": -489.0,
+      "max_dd_bps": 722.0,
+      "sharpe_trade": -0.24
+     },
+     "oos": {
+      "trades": 25,
+      "winrate_pct": 24.0,
+      "expectancy_bps": -23.4,
+      "profit_factor": 0.07,
+      "total_bps": -584.0,
+      "max_dd_bps": 581.0,
+      "sharpe_trade": -0.658
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E1",
+     "align_ema50": false,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      0.6,
+      1.2,
+      2.0
+     ],
+     "is": {
+      "trades": 57,
+      "winrate_pct": 33.3,
+      "expectancy_bps": -9.2,
+      "profit_factor": 0.43,
+      "total_bps": -523.0,
+      "max_dd_bps": 734.0,
+      "sharpe_trade": -0.296
+     },
+     "oos": {
+      "trades": 30,
+      "winrate_pct": 20.0,
+      "expectancy_bps": -20.5,
+      "profit_factor": 0.09,
+      "total_bps": -614.0,
+      "max_dd_bps": 608.0,
+      "sharpe_trade": -0.716
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E1",
+     "align_ema50": false,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      0.6,
+      1.2,
+      2.0
+     ],
+     "is": {
+      "trades": 57,
+      "winrate_pct": 33.3,
+      "expectancy_bps": -9.2,
+      "profit_factor": 0.43,
+      "total_bps": -522.0,
+      "max_dd_bps": 734.0,
+      "sharpe_trade": -0.273
+     },
+     "oos": {
+      "trades": 27,
+      "winrate_pct": 22.2,
+      "expectancy_bps": -18.8,
+      "profit_factor": 0.11,
+      "total_bps": -508.0,
+      "max_dd_bps": 523.0,
+      "sharpe_trade": -0.562
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E1",
+     "align_ema50": false,
+     "sl_atr": 3.0,
+     "tp_ladder": [
+      0.8,
+      1.5,
+      2.5
+     ],
+     "is": {
+      "trades": 55,
+      "winrate_pct": 36.4,
+      "expectancy_bps": -10.2,
+      "profit_factor": 0.46,
+      "total_bps": -562.0,
+      "max_dd_bps": 795.0,
+      "sharpe_trade": -0.248
+     },
+     "oos": {
+      "trades": 24,
+      "winrate_pct": 25.0,
+      "expectancy_bps": -24.4,
+      "profit_factor": 0.07,
+      "total_bps": -585.0,
+      "max_dd_bps": 582.0,
+      "sharpe_trade": -0.605
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E1",
+     "align_ema50": false,
+     "sl_atr": 3.0,
+     "tp_ladder": [
+      0.6,
+      1.2,
+      2.0
+     ],
+     "is": {
+      "trades": 57,
+      "winrate_pct": 33.3,
+      "expectancy_bps": -10.3,
+      "profit_factor": 0.4,
+      "total_bps": -590.0,
+      "max_dd_bps": 801.0,
+      "sharpe_trade": -0.276
+     },
+     "oos": {
+      "trades": 26,
+      "winrate_pct": 23.1,
+      "expectancy_bps": -22.4,
+      "profit_factor": 0.1,
+      "total_bps": -582.0,
+      "max_dd_bps": 597.0,
+      "sharpe_trade": -0.564
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      0.8,
+      1.5,
+      2.5
+     ],
+     "is": {
+      "trades": 152,
+      "winrate_pct": 33.6,
+      "expectancy_bps": -12.6,
+      "profit_factor": 0.35,
+      "total_bps": -1911.0,
+      "max_dd_bps": 1899.0,
+      "sharpe_trade": -0.313
+     },
+     "oos": {
+      "trades": 74,
+      "winrate_pct": 18.9,
+      "expectancy_bps": -10.0,
+      "profit_factor": 0.22,
+      "total_bps": -736.0,
+      "max_dd_bps": 749.0,
+      "sharpe_trade": -0.497
+     }
+    }
+   ],
+   "validated": null,
+   "best_effort": {
+    "stage": 1,
+    "entry": "E1",
+    "align_ema50": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "is": {
+     "trades": 52,
+     "winrate_pct": 36.5,
+     "expectancy_bps": -2.5,
+     "profit_factor": 0.87,
+     "total_bps": -131.0,
+     "max_dd_bps": 624.0,
+     "sharpe_trade": -0.054
+    },
+    "oos": {
+     "trades": 28,
+     "winrate_pct": 21.4,
+     "expectancy_bps": -26.0,
+     "profit_factor": 0.09,
+     "total_bps": -729.0,
+     "max_dd_bps": 728.0,
+     "sharpe_trade": -0.816
+    }
+   }
+  },
+  "EURUSD": {
+   "bars_5m": 17300,
+   "fees_bps": 1.5,
+   "history": [
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      1.5,
+      2.5,
+      4.0
+     ],
+     "is": {
+      "trades": 79,
+      "winrate_pct": 60.8,
+      "expectancy_bps": -0.2,
+      "profit_factor": 0.96,
+      "total_bps": -14.0,
+      "max_dd_bps": 74.0,
+      "sharpe_trade": -0.019
+     },
+     "oos": {
+      "trades": 29,
+      "winrate_pct": 44.8,
+      "expectancy_bps": -2.7,
+      "profit_factor": 0.5,
+      "total_bps": -78.0,
+      "max_dd_bps": 62.0,
+      "sharpe_trade": -0.304
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 1.5,
+     "tp_ladder": [
+      1.5,
+      2.5,
+      4.0
+     ],
+     "is": {
+      "trades": 79,
+      "winrate_pct": 53.2,
+      "expectancy_bps": -0.4,
+      "profit_factor": 0.91,
+      "total_bps": -28.0,
+      "max_dd_bps": 79.0,
+      "sharpe_trade": -0.042
+     },
+     "oos": {
+      "trades": 29,
+      "winrate_pct": 44.8,
+      "expectancy_bps": -1.5,
+      "profit_factor": 0.64,
+      "total_bps": -45.0,
+      "max_dd_bps": 34.0,
+      "sharpe_trade": -0.199
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      1.0,
+      1.5,
+      2.5
+     ],
+     "is": {
+      "trades": 79,
+      "winrate_pct": 57.0,
+      "expectancy_bps": -1.2,
+      "profit_factor": 0.68,
+      "total_bps": -96.0,
+      "max_dd_bps": 112.0,
+      "sharpe_trade": -0.158
+     },
+     "oos": {
+      "trades": 30,
+      "winrate_pct": 43.3,
+      "expectancy_bps": -2.7,
+      "profit_factor": 0.41,
+      "total_bps": -82.0,
+      "max_dd_bps": 69.0,
+      "sharpe_trade": -0.368
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": true,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      1.5,
+      2.5,
+      4.0
+     ],
+     "is": {
+      "trades": 44,
+      "winrate_pct": 59.1,
+      "expectancy_bps": -1.3,
+      "profit_factor": 0.73,
+      "total_bps": -56.0,
+      "max_dd_bps": 93.0,
+      "sharpe_trade": -0.134
+     },
+     "oos": {
+      "trades": 10,
+      "winrate_pct": 50.0,
+      "expectancy_bps": -1.5,
+      "profit_factor": 0.71,
+      "total_bps": -15.0,
+      "max_dd_bps": 27.0,
+      "sharpe_trade": -0.15
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 1.0,
+     "tp_ladder": [
+      1.0,
+      1.5,
+      2.0
+     ],
+     "is": {
+      "trades": 79,
+      "winrate_pct": 43.0,
+      "expectancy_bps": -1.3,
+      "profit_factor": 0.6,
+      "total_bps": -100.0,
+      "max_dd_bps": 124.0,
+      "sharpe_trade": -0.235
+     },
+     "oos": {
+      "trades": 30,
+      "winrate_pct": 40.0,
+      "expectancy_bps": -1.2,
+      "profit_factor": 0.58,
+      "total_bps": -37.0,
+      "max_dd_bps": 36.0,
+      "sharpe_trade": -0.245
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 1.5,
+     "tp_ladder": [
+      1.0,
+      1.5,
+      2.5
+     ],
+     "is": {
+      "trades": 79,
+      "winrate_pct": 50.6,
+      "expectancy_bps": -1.4,
+      "profit_factor": 0.63,
+      "total_bps": -108.0,
+      "max_dd_bps": 120.0,
+      "sharpe_trade": -0.203
+     },
+     "oos": {
+      "trades": 30,
+      "winrate_pct": 43.3,
+      "expectancy_bps": -1.7,
+      "profit_factor": 0.52,
+      "total_bps": -52.0,
+      "max_dd_bps": 44.0,
+      "sharpe_trade": -0.277
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E2",
+     "align_ema50": true,
+     "sl_atr": 3.0,
+     "tp_ladder": [
+      0.8,
+      1.5,
+      2.5
+     ],
+     "is": {
+      "trades": 44,
+      "winrate_pct": 61.4,
+      "expectancy_bps": 0.7,
+      "profit_factor": 1.31,
+      "total_bps": 29.0,
+      "max_dd_bps": 35.0,
+      "sharpe_trade": 0.096
+     },
+     "oos": {
+      "trades": 10,
+      "winrate_pct": 70.0,
+      "expectancy_bps": 1.2,
+      "profit_factor": 2.02,
+      "total_bps": 12.0,
+      "max_dd_bps": 12.0,
+      "sharpe_trade": 0.231
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E2",
+     "align_ema50": true,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      0.8,
+      1.5,
+      2.5
+     ],
+     "is": {
+      "trades": 44,
+      "winrate_pct": 59.1,
+      "expectancy_bps": -0.0,
+      "profit_factor": 0.98,
+      "total_bps": -2.0,
+      "max_dd_bps": 50.0,
+      "sharpe_trade": -0.006
+     },
+     "oos": {
+      "trades": 10,
+      "winrate_pct": 60.0,
+      "expectancy_bps": 0.4,
+      "profit_factor": 1.22,
+      "total_bps": 4.0,
+      "max_dd_bps": 12.0,
+      "sharpe_trade": 0.074
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 3.0,
+     "tp_ladder": [
+      0.8,
+      1.5,
+      2.5
+     ],
+     "is": {
+      "trades": 79,
+      "winrate_pct": 57.0,
+      "expectancy_bps": -0.1,
+      "profit_factor": 0.97,
+      "total_bps": -7.0,
+      "max_dd_bps": 101.0,
+      "sharpe_trade": -0.013
+     },
+     "oos": {
+      "trades": 29,
+      "winrate_pct": 48.3,
+      "expectancy_bps": -1.9,
+      "profit_factor": 0.48,
+      "total_bps": -55.0,
+      "max_dd_bps": 32.0,
+      "sharpe_trade": -0.232
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E2",
+     "align_ema50": true,
+     "sl_atr": 3.0,
+     "tp_ladder": [
+      0.6,
+      1.2,
+      2.0
+     ],
+     "is": {
+      "trades": 44,
+      "winrate_pct": 52.3,
+      "expectancy_bps": -0.6,
+      "profit_factor": 0.76,
+      "total_bps": -24.0,
+      "max_dd_bps": 39.0,
+      "sharpe_trade": -0.089
+     },
+     "oos": {
+      "trades": 10,
+      "winrate_pct": 50.0,
+      "expectancy_bps": 0.5,
+      "profit_factor": 1.36,
+      "total_bps": 5.0,
+      "max_dd_bps": 12.0,
+      "sharpe_trade": 0.104
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      0.8,
+      1.5,
+      2.5
+     ],
+     "is": {
+      "trades": 79,
+      "winrate_pct": 55.7,
+      "expectancy_bps": -0.6,
+      "profit_factor": 0.81,
+      "total_bps": -46.0,
+      "max_dd_bps": 107.0,
+      "sharpe_trade": -0.079
+     },
+     "oos": {
+      "trades": 30,
+      "winrate_pct": 43.3,
+      "expectancy_bps": -1.7,
+      "profit_factor": 0.5,
+      "total_bps": -50.0,
+      "max_dd_bps": 32.0,
+      "sharpe_trade": -0.233
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 3.0,
+     "tp_ladder": [
+      0.6,
+      1.2,
+      2.0
+     ],
+     "is": {
+      "trades": 79,
+      "winrate_pct": 48.1,
+      "expectancy_bps": -1.0,
+      "profit_factor": 0.62,
+      "total_bps": -82.0,
+      "max_dd_bps": 115.0,
+      "sharpe_trade": -0.157
+     },
+     "oos": {
+      "trades": 30,
+      "winrate_pct": 36.7,
+      "expectancy_bps": -2.3,
+      "profit_factor": 0.37,
+      "total_bps": -69.0,
+      "max_dd_bps": 46.0,
+      "sharpe_trade": -0.299
+     }
+    }
+   ],
+   "validated": null,
+   "best_effort": {
+    "stage": 2,
+    "entry": "E2",
+    "align_ema50": true,
+    "sl_atr": 3.0,
+    "tp_ladder": [
+     0.8,
+     1.5,
+     2.5
+    ],
+    "is": {
+     "trades": 44,
+     "winrate_pct": 61.4,
+     "expectancy_bps": 0.7,
+     "profit_factor": 1.31,
+     "total_bps": 29.0,
+     "max_dd_bps": 35.0,
+     "sharpe_trade": 0.096
+    },
+    "oos": {
+     "trades": 10,
+     "winrate_pct": 70.0,
+     "expectancy_bps": 1.2,
+     "profit_factor": 2.02,
+     "total_bps": 12.0,
+     "max_dd_bps": 12.0,
+     "sharpe_trade": 0.231
+    }
+   }
+  },
+  "GBPUSD": {
+   "bars_5m": 17300,
+   "fees_bps": 1.5,
+   "history": [
+    {
+     "stage": 1,
+     "entry": "E1",
+     "align_ema50": false,
+     "sl_atr": 1.0,
+     "tp_ladder": [
+      1.0,
+      1.5,
+      2.0
+     ],
+     "is": {
+      "trades": 35,
+      "winrate_pct": 42.9,
+      "expectancy_bps": -1.1,
+      "profit_factor": 0.69,
+      "total_bps": -38.0,
+      "max_dd_bps": 47.0,
+      "sharpe_trade": -0.166
+     },
+     "oos": {
+      "trades": 20,
+      "winrate_pct": 25.0,
+      "expectancy_bps": -3.5,
+      "profit_factor": 0.26,
+      "total_bps": -70.0,
+      "max_dd_bps": 74.0,
+      "sharpe_trade": -0.621
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E1",
+     "align_ema50": false,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      1.5,
+      2.5,
+      4.0
+     ],
+     "is": {
+      "trades": 32,
+      "winrate_pct": 50.0,
+      "expectancy_bps": -1.2,
+      "profit_factor": 0.79,
+      "total_bps": -39.0,
+      "max_dd_bps": 89.0,
+      "sharpe_trade": -0.101
+     },
+     "oos": {
+      "trades": 16,
+      "winrate_pct": 31.2,
+      "expectancy_bps": -6.0,
+      "profit_factor": 0.19,
+      "total_bps": -96.0,
+      "max_dd_bps": 94.0,
+      "sharpe_trade": -0.733
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 1.5,
+     "tp_ladder": [
+      1.0,
+      1.5,
+      2.5
+     ],
+     "is": {
+      "trades": 80,
+      "winrate_pct": 51.2,
+      "expectancy_bps": -1.8,
+      "profit_factor": 0.59,
+      "total_bps": -145.0,
+      "max_dd_bps": 149.0,
+      "sharpe_trade": -0.229
+     },
+     "oos": {
+      "trades": 31,
+      "winrate_pct": 29.0,
+      "expectancy_bps": -4.0,
+      "profit_factor": 0.25,
+      "total_bps": -123.0,
+      "max_dd_bps": 115.0,
+      "sharpe_trade": -0.643
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E1",
+     "align_ema50": false,
+     "sl_atr": 1.5,
+     "tp_ladder": [
+      1.0,
+      1.5,
+      2.5
+     ],
+     "is": {
+      "trades": 33,
+      "winrate_pct": 45.5,
+      "expectancy_bps": -2.0,
+      "profit_factor": 0.56,
+      "total_bps": -67.0,
+      "max_dd_bps": 78.0,
+      "sharpe_trade": -0.252
+     },
+     "oos": {
+      "trades": 16,
+      "winrate_pct": 43.8,
+      "expectancy_bps": -2.5,
+      "profit_factor": 0.45,
+      "total_bps": -40.0,
+      "max_dd_bps": 43.0,
+      "sharpe_trade": -0.336
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 1.0,
+     "tp_ladder": [
+      1.0,
+      1.5,
+      2.0
+     ],
+     "is": {
+      "trades": 80,
+      "winrate_pct": 38.8,
+      "expectancy_bps": -2.0,
+      "profit_factor": 0.52,
+      "total_bps": -162.0,
+      "max_dd_bps": 161.0,
+      "sharpe_trade": -0.304
+     },
+     "oos": {
+      "trades": 31,
+      "winrate_pct": 25.8,
+      "expectancy_bps": -2.9,
+      "profit_factor": 0.3,
+      "total_bps": -89.0,
+      "max_dd_bps": 84.0,
+      "sharpe_trade": -0.588
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 1.5,
+     "tp_ladder": [
+      1.5,
+      2.5,
+      4.0
+     ],
+     "is": {
+      "trades": 80,
+      "winrate_pct": 47.5,
+      "expectancy_bps": -2.0,
+      "profit_factor": 0.59,
+      "total_bps": -163.0,
+      "max_dd_bps": 165.0,
+      "sharpe_trade": -0.226
+     },
+     "oos": {
+      "trades": 31,
+      "winrate_pct": 25.8,
+      "expectancy_bps": -4.9,
+      "profit_factor": 0.19,
+      "total_bps": -152.0,
+      "max_dd_bps": 145.0,
+      "sharpe_trade": -0.792
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E1",
+     "align_ema50": false,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      0.6,
+      1.2,
+      2.0
+     ],
+     "is": {
+      "trades": 30,
+      "winrate_pct": 56.7,
+      "expectancy_bps": -1.8,
+      "profit_factor": 0.52,
+      "total_bps": -54.0,
+      "max_dd_bps": 75.0,
+      "sharpe_trade": -0.217
+     },
+     "oos": {
+      "trades": 15,
+      "winrate_pct": 40.0,
+      "expectancy_bps": -3.4,
+      "profit_factor": 0.29,
+      "total_bps": -51.0,
+      "max_dd_bps": 47.0,
+      "sharpe_trade": -0.427
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E1",
+     "align_ema50": false,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      0.8,
+      1.5,
+      2.5
+     ],
+     "is": {
+      "trades": 30,
+      "winrate_pct": 46.7,
+      "expectancy_bps": -1.9,
+      "profit_factor": 0.56,
+      "total_bps": -57.0,
+      "max_dd_bps": 81.0,
+      "sharpe_trade": -0.207
+     },
+     "oos": {
+      "trades": 15,
+      "winrate_pct": 40.0,
+      "expectancy_bps": -4.8,
+      "profit_factor": 0.3,
+      "total_bps": -73.0,
+      "max_dd_bps": 71.0,
+      "sharpe_trade": -0.488
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      0.6,
+      1.2,
+      2.0
+     ],
+     "is": {
+      "trades": 80,
+      "winrate_pct": 45.0,
+      "expectancy_bps": -2.4,
+      "profit_factor": 0.44,
+      "total_bps": -191.0,
+      "max_dd_bps": 191.0,
+      "sharpe_trade": -0.305
+     },
+     "oos": {
+      "trades": 31,
+      "winrate_pct": 32.3,
+      "expectancy_bps": -4.2,
+      "profit_factor": 0.18,
+      "total_bps": -132.0,
+      "max_dd_bps": 124.0,
+      "sharpe_trade": -0.659
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E2",
+     "align_ema50": true,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      0.6,
+      1.2,
+      2.0
+     ],
+     "is": {
+      "trades": 39,
+      "winrate_pct": 46.2,
+      "expectancy_bps": -2.6,
+      "profit_factor": 0.43,
+      "total_bps": -99.0,
+      "max_dd_bps": 99.0,
+      "sharpe_trade": -0.311
+     },
+     "oos": {
+      "trades": 16,
+      "winrate_pct": 31.2,
+      "expectancy_bps": -5.1,
+      "profit_factor": 0.12,
+      "total_bps": -81.0,
+      "max_dd_bps": 74.0,
+      "sharpe_trade": -0.798
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      0.6,
+      1.2,
+      2.0
+     ],
+     "is": {
+      "trades": 79,
+      "winrate_pct": 48.1,
+      "expectancy_bps": -2.9,
+      "profit_factor": 0.41,
+      "total_bps": -226.0,
+      "max_dd_bps": 226.0,
+      "sharpe_trade": -0.314
+     },
+     "oos": {
+      "trades": 31,
+      "winrate_pct": 45.2,
+      "expectancy_bps": -3.4,
+      "profit_factor": 0.26,
+      "total_bps": -107.0,
+      "max_dd_bps": 97.0,
+      "sharpe_trade": -0.458
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E1",
+     "align_ema50": false,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      0.6,
+      1.2,
+      2.0
+     ],
+     "is": {
+      "trades": 32,
+      "winrate_pct": 43.8,
+      "expectancy_bps": -3.0,
+      "profit_factor": 0.34,
+      "total_bps": -97.0,
+      "max_dd_bps": 117.0,
+      "sharpe_trade": -0.39
+     },
+     "oos": {
+      "trades": 16,
+      "winrate_pct": 43.8,
+      "expectancy_bps": -2.9,
+      "profit_factor": 0.32,
+      "total_bps": -46.0,
+      "max_dd_bps": 44.0,
+      "sharpe_trade": -0.415
+     }
+    }
+   ],
+   "validated": null,
+   "best_effort": {
+    "stage": 1,
+    "entry": "E1",
+    "align_ema50": false,
+    "sl_atr": 1.0,
+    "tp_ladder": [
+     1.0,
+     1.5,
+     2.0
+    ],
+    "is": {
+     "trades": 35,
+     "winrate_pct": 42.9,
+     "expectancy_bps": -1.1,
+     "profit_factor": 0.69,
+     "total_bps": -38.0,
+     "max_dd_bps": 47.0,
+     "sharpe_trade": -0.166
+    },
+    "oos": {
+     "trades": 20,
+     "winrate_pct": 25.0,
+     "expectancy_bps": -3.5,
+     "profit_factor": 0.26,
+     "total_bps": -70.0,
+     "max_dd_bps": 74.0,
+     "sharpe_trade": -0.621
+    }
+   }
+  },
+  "XAUUSD": {
+   "bars_5m": 17377,
+   "fees_bps": 4.0,
+   "history": [
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": true,
+     "sl_atr": 1.0,
+     "tp_ladder": [
+      1.0,
+      1.5,
+      2.0
+     ],
+     "is": {
+      "trades": 55,
+      "winrate_pct": 45.5,
+      "expectancy_bps": -1.9,
+      "profit_factor": 0.86,
+      "total_bps": -104.0,
+      "max_dd_bps": 302.0,
+      "sharpe_trade": -0.069
+     },
+     "oos": {
+      "trades": 22,
+      "winrate_pct": 54.5,
+      "expectancy_bps": -1.2,
+      "profit_factor": 0.89,
+      "total_bps": -27.0,
+      "max_dd_bps": 135.0,
+      "sharpe_trade": -0.054
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 1.5,
+     "tp_ladder": [
+      1.5,
+      2.5,
+      4.0
+     ],
+     "is": {
+      "trades": 74,
+      "winrate_pct": 50.0,
+      "expectancy_bps": -2.1,
+      "profit_factor": 0.88,
+      "total_bps": -157.0,
+      "max_dd_bps": 528.0,
+      "sharpe_trade": -0.052
+     },
+     "oos": {
+      "trades": 29,
+      "winrate_pct": 48.3,
+      "expectancy_bps": -7.1,
+      "profit_factor": 0.59,
+      "total_bps": -206.0,
+      "max_dd_bps": 375.0,
+      "sharpe_trade": -0.238
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": true,
+     "sl_atr": 1.5,
+     "tp_ladder": [
+      1.5,
+      2.5,
+      4.0
+     ],
+     "is": {
+      "trades": 55,
+      "winrate_pct": 45.5,
+      "expectancy_bps": -2.3,
+      "profit_factor": 0.88,
+      "total_bps": -127.0,
+      "max_dd_bps": 531.0,
+      "sharpe_trade": -0.054
+     },
+     "oos": {
+      "trades": 22,
+      "winrate_pct": 50.0,
+      "expectancy_bps": -7.9,
+      "profit_factor": 0.55,
+      "total_bps": -175.0,
+      "max_dd_bps": 306.0,
+      "sharpe_trade": -0.269
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": true,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      1.5,
+      2.5,
+      4.0
+     ],
+     "is": {
+      "trades": 53,
+      "winrate_pct": 56.6,
+      "expectancy_bps": -2.5,
+      "profit_factor": 0.88,
+      "total_bps": -130.0,
+      "max_dd_bps": 477.0,
+      "sharpe_trade": -0.051
+     },
+     "oos": {
+      "trades": 21,
+      "winrate_pct": 52.4,
+      "expectancy_bps": -11.4,
+      "profit_factor": 0.47,
+      "total_bps": -238.0,
+      "max_dd_bps": 369.0,
+      "sharpe_trade": -0.331
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      1.5,
+      2.5,
+      4.0
+     ],
+     "is": {
+      "trades": 72,
+      "winrate_pct": 59.7,
+      "expectancy_bps": -2.5,
+      "profit_factor": 0.88,
+      "total_bps": -178.0,
+      "max_dd_bps": 456.0,
+      "sharpe_trade": -0.054
+     },
+     "oos": {
+      "trades": 28,
+      "winrate_pct": 50.0,
+      "expectancy_bps": -10.8,
+      "profit_factor": 0.49,
+      "total_bps": -303.0,
+      "max_dd_bps": 472.0,
+      "sharpe_trade": -0.315
+     }
+    },
+    {
+     "stage": 1,
+     "entry": "E2",
+     "align_ema50": true,
+     "sl_atr": 1.5,
+     "tp_ladder": [
+      1.0,
+      1.5,
+      2.5
+     ],
+     "is": {
+      "trades": 55,
+      "winrate_pct": 54.5,
+      "expectancy_bps": -2.9,
+      "profit_factor": 0.81,
+      "total_bps": -161.0,
+      "max_dd_bps": 418.0,
+      "sharpe_trade": -0.093
+     },
+     "oos": {
+      "trades": 22,
+      "winrate_pct": 54.5,
+      "expectancy_bps": -6.4,
+      "profit_factor": 0.59,
+      "total_bps": -141.0,
+      "max_dd_bps": 235.0,
+      "sharpe_trade": -0.233
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 3.0,
+     "tp_ladder": [
+      0.8,
+      1.5,
+      2.5
+     ],
+     "is": {
+      "trades": 73,
+      "winrate_pct": 76.7,
+      "expectancy_bps": 1.3,
+      "profit_factor": 1.11,
+      "total_bps": 95.0,
+      "max_dd_bps": 348.0,
+      "sharpe_trade": 0.036
+     },
+     "oos": {
+      "trades": 25,
+      "winrate_pct": 68.0,
+      "expectancy_bps": -9.7,
+      "profit_factor": 0.44,
+      "total_bps": -241.0,
+      "max_dd_bps": 319.0,
+      "sharpe_trade": -0.286
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E2",
+     "align_ema50": true,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      0.8,
+      1.5,
+      2.5
+     ],
+     "is": {
+      "trades": 54,
+      "winrate_pct": 72.2,
+      "expectancy_bps": 0.8,
+      "profit_factor": 1.06,
+      "total_bps": 42.0,
+      "max_dd_bps": 333.0,
+      "sharpe_trade": 0.023
+     },
+     "oos": {
+      "trades": 21,
+      "winrate_pct": 61.9,
+      "expectancy_bps": -12.4,
+      "profit_factor": 0.37,
+      "total_bps": -260.0,
+      "max_dd_bps": 348.0,
+      "sharpe_trade": -0.388
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      0.8,
+      1.5,
+      2.5
+     ],
+     "is": {
+      "trades": 74,
+      "winrate_pct": 74.3,
+      "expectancy_bps": -0.0,
+      "profit_factor": 1.0,
+      "total_bps": -0.0,
+      "max_dd_bps": 268.0,
+      "sharpe_trade": -0.0
+     },
+     "oos": {
+      "trades": 27,
+      "winrate_pct": 59.3,
+      "expectancy_bps": -12.5,
+      "profit_factor": 0.33,
+      "total_bps": -339.0,
+      "max_dd_bps": 416.0,
+      "sharpe_trade": -0.414
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E2",
+     "align_ema50": true,
+     "sl_atr": 3.0,
+     "tp_ladder": [
+      0.8,
+      1.5,
+      2.5
+     ],
+     "is": {
+      "trades": 53,
+      "winrate_pct": 73.6,
+      "expectancy_bps": -0.6,
+      "profit_factor": 0.96,
+      "total_bps": -32.0,
+      "max_dd_bps": 393.0,
+      "sharpe_trade": -0.016
+     },
+     "oos": {
+      "trades": 20,
+      "winrate_pct": 70.0,
+      "expectancy_bps": -9.7,
+      "profit_factor": 0.48,
+      "total_bps": -195.0,
+      "max_dd_bps": 282.0,
+      "sharpe_trade": -0.274
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E2",
+     "align_ema50": false,
+     "sl_atr": 3.0,
+     "tp_ladder": [
+      0.6,
+      1.2,
+      2.0
+     ],
+     "is": {
+      "trades": 73,
+      "winrate_pct": 68.5,
+      "expectancy_bps": -0.9,
+      "profit_factor": 0.91,
+      "total_bps": -68.0,
+      "max_dd_bps": 384.0,
+      "sharpe_trade": -0.028
+     },
+     "oos": {
+      "trades": 26,
+      "winrate_pct": 57.7,
+      "expectancy_bps": -7.5,
+      "profit_factor": 0.49,
+      "total_bps": -194.0,
+      "max_dd_bps": 272.0,
+      "sharpe_trade": -0.233
+     }
+    },
+    {
+     "stage": 2,
+     "entry": "E2",
+     "align_ema50": true,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      0.6,
+      1.2,
+      2.0
+     ],
+     "is": {
+      "trades": 54,
+      "winrate_pct": 63.0,
+      "expectancy_bps": -1.5,
+      "profit_factor": 0.86,
+      "total_bps": -83.0,
+      "max_dd_bps": 373.0,
+      "sharpe_trade": -0.049
+     },
+     "oos": {
+      "trades": 22,
+      "winrate_pct": 59.1,
+      "expectancy_bps": -12.4,
+      "profit_factor": 0.35,
+      "total_bps": -274.0,
+      "max_dd_bps": 352.0,
+      "sharpe_trade": -0.395
+     }
+    }
+   ],
+   "validated": null,
+   "best_effort": {
+    "stage": 1,
+    "entry": "E2",
+    "align_ema50": true,
+    "sl_atr": 1.0,
+    "tp_ladder": [
+     1.0,
+     1.5,
+     2.0
+    ],
+    "is": {
+     "trades": 55,
+     "winrate_pct": 45.5,
+     "expectancy_bps": -1.9,
+     "profit_factor": 0.86,
+     "total_bps": -104.0,
+     "max_dd_bps": 302.0,
+     "sharpe_trade": -0.069
+    },
+    "oos": {
+     "trades": 22,
+     "winrate_pct": 54.5,
+     "expectancy_bps": -1.2,
+     "profit_factor": 0.89,
+     "total_bps": -27.0,
+     "max_dd_bps": 135.0,
+     "sharpe_trade": -0.054
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Titanium — Émotion du marché</title>
+<style>
+  /* ── Palette : chaque couleur est celle d'une ÉMOTION, pas un accent décoratif.
+     Le cyan maison (#00e5ff) n'est plus la teinte de la page : c'est la couleur
+     de la COMPLAISANCE. La page prend la couleur de l'humeur dominante. ── */
+  :root {
+    --void:      #05070a;
+    --void-2:    #090d13;
+    --ink:       #dbe6f0;
+    --ink-dim:   #7e90a4;
+    --rule:      #1b2531;
+    --mood:      #00e5ff;
+  }
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0; background: var(--void); color: var(--ink);
+    font-family: "Courier New", Courier, monospace; min-height: 100vh;
+    background-image:
+      radial-gradient(110% 70% at 50% -8%, color-mix(in srgb, var(--mood) 20%, transparent) 0%, transparent 58%),
+      radial-gradient(80% 50% at 50% 108%, color-mix(in srgb, var(--mood) 9%, transparent) 0%, transparent 52%);
+    transition: background-image 1.6s ease;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 26px 20px 56px; }
+
+  header { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+           border-bottom: 1px solid var(--rule); padding-bottom: 13px; }
+  h1 { font-family: "Arial Black", "Segoe UI Black", Impact, sans-serif;
+       font-size: clamp(19px, 3.2vw, 32px); letter-spacing: .15em; text-transform: uppercase;
+       margin: 0; color: var(--mood); transition: color 1.2s ease; }
+  .tag { font-size: 11px; letter-spacing: .13em; text-transform: uppercase;
+         border: 1px solid color-mix(in srgb, var(--mood) 45%, transparent);
+         border-radius: 2px; padding: 3px 8px; color: var(--mood); }
+  .clock { margin-left: auto; font-size: 12px; color: var(--ink-dim); }
+
+  .lede { color: var(--ink-dim); font-size: 12.5px; line-height: 1.65;
+          margin: 13px 0 20px; max-width: 76ch; }
+  .lede b { color: var(--ink); font-weight: normal; }
+
+  /* ── Le dôme (signature) ── */
+  .dome { position: relative; width: 100%; aspect-ratio: 2.7 / 1; min-height: 250px;
+          border: 1px solid var(--rule); background: var(--void-2); overflow: hidden; }
+  .dome canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+  .ax { position: absolute; font-size: 9.5px; letter-spacing: .16em;
+        text-transform: uppercase; color: var(--ink-dim); pointer-events: none; }
+  .ax-fear  { left: 9px;  bottom: 6px; }
+  .ax-greed { right: 9px; bottom: 6px; }
+  .ax-high  { left: 9px;  top: 6px; }
+
+  .dot { position: absolute; width: 11px; height: 11px; margin: -5.5px 0 0 -5.5px;
+         border-radius: 50%; background: var(--c);
+         box-shadow: 0 0 0 2px color-mix(in srgb, var(--c) 30%, transparent),
+                     0 0 16px color-mix(in srgb, var(--c) 85%, transparent);
+         animation: breathe var(--pulse, 4s) ease-in-out infinite;
+         transition: left .9s ease, top .9s ease; }
+  .dot .lbl { position: absolute; left: 14px; top: var(--ly, -4px); white-space: nowrap;
+              font-size: 10px; letter-spacing: .07em; color: var(--ink);
+              text-shadow: 0 0 5px var(--void), 0 0 5px var(--void); }
+  .dot.stale { animation: none; opacity: .5; }
+  @keyframes breathe { 0%,100% { transform: scale(1); opacity: .85; }
+                       50%     { transform: scale(1.45); opacity: 1; } }
+
+  /* ── Cartes ── */
+  .grid { display: grid; gap: 12px; margin-top: 20px;
+          grid-template-columns: repeat(auto-fill, minmax(256px, 1fr)); }
+  .card { border: 1px solid var(--rule); border-left: 3px solid var(--c);
+          background: linear-gradient(180deg, color-mix(in srgb, var(--c) 8%, var(--void-2)), var(--void-2));
+          padding: 12px 13px; }
+  .card .sym { font-size: 11.5px; letter-spacing: .09em; color: var(--ink-dim); }
+  .card .emo { font-family: "Arial Black", "Segoe UI Black", Impact, sans-serif;
+               font-size: 20px; letter-spacing: .07em; text-transform: uppercase;
+               color: var(--c); margin: 3px 0 9px; line-height: 1.05; }
+  .bar { margin: 6px 0; }
+  .bar .lab { display: flex; justify-content: space-between; font-size: 9.5px;
+              letter-spacing: .09em; color: var(--ink-dim); text-transform: uppercase; }
+  .bar .track { height: 3px; background: #131a23; margin-top: 3px; position: relative; }
+  .bar .fill { position: absolute; top: 0; bottom: 0; background: var(--c); }
+  .meta { margin-top: 9px; font-size: 10px; color: var(--ink-dim); line-height: 1.55; }
+  .chip { display: inline-block; font-size: 9px; letter-spacing: .09em; text-transform: uppercase;
+          border: 1px solid currentColor; border-radius: 2px; padding: 1px 5px; margin: 0 4px 3px 0; }
+  .chip.warn  { color: #ffb020; }
+  .chip.block { color: #ff2d4b; }
+  .chip.bias  { color: #34d399; }
+  .chip.mute  { color: var(--ink-dim); }
+
+  .empty { border: 1px dashed var(--rule); padding: 24px; text-align: center;
+           color: var(--ink-dim); font-size: 13px; line-height: 1.7; }
+  footer { margin-top: 30px; padding-top: 13px; border-top: 1px solid var(--rule);
+           font-size: 10.5px; color: var(--ink-dim); line-height: 1.7; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dot { animation: none; transition: none; } body { transition: none; }
+  }
+  :focus-visible { outline: 2px solid var(--mood); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1 id="title">Émotion du marché</h1>
+    <span class="tag">lecture seule</span>
+    <span class="clock" id="clock">—</span>
+  </header>
+
+  <p class="lede">
+    Ce que ressent la foule, lu dans la <b>pression</b>, le <b>positionnement</b>,
+    l'<b>énergie</b> et la <b>peur macro</b> — jamais dans un indicateur mécanique.
+    Deux axes : la <b>direction</b> (peur ↔ avidité) et l'<b>énergie</b> (épuisée ↔ intense).
+    C'est l'énergie qui sépare une <b>panique</b> qui peut encore tomber d'une
+    <b>capitulation</b> déjà à bout. Les zones sont peintes par le modèle lui-même ;
+    l'étiquette d'un actif fait foi. <b>Rien ici ne décide d'un trade.</b>
+  </p>
+
+  <div class="dome" id="dome">
+    <canvas id="terrain"></canvas>
+    <span class="ax ax-fear">← peur</span>
+    <span class="ax ax-greed">avidité →</span>
+    <span class="ax ax-high">↑ énergie</span>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  <div id="empty"></div>
+
+  <footer>
+    <b>Espoir</b> et <b>anxiété</b> n'ont pas de zone sur la carte : ce sont des mouvements,
+    pas des positions — ils apparaissent quand la peur reflue ou que l'avidité retombe.<br>
+    Segment ÉMOTION — read-only. Aucun branchement dans une décision de trading sans le
+    protocole M2. Une donnée périmée ou peu fiable neutralise toute consigne :
+    mieux vaut ne rien dire que dire faux.
+  </footer>
+
+</div>
+
+<script>
+const COLOR = {
+  "DÉSESPOIR":"#2f5fa8", "CAPITULATION":"#4d7ec0", "PANIQUE":"#ff2d4b", "PEUR":"#e8604f",
+  "NEUTRE":"#7d8ea3", "ESPOIR":"#34d399", "OPTIMISME":"#7dd957", "EXALTATION":"#ffa033",
+  "EUPHORIE":"#ffcc33", "COMPLAISANCE":"#00e5ff", "ANXIÉTÉ":"#c98bdb",
+};
+
+/* Port fidèle de emotion_engine._market_emotion (momentum neutre) — peint les zones.
+   L'étiquette d'un actif vient TOUJOURS du serveur (qui a le momentum en plus).
+   À garder synchrone avec le Python. */
+function zoneAt(v, a) {
+  if (v <= -40) {
+    if (v <= -70 && a <= 25) return "DÉSESPOIR";
+    if (a >= 60) return "PANIQUE";
+    if (a <= 30) return "CAPITULATION";
+    return "PEUR";
+  }
+  if (v < 20) return "NEUTRE";
+  if (v >= 80 && a >= 55) return "EUPHORIE";
+  if (v >= 55 && a >= 70) return "EXALTATION";
+  if (v >= 55) return a < 40 ? "COMPLAISANCE" : "OPTIMISME";
+  return a >= 40 ? "OPTIMISME" : "COMPLAISANCE";
+}
+
+/* Marge interne : les points ne collent jamais au bord. */
+const PAD = 0.055;
+const xOf = v => (PAD + (1 - 2 * PAD) * (v + 100) / 200) * 100;
+const yOf = a => (PAD + (1 - 2 * PAD) * (1 - a / 100)) * 100;
+
+/* Ancres des étiquettes de zone, vérifiées contre zoneAt(). */
+const ZONE_TAGS = [
+  ["DÉSESPOIR", -85, 12], ["CAPITULATION", -55, 15], ["PANIQUE", -70, 80],
+  ["PEUR", -70, 45], ["NEUTRE", -10, 52], ["OPTIMISME", 38, 70],
+  ["COMPLAISANCE", 38, 17], ["EXALTATION", 67, 86], ["EUPHORIE", 90, 74],
+];
+
+function paintTerrain() {
+  const cv = document.getElementById("terrain");
+  const box = cv.parentElement.getBoundingClientRect();
+  const W = Math.max(320, Math.floor(box.width)), H = Math.max(220, Math.floor(box.height));
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext("2d");
+  ctx.clearRect(0, 0, W, H);
+
+  const px2v = px => ((px / W) * 100 - PAD * 100) / (1 - 2 * PAD) * 2 - 100;
+  const py2a = py => (1 - ((py / H) * 100 - PAD * 100) / (1 - 2 * PAD) / 100) * 100;
+
+  const STEP = 3;
+  for (let px = 0; px < W; px += STEP) {
+    for (let py = 0; py < H; py += STEP) {
+      const v = Math.max(-100, Math.min(100, px2v(px)));
+      const a = Math.max(0, Math.min(100, py2a(py)));
+      ctx.fillStyle = COLOR[zoneAt(v, a)];
+      ctx.globalAlpha = 0.17;
+      ctx.fillRect(px, py, STEP, STEP);
+    }
+  }
+  ctx.globalAlpha = 1;
+
+  // La ligne qui compte : la frontière peur / avidité.
+  ctx.strokeStyle = "rgba(140,160,180,.20)"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(xOf(0) / 100 * W, 0); ctx.lineTo(xOf(0) / 100 * W, H); ctx.stroke();
+
+  // Nommer les zones : sans ça, la carte ne dit rien.
+  ctx.font = '600 10px "Courier New", monospace';
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  for (const [name, v, a] of ZONE_TAGS) {
+    const x = xOf(v) / 100 * W, y = yOf(a) / 100 * H;
+    ctx.fillStyle = "rgba(5,7,10,.75)";
+    const w = ctx.measureText(name).width + 10;
+    ctx.fillRect(x - w / 2, y - 8, w, 16);
+    ctx.fillStyle = COLOR[name];
+    ctx.globalAlpha = 0.92;
+    ctx.fillText(name, x, y);
+    ctx.globalAlpha = 1;
+  }
+}
+
+/* ── Données ── */
+const MT5 = ["USTECH", "XAUUSD", "EURUSD"];   // limité : chaque lecture prend le verrou MT5
+
+async function jget(url) {
+  const r = await fetch(url, { cache: "no-store" });
+  if (!r.ok) throw new Error(url + " → " + r.status);
+  return r.json();
+}
+
+async function load() {
+  const out = [];
+  try {
+    const d = await jget("/emotion");
+    for (const [sym, e] of Object.entries(d.symbols || {}))
+      if (e && e.available) out.push({ sym, src: "binance", e });
+  } catch (err) { /* le bloc vide parlera */ }
+  const res = await Promise.allSettled(MT5.map(s => jget("/emotion/" + s)));
+  res.forEach((r, i) => {
+    if (r.status === "fulfilled" && r.value.emotion && r.value.emotion.available)
+      out.push({ sym: MT5[i], src: "mt5", e: r.value.emotion });
+  });
+  return out;
+}
+
+/* L'énergie DEVIENT du mouvement : 0 → 6 s (à bout), 100 → 0,7 s (électrique). */
+const pulseFor = a => (6 - Math.max(0, Math.min(100, a)) / 100 * 5.3).toFixed(2) + "s";
+
+function render(items) {
+  const dome = document.getElementById("dome");
+  dome.querySelectorAll(".dot").forEach(n => n.remove());
+  const grid = document.getElementById("grid"), empty = document.getElementById("empty");
+  grid.innerHTML = "";
+
+  if (!items.length) {
+    empty.innerHTML = '<div class="empty">Aucune émotion lisible pour l\'instant.<br>' +
+      'Le flux crypto met environ 4 minutes après un démarrage à accumuler ses bougies, ' +
+      'et MT5 doit être connecté. Cette page se rafraîchit toute seule.</div>';
+    return;
+  }
+  empty.innerHTML = "";
+
+  // Étiquettes : on décale celles qui se marcheraient dessus.
+  const rect = dome.getBoundingClientRect();
+  const placed = [];
+  const sorted = items.slice().sort((a, b) => a.e.valence - b.e.valence);
+
+  for (const { sym, src, e } of sorted) {
+    const c = COLOR[e.label] || "#7d8ea3";
+    const xp = xOf(e.valence), yp = yOf(e.arousal);
+    const xpx = xp / 100 * rect.width, ypx = yp / 100 * rect.height;
+
+    let ly = -4;
+    while (placed.some(p => Math.abs(p.x - xpx) < 78 && Math.abs(p.y + p.ly - (ypx + ly)) < 13)) ly -= 13;
+    placed.push({ x: xpx, y: ypx, ly });
+
+    const dot = document.createElement("div");
+    dot.className = "dot" + (e.stale ? " stale" : "");
+    dot.style.setProperty("--c", c);
+    dot.style.setProperty("--pulse", pulseFor(e.arousal));
+    dot.style.setProperty("--ly", ly + "px");
+    dot.style.left = xp + "%"; dot.style.top = yp + "%";
+    dot.title = sym + " — " + e.label;
+    const lbl = document.createElement("span");
+    lbl.className = "lbl"; lbl.textContent = sym;
+    dot.appendChild(lbl);
+    dome.appendChild(dot);
+  }
+
+  for (const { sym, src, e } of items) {
+    const c = COLOR[e.label] || "#7d8ea3";
+    const card = document.createElement("div");
+    card.className = "card";
+    card.style.setProperty("--c", c);
+    const chips = [];
+    if (e.stale) chips.push('<span class="chip warn">donnée périmée</span>');
+    if (e.contrarian_bias) chips.push('<span class="chip bias">fade ' + e.contrarian_bias + '</span>');
+    if (e.filter_block) chips.push('<span class="chip block">ne pas ' +
+      (e.filter_block === "long" ? "acheter" : "vendre") + '</span>');
+    if (!e.stale && e.confidence < 0.35) chips.push('<span class="chip warn">confiance trop basse</span>');
+    if (!chips.length) chips.push('<span class="chip mute">rien à signaler</span>');
+
+    const vPct = (e.valence + 100) / 2;
+    card.innerHTML =
+      '<div class="sym">' + sym + ' · ' + src + '</div>' +
+      '<div class="emo">' + e.label + '</div>' +
+      '<div class="bar"><div class="lab"><span>peur ↔ avidité</span><span>' + e.valence.toFixed(0) + '</span></div>' +
+        '<div class="track"><div class="fill" style="left:' + Math.min(50, vPct) + '%;width:' +
+          Math.max(1, Math.abs(vPct - 50)) + '%"></div></div></div>' +
+      '<div class="bar"><div class="lab"><span>énergie</span><span>' + e.arousal.toFixed(0) + '</span></div>' +
+        '<div class="track"><div class="fill" style="left:0;width:' + Math.max(1, e.arousal) + '%"></div></div></div>' +
+      '<div class="bar"><div class="lab"><span>confiance</span><span>' + (e.confidence * 100).toFixed(0) + '%</span></div>' +
+        '<div class="track"><div class="fill" style="left:0;width:' + (e.confidence * 100) + '%"></div></div></div>' +
+      '<div class="meta">' + chips.join("") + '<br>lu dans : ' +
+        (Object.keys(e.breakdown || {}).join(", ") || "—") + '</div>';
+    grid.appendChild(card);
+  }
+
+  const lead = items.slice().sort((a, b) => b.e.confidence - a.e.confidence)[0];
+  if (lead) document.documentElement.style.setProperty("--mood", COLOR[lead.e.label] || "#00e5ff");
+}
+
+async function tick() {
+  try {
+    render(await load());
+    document.getElementById("clock").textContent = "lu à " + new Date().toLocaleTimeString("fr-FR");
+  } catch (err) {
+    document.getElementById("clock").textContent = "lecture impossible";
+  }
+}
+
+paintTerrain();
+addEventListener("resize", () => { paintTerrain(); });
+tick();
+setInterval(tick, 20000);   // 20 s : chaque lecture MT5 prend le verrou mt5_lock
+</script>
+</body>
+</html>

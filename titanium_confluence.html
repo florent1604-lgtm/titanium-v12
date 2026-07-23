@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Confluence — Titanium DÉMO</title>
+<style>
+  :root{
+    --bg:#080b11; --bg2:#0c121c; --panel:#0e1622; --panel2:#111c2b;
+    --line:#1b2a3d; --line2:#243449;
+    --ink:#e8eef6; --mut:#7f92aa; --dim:#4a5a70;
+    --cyan:#00e5ff; --cyan-d:#0891a3;
+    --pass:#26e0a0; --pass-g:rgba(38,224,160,.55);
+    --wait:#ffb454; --short:#ff5c7a; --long:#26e0a0;
+    --block:#33465e; --err:#ff5566;
+    --mono:"JetBrains Mono","SFMono-Regular",Consolas,"Courier New",monospace;
+    --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans)}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(1100px 600px at 80% -10%, rgba(0,229,255,.06), transparent 60%),
+      repeating-linear-gradient(0deg, transparent 0 2px, rgba(255,255,255,.010) 2px 3px),
+      var(--bg);
+    padding:18px clamp(12px,3vw,34px) 60px;
+  }
+
+  /* ── Bandeau instrument ─────────────────────────────── */
+  header{
+    display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+    border:1px solid var(--line);border-radius:14px;
+    background:linear-gradient(180deg,var(--panel2),var(--panel));
+    padding:14px 20px;margin-bottom:22px;position:relative;overflow:hidden;
+  }
+  header::before{content:"";position:absolute;inset:0;background:
+    linear-gradient(90deg,rgba(0,229,255,.10),transparent 40%);pointer-events:none}
+  .brand{display:flex;flex-direction:column;gap:2px;z-index:1}
+  .brand h1{margin:0;font-size:15px;letter-spacing:.28em;font-weight:700;text-transform:uppercase}
+  .brand .sub{font:500 11px/1 var(--mono);color:var(--cyan);letter-spacing:.18em}
+  .spacer{flex:1}
+  .stat{display:flex;flex-direction:column;gap:3px;align-items:flex-end;z-index:1;min-width:64px}
+  .stat b{font:600 15px/1 var(--mono)}
+  .stat span{font:500 9.5px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+  .chip{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:999px;
+    border:1px solid var(--line);font:600 11px/1 var(--mono);letter-spacing:.06em}
+  .chip .dot{width:8px;height:8px;border-radius:50%;background:var(--dim)}
+  .chip.on{border-color:rgba(38,224,160,.4);color:var(--pass)}
+  .chip.on .dot{background:var(--pass);box-shadow:0 0 8px var(--pass-g);animation:pulse 2.4s infinite}
+  .chip.off{color:var(--mut)}
+  .chip.armed{border-color:rgba(255,180,84,.4);color:var(--wait)}
+  .chip.armed .dot{background:var(--wait);box-shadow:0 0 8px rgba(255,180,84,.5)}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+  /* ── Grille des instruments ─────────────────────────── */
+  #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+  .card{
+    border:1px solid var(--line);border-radius:15px;padding:16px 17px 15px;
+    background:linear-gradient(180deg,var(--panel),var(--bg2));position:relative;overflow:hidden;
+    transition:border-color .3s,box-shadow .3s;
+  }
+  .card.enter{border-color:rgba(38,224,160,.55);box-shadow:0 0 0 1px rgba(38,224,160,.25),0 0 30px rgba(38,224,160,.15)}
+  .card.err{border-color:rgba(255,85,102,.4)}
+  .card .top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:15px}
+  .sym{font:700 22px/1 var(--mono);letter-spacing:.02em}
+  .tf{font:500 10px/1 var(--mono);color:var(--mut);margin-top:6px;letter-spacing:.08em}
+  .verdict{padding:6px 12px;border-radius:9px;font:700 12px/1 var(--sans);letter-spacing:.12em;
+    text-transform:uppercase;white-space:nowrap;border:1px solid transparent}
+  .v-ENTER{background:rgba(38,224,160,.16);color:var(--pass);border-color:rgba(38,224,160,.5)}
+  .v-WAIT{background:rgba(255,180,84,.13);color:var(--wait);border-color:rgba(255,180,84,.4)}
+  .v-BLOCK{background:rgba(51,70,94,.25);color:#9fb2cc;border-color:var(--line)}
+  .v-ERROR{background:rgba(255,85,102,.14);color:var(--err);border-color:rgba(255,85,102,.4)}
+
+  .setup{display:flex;align-items:center;gap:9px;margin-bottom:14px;font:500 11px/1 var(--sans);color:var(--mut)}
+  .dir{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:7px;
+    font:700 11px/1 var(--mono);letter-spacing:.06em}
+  .dir.long{background:rgba(38,224,160,.12);color:var(--long)}
+  .dir.short{background:rgba(255,92,122,.12);color:var(--short)}
+  .dir.flat{background:rgba(80,96,120,.12);color:var(--mut)}
+  .fam{padding:3px 8px;border:1px solid var(--line);border-radius:6px;font:600 10px/1 var(--mono);
+    letter-spacing:.08em;text-transform:uppercase}
+
+  /* ── Chaîne des 5 piliers (signature) ───────────────── */
+  .chain{display:flex;align-items:flex-start;gap:0;margin:6px 0 16px}
+  .node{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;position:relative}
+  .seg{position:absolute;top:13px;left:-50%;width:100%;height:2px;background:var(--line);z-index:0}
+  .node.on .seg{background:linear-gradient(90deg,var(--pass),var(--pass));box-shadow:0 0 6px var(--pass-g)}
+  .node:first-child .seg{display:none}
+  .bulb{width:26px;height:26px;border-radius:50%;border:2px solid var(--block);z-index:1;
+    display:flex;align-items:center;justify-content:center;background:var(--bg2);
+    font:700 12px/1 var(--mono);color:var(--dim);transition:.3s}
+  .node.on .bulb{border-color:var(--pass);color:var(--pass);background:rgba(38,224,160,.1);
+    box-shadow:0 0 12px var(--pass-g)}
+  .node.on .bulb::after{content:"✓"}
+  .node:not(.on) .bulb::after{content:"·"}
+  .lbl{font:600 8.5px/1.25 var(--sans);text-align:center;color:var(--mut);letter-spacing:.03em;
+    text-transform:uppercase;max-width:60px;min-height:22px}
+  .node.on .lbl{color:var(--ink)}
+  .score{font:600 10px/1 var(--mono);color:var(--mut);margin-left:auto}
+
+  .reason{font:500 12px/1.5 var(--sans);color:#c6d3e4;background:var(--bg);border:1px solid var(--line);
+    border-radius:9px;padding:9px 11px;margin-bottom:12px}
+
+  /* ── Preuves (trace) ────────────────────────────────── */
+  .ev{display:grid;grid-template-columns:1fr 1fr;gap:7px 14px}
+  .ev .row{display:flex;flex-direction:column;gap:3px}
+  .ev .k{font:600 8.5px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+  .ev .val{font:500 11.5px/1.3 var(--mono);color:var(--ink)}
+  .ev .val.good{color:var(--pass)} .ev .val.bad{color:var(--mut)}
+
+  /* ── Plan de trade : entrée / SL / TP ladder ────────── */
+  .levels{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .lv{flex:1;min-width:72px;display:flex;flex-direction:column;gap:3px;padding:7px 9px;
+    border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+  .lv span{font:600 8px/1.1 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+  .lv b{font:700 12px/1 var(--mono)}
+  .lv.entry{border-color:rgba(0,229,255,.35)} .lv.entry b{color:var(--cyan)}
+  .lv.sl{border-color:rgba(255,92,122,.3)} .lv.sl b{color:var(--short)}
+  .lv.tp b{color:var(--pass)}
+
+  .placed{margin-top:12px;padding:10px 12px;border-radius:9px;background:rgba(38,224,160,.12);
+    border:1px solid rgba(38,224,160,.45);font:600 12px/1.4 var(--mono);color:var(--pass)}
+  .foot{display:flex;justify-content:space-between;margin-top:12px;
+    font:500 9.5px/1 var(--mono);color:var(--dim);letter-spacing:.04em}
+
+  .empty{grid-column:1/-1;text-align:center;color:var(--mut);padding:60px 20px;font:500 13px var(--sans)}
+  .note{margin-top:20px;font:500 10.5px/1.5 var(--sans);color:var(--dim);text-align:center}
+  a{color:var(--cyan-d)}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <h1>Confluence</h1>
+      <div class="sub" id="mode">MÉTHODE FLORENT · DÉMO</div>
+    </div>
+    <div class="spacer"></div>
+    <span class="chip off" id="c-enabled"><span class="dot"></span>MOTEUR</span>
+    <span class="chip off" id="c-armed"><span class="dot"></span>ORDRES</span>
+    <div class="stat"><b id="s-dec">–</b><span>décisions</span></div>
+    <div class="stat"><b id="s-placed">–</b><span>ouvertes</span></div>
+    <div class="stat"><b id="s-err">–</b><span>erreurs</span></div>
+    <div class="stat"><b id="s-beat">–</b><span>dernier cycle</span></div>
+  </header>
+  <div id="grid"><div class="empty">Connexion au moteur…</div></div>
+  <div class="note" id="note"></div>
+
+<script>
+const PILLARS = [
+  {key:"trend_sr",        lbl:"Tendance & S/R"},
+  {key:"fair_value",      lbl:"Juste-prix"},
+  {key:"liquidity",       lbl:"Liquidité"},
+  {key:"ote_ob",          lbl:"Fib OTE"},
+  {key:"candle_confirmed",lbl:"Bougie"},
+];
+const VERDICT_FR = {ENTER:"Entrée", WAIT:"Attente", BLOCK:"Pas d'entrée", ERROR:"Erreur"};
+
+const esc = s => String(s??"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const num = (v,d=2)=> (v==null||isNaN(v))?"–":Number(v).toFixed(d);
+const fmtPx = v => (v==null||isNaN(v))?"–":(Math.abs(v)>=100?Number(v).toFixed(2):Number(v).toFixed(5));
+
+function ago(iso){
+  if(!iso) return "–";
+  const s = Math.max(0,(Date.now()-new Date(iso).getTime())/1000);
+  if(s<90) return Math.round(s)+" s";
+  if(s<5400) return Math.round(s/60)+" min";
+  return Math.round(s/3600)+" h";
+}
+
+function dirTag(side){
+  if(side>0) return `<span class="dir long">▲ LONG</span>`;
+  if(side<0) return `<span class="dir short">▼ SHORT</span>`;
+  return `<span class="dir flat">— NEUTRE</span>`;
+}
+
+function evidence(t){
+  if(!t || !t.pillars) return "";
+  const p = t.pillars, out = [];
+  const sr = p.sr||{};
+  if(sr.on_level_kind) out.push(["Niveau",`${sr.on_level_kind==="support"?"Support":"Résistance"} ${num(sr.on_level, sr.on_level>100?2:5)} · force ${num(sr.on_level_strength,2)}`, "good"]);
+  else out.push(["Niveau","entre deux niveaux","bad"]);
+  const vp = p.vpoc||{};
+  out.push(["Juste-prix (VPOC)", vp.on_fair_price_zone?"sur zone d'échange":"hors zone", vp.on_fair_price_zone?"good":"bad"]);
+  const fb = p.fib||{};
+  out.push(["Fib OTE", fb.invalidated?"structure invalidée":(fb.in_ote?"dans la golden zone":"hors zone OTE"), fb.in_ote?"good":"bad"]);
+  const cd = p.candle||{};
+  const pat = (cd.patterns&&cd.patterns.length)?cd.patterns.join(", "):"aucune";
+  out.push(["Bougie", `${pat}${cd.direction? (cd.direction>0?" ▲":" ▼"):""}`, cd.direction?"good":"bad"]);
+  const liq = p.liquidity;
+  out.push(["Liquidité / FVG", liq>0?"sweep haussier":liq<0?"sweep baissier":"aucun", liq?"good":"bad"]);
+  const tr = (t.setup&&t.setup.trend_context!=null)?t.setup.trend_context:p.trend;
+  out.push(["Tendance HTF", tr>0?"haussière ▲":tr<0?"baissière ▼":"neutre", tr?"good":"bad"]);
+  return out.map(([k,v,c])=>`<div class="row"><div class="k">${esc(k)}</div><div class="val ${c}">${esc(v)}</div></div>`).join("");
+}
+
+function card(sym, d){
+  const verdict = d.verdict||"BLOCK";
+  const gates = {}; (d.gates||[]).forEach(g=>gates[g.name]=g.passed);
+  const nPass = PILLARS.filter(p=>gates[p.key]).length;
+
+  if(verdict==="ERROR"){
+    return `<div class="card err"><div class="top"><div><div class="sym">${esc(sym)}</div>
+      <div class="tf">donnée indisponible</div></div>
+      <div class="verdict v-ERROR">Erreur</div></div>
+      <div class="reason">${esc(d.error||"symbole/données indisponibles")}</div></div>`;
+  }
+
+  const chain = PILLARS.map((p,i)=>{
+    const on = gates[p.key];
+    const link = on && i>0 && gates[PILLARS[i-1].key];
+    return `<div class="node ${on?"on":""}">
+      ${i>0?`<span class="seg" style="${link?"":"opacity:.5"}"></span>`:""}
+      <span class="bulb"></span><span class="lbl">${p.lbl}</span></div>`;
+  }).join("");
+
+  const reason = (d.reasons&&d.reasons[0])||"—";
+  const placed = d.placed && d.placed.sent
+      ? `<div class="placed">● POSITION OUVERTE — ${esc(d.placed.side||"")} · lot ${esc(d.placed.lot)} @ ${esc(d.placed.price)}</div>`
+      : (d.placed && d.placed.reason ? `<div class="foot"><span>placement : ${esc(d.placed.reason)}</span><span></span></div>` : "");
+
+  const fam = d.setup_family?`<span class="fam">${esc(d.setup_family)}</span>`:"";
+
+  const lv = d.levels;
+  const levels = (lv && lv.entry) ? `<div class="levels">
+      <div class="lv entry"><span>Entrée</span><b>${fmtPx(lv.entry)}</b></div>
+      <div class="lv sl"><span>SL · ${esc(lv.sl_atr)}×ATR</span><b>${fmtPx(lv.sl)}</b></div>
+      ${(lv.tps||[]).map(t=>`<div class="lv tp"><span>TP${t.n} · R:R ${esc(t.rr)}</span><b>${fmtPx(t.price)}</b></div>`).join("")}
+    </div>` : "";
+
+  const rf = d.reference;
+  const refLine = rf ? `<div class="tf">⇄ Binance ${fmtPx(rf.price)} · écart ${rf.divergence_pct>=0?'+':''}${esc(rf.divergence_pct)}%</div>` : "";
+
+  return `<div class="card ${verdict==="ENTER"?"enter":""}">
+    <div class="top">
+      <div><div class="sym">${esc(sym)}</div><div class="tf">${esc(d.ltf||"")} · ${esc(d.htf||"")}${d.venue==="crypto"?" · CRYPTO":""}</div>${refLine}</div>
+      <div class="verdict v-${verdict}">${VERDICT_FR[verdict]||verdict}</div>
+    </div>
+    <div class="setup">${dirTag(d.side||0)} ${fam}
+      <span class="score">${nPass}/5 piliers</span></div>
+    <div class="chain">${chain}</div>
+    <div class="reason">${esc(reason)}</div>
+    <div class="ev">${evidence(d.trace)}</div>
+    ${levels}
+    ${placed}
+    <div class="foot"><span>${esc((d.code||"").toLowerCase())}</span><span>id ${esc((d.decision_id||"").slice(0,8))}</span></div>
+  </div>`;
+}
+
+async function tick(){
+  let data;
+  try{
+    const r = await fetch("/confluence/demo/status",{cache:"no-store"});
+    data = await r.json();
+  }catch(e){
+    document.getElementById("note").textContent = "Moteur injoignable — le bot est-il lancé ? ("+e+")";
+    return;
+  }
+  const en = !!data.enabled, armed = !!data.orders_armed;
+  const ce = document.getElementById("c-enabled");
+  ce.className = "chip "+(en?"on":"off"); ce.querySelector(".dot")||0;
+  ce.innerHTML = `<span class="dot"></span>MOTEUR ${en?"ACTIF":"OFF"}`;
+  const ca = document.getElementById("c-armed");
+  ca.className = "chip "+(armed?"armed":"off");
+  ca.innerHTML = `<span class="dot"></span>ORDRES ${armed?"ARMÉS":"OFF"}`;
+
+  const hb = data.heartbeat||{};
+  document.getElementById("s-dec").textContent = hb.n_decisions??"–";
+  document.getElementById("s-placed").textContent = hb.n_placed??"–";
+  const se = document.getElementById("s-err"); se.textContent = hb.n_errors??"–";
+  se.style.color = (hb.n_errors>0)?"var(--err)":"var(--pass)";
+  document.getElementById("s-beat").textContent = "il y a "+ago(hb.last_cycle_at);
+
+  const syms = data.symbols||{};
+  const keys = Object.keys(syms);
+  const grid = document.getElementById("grid");
+  if(!keys.length){ grid.innerHTML = `<div class="empty">En attente du premier cycle… (la boucle calcule toutes les ${Math.round((data.seconds||300))/60||5} min)</div>`; }
+  else{
+    // ENTER puis WAIT puis BLOCK ; garde un ordre stable
+    keys.sort((a,b)=>{
+      const rank=v=>({ENTER:0,WAIT:1,BLOCK:2,ERROR:3}[(syms[v].verdict||"BLOCK")]??2);
+      return rank(a)-rank(b) || a.localeCompare(b);
+    });
+    grid.innerHTML = keys.map(k=>card(k, syms[k])).join("");
+  }
+  document.getElementById("note").innerHTML =
+    `Surveillance : ${esc((data.watchlist||keys).join(" · "))} — horodatage en heure serveur Axi. `+
+    `Une entrée n'est prise que si les 5 piliers s'alignent (méthode AND de Florent). Rafraîchi toutes les 15 s.`;
+}
+tick(); setInterval(tick, 15000);
+</script>
+</body>
+</html>

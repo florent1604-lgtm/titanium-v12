@@ -43,13 +43,43 @@ def test_cerveau_sans_couverture_bloque():
 
 
 # --- L'ÉMOTION pilote la CONVICTION (taille), sans bloquer -------------------------------
-def test_emotion_alignee_forte_augmente_la_conviction():
+def test_emotion_est_une_piece_pas_le_pilier():
+    """Correction Florent (21/07/2026) : l'émotion est UNE PIÈCE du noyau de calcul, pas le
+    pilier décisionnaire. Elle agit via les familles du consensus (déjà comptées dans
+    consensus_score) — elle ne doit donc PLUS re-pondérer la taille ici. Son tag reste
+    retourné pour l'observabilité."""
     aligned = bg.gate_entry("BTCUSD", 1, consensus_fn=_cons(emo_dir=1, emo_conf=1.0), master_fn=_master(bg.AUTO))
     opposed = bg.gate_entry("BTCUSD", 1, consensus_fn=_cons(emo_dir=-1, emo_conf=1.0), master_fn=_master(bg.AUTO))
-    assert aligned.allow and opposed.allow          # émotion ne bloque pas (sizing, pas veto)
-    assert aligned.conviction > opposed.conviction  # alignée = plus grosse taille
-    assert "EMO_ALIGNED" in aligned.reason_codes and "EMO_OPPOSED" in opposed.reason_codes
-    assert opposed.conviction == bg._CONV_FLOOR      # opposée → taille plancher
+    assert aligned.allow and opposed.allow                    # l'émotion ne bloque jamais
+    assert aligned.conviction == opposed.conviction           # équilibre : plus de domination
+    assert "EMO_ALIGNED" in aligned.reason_codes              # mais l'apport reste VISIBLE
+    assert "EMO_OPPOSED" in opposed.reason_codes
+
+
+def test_conviction_utilise_la_preuve_pas_la_disponibilite():
+    """Audit Hermes (21/07/2026) : `coverage` compte une famille dès qu'un moteur RÉPOND,
+    même en votant zéro. La taille doit suivre `directional_coverage` (preuve signée), sinon
+    de la simple présence se transforme en engagement."""
+    dispo_pleine_sans_preuve = lambda s: {  # noqa: E731
+        "status": "UNCONFIRMED", "side": "long", "consensus_score": 60,
+        "coverage": 1.0, "directional_coverage": 0.2, "conflict": False,
+        "engine_directions": {}, "engine_confirmation": {}}
+    preuve_pleine = lambda s: {  # noqa: E731
+        "status": "UNCONFIRMED", "side": "long", "consensus_score": 60,
+        "coverage": 1.0, "directional_coverage": 1.0, "conflict": False,
+        "engine_directions": {}, "engine_confirmation": {}}
+    faible = bg.gate_entry("BTCUSD", 1, consensus_fn=dispo_pleine_sans_preuve, master_fn=_master(bg.AUTO))
+    solide = bg.gate_entry("BTCUSD", 1, consensus_fn=preuve_pleine, master_fn=_master(bg.AUTO))
+    assert solide.conviction > faible.conviction     # la preuve dimensionne, pas la présence
+    assert faible.conviction >= bg._CONV_FLOOR       # plancher CONSERVÉ (phase de test)
+
+
+def test_conviction_suit_l_equilibre_du_consensus():
+    """La taille suit la force de l'équilibre (coverage × |consensus_score|), pas un levier isolé."""
+    faible = bg.gate_entry("BTCUSD", 1, consensus_fn=_cons(score=10, coverage=0.2), master_fn=_master(bg.AUTO))
+    fort = bg.gate_entry("BTCUSD", 1, consensus_fn=_cons(score=90, coverage=1.0), master_fn=_master(bg.AUTO))
+    assert fort.conviction > faible.conviction
+    assert faible.conviction >= bg._CONV_FLOOR                # un setup faible s'ouvre petit
 
 
 def test_conviction_bornee_0_1():

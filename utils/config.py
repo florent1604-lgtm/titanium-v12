@@ -191,6 +191,14 @@ OPT_CONFIGURATIONS = [
     # Configs avec trailing (exploite les murs détectés par L2)
     {"atr_mult": 0.8, "tp_ratios": (2.0, 3.0, 4.0), "trailing": True},
     {"atr_mult": 1.0, "tp_ratios": (2.0, 3.0, 4.0), "trailing": True},
+    # Zone « respiration » — validée strategy_lab 08/07/2026 (winrate 29→64 %
+    # sur BTC 365j quand le SL passe à ATR×2 ; l'ancienne grille plafonnait à
+    # ×1.0 et forçait l'optimiseur dans la zone 81 % de sorties SL)
+    {"atr_mult": 1.5, "tp_ratios": (1.5, 2.5, 4.0), "trailing": False},
+    {"atr_mult": 2.0, "tp_ratios": (1.5, 2.5, 4.0), "trailing": False},
+    {"atr_mult": 2.0, "tp_ratios": (2.0, 3.0, 4.0), "trailing": False},
+    {"atr_mult": 2.5, "tp_ratios": (1.5, 2.5, 4.0), "trailing": False},
+    {"atr_mult": 2.0, "tp_ratios": (1.5, 2.5, 4.0), "trailing": True},
 ]
 OPT_CONFIGURATIONS_PAXG = [
     # Configs conservatrices
@@ -203,7 +211,125 @@ OPT_CONFIGURATIONS_PAXG = [
     {"atr_mult": 1.2,  "tp_ratios": (1.5, 2.5, 3.5), "trailing": False},
     # Avec trailing
     {"atr_mult": 1.0,  "tp_ratios": (1.5, 2.5, 3.5), "trailing": True},
+    # Zone « respiration » PAXG (strategy_lab 08/07/2026)
+    {"atr_mult": 1.5,  "tp_ratios": (1.5, 2.5, 3.5), "trailing": False},
+    {"atr_mult": 2.0,  "tp_ratios": (1.5, 2.5, 3.5), "trailing": False},
+    {"atr_mult": 2.0,  "tp_ratios": (1.2, 1.8, 2.4), "trailing": False},
 ]
+
+# ── Filtre d'alignement momentum (strategy_lab V3, 08/07/2026) ───────────────
+# Bloque un signal pris CONTRE la pente de l'EMA50-H1. Validé : BTC (+31 bps/
+# trade, PF 1.59) et forex (PF 1.8-2.0) ; NUISIBLE sur PAXG (−8.7 bps) — d'où
+# une liste par symbole. Vide = filtre désactivé.
+MOMENTUM_ALIGN_SYMBOLS = _list("MOMENTUM_ALIGN_SYMBOLS", "")
+
+# ── Moteur forex/or MT5-Axi (paper only — stratégie V3 validée 08/07/2026) ──
+FOREX_ENABLED         = _bool("FOREX_ENABLED", "0")
+FOREX_SYMBOLS         = _list("FOREX_SYMBOLS", "EURUSD,GBPUSD,XAUUSD")
+# Surveillés en data seulement (prix affiché, pas de trade) — ex: BTCUSD CFD
+# dont le backtest MT5 est non rentable malgré 73 % de winrate.
+FOREX_MONITOR_SYMBOLS = _list("FOREX_MONITOR_SYMBOLS", "BTCUSD")
+FOREX_SCAN_SECONDS    = _int("FOREX_SCAN_SECONDS", 60)
+FOREX_CAPITAL         = _float("FOREX_CAPITAL", 10000.0)   # capital paper virtuel (EUR)
+FOREX_RISK_PCT        = _float("FOREX_RISK_PCT", 1.0)      # % du capital risqué par trade
+FOREX_SL_ATR          = _float("FOREX_SL_ATR", 2.0)
+FOREX_TPS             = [float(x) for x in _list("FOREX_TPS", "1.5,2.5,4.0")]
+FOREX_TIME_STOP_HOURS = _int("FOREX_TIME_STOP_HOURS", 48)
+
+# ── Moteur SWING multi-actifs (paper only — configs validées tester natif MT5) ──
+# Panier retenu après re-validation fills réels 3,5 ans (docs/RAPPORT_REVALIDATION):
+# USTECH +9350€ PF1.66, NAS100.fs +3249€ PF1.84, HSI.fs +383€ PF1.22. Chaque actif
+# utilise SA config dans data/asset_configs.json (SL/TP/align/RSI/TF/time-stop).
+SWING_ENABLED       = _bool("SWING_ENABLED", "0")
+SWING_LIVE_SYMBOLS  = _list("SWING_LIVE_SYMBOLS", "USTECH,NAS100.fs,HSI.fs")
+SWING_SCAN_SECONDS  = _int("SWING_SCAN_SECONDS", 30)
+SWING_CAPITAL       = _float("SWING_CAPITAL", 10000.0)
+SWING_RISK_PCT      = _float("SWING_RISK_PCT", 1.0)
+
+# Forward-paper GELÉ XRP/LINK intraday (Binance) — pré-enreg collab/FORWARD_PAPER_PREREGISTRATION.md.
+# MIRROR = miroir des entrées sur le compte démo MT5 (visibilité iOS ; coûts Axi non représentatifs).
+FORWARD_PAPER_ENABLED = _bool("FORWARD_PAPER_ENABLED", "0")
+FORWARD_PAPER_MIRROR  = _bool("FORWARD_PAPER_MIRROR", "0")
+FORWARD_PAPER_SECONDS = _int("FORWARD_PAPER_SECONDS", 3600)
+
+# ── Moteur de CONFLUENCE en DÉMO MT5 (méthode Florent, mode EXPLORE) ──
+# Câble la stack de détection (adapter → portes ET) sur l'exécuteur DÉMO MT5 pour
+# OUVRIR de vraies positions sur le compte DÉMO et observer les décisions en direct.
+# DÉSARMÉ par défaut ; les ordres exigent EN PLUS `DEMO_EXEC_ENABLED=1` + le mur
+# démo↔réel (refus absolu hors compte démo). Décision sur bougies CLÔTURÉES.
+CONFLUENCE_DEMO_ENABLED = _bool("CONFLUENCE_DEMO_ENABLED", "0")
+CONFLUENCE_DEMO_SYMBOLS = _list("CONFLUENCE_DEMO_SYMBOLS", "XAUUSD,EURUSD,US500.fs")
+CONFLUENCE_DEMO_LTF     = _str("CONFLUENCE_DEMO_LTF", "M15")
+CONFLUENCE_DEMO_HTF     = _str("CONFLUENCE_DEMO_HTF", "H4")
+CONFLUENCE_DEMO_SECONDS = _int("CONFLUENCE_DEMO_SECONDS", 300)
+# ROTATION d'actifs (directive Florent : « rotation des différents actifs, toutes nos
+# ressources »). Le crypto (marché ouvert 24/7) est scanné CHAQUE cycle ; les CFD (univers
+# large) tournent par lots de CONFLUENCE_ROTATE_BATCH par cycle (0 = tout à chaque cycle).
+CONFLUENCE_ROTATE_BATCH = _int("CONFLUENCE_ROTATE_BATCH", 10)
+CONFLUENCE_DEMO_SL_ATR  = _float("CONFLUENCE_DEMO_SL_ATR", 1.5)
+CONFLUENCE_DEMO_TP_ATR  = _float("CONFLUENCE_DEMO_TP_ATR", 3.0)
+# Ladder de take-profits (multiples d'ATR depuis l'entrée) — méthode Florent (TP1/TP2/TP3).
+try:
+    CONFLUENCE_DEMO_TP_LADDER = tuple(
+        float(x) for x in _list("CONFLUENCE_DEMO_TP_LADDER", "1.5,2.5,4.0"))
+except (TypeError, ValueError):
+    CONFLUENCE_DEMO_TP_LADDER = (1.5, 2.5, 4.0)
+if not CONFLUENCE_DEMO_TP_LADDER:
+    CONFLUENCE_DEMO_TP_LADDER = (1.5, 2.5, 4.0)
+
+# ── Confluence CRYPTO (marché 24/7, seul ouvert le week-end) ──
+# Décision Florent : MT5 reste la PASSERELLE PRINCIPALE (données + exécution), AJUSTÉE à
+# Binance (référence de prix). Le crypto Axi (BTCUSD, ETHUSD…) est LIVE et TRADABLE le
+# week-end sur le compte démo → mêmes données MT5 + même exécuteur démo, venue=crypto
+# (pas de blocage week-end). Binance sert de cross-check (divergence de prix affichée).
+CONFLUENCE_CRYPTO_ENABLED = _bool("CONFLUENCE_CRYPTO_ENABLED", "0")
+CONFLUENCE_CRYPTO_SYMBOLS = _list("CONFLUENCE_CRYPTO_SYMBOLS",
+                                  "BTCUSD,ETHUSD,XRPUSD,LTCUSD,BCHUSD,ADAUSD")
+
+# ── Module AGRESSIF (phase de test) : setups 4/5 structurés, détectés toujours ──
+# `EXEC=1` autorise leur EXÉCUTION sur le démo (tag distinct « confluence-aggr » pour
+# comparer strict vs agressif). Détection/alerte toujours actives ; exécution armée à part.
+CONFLUENCE_AGGRESSIVE_MIN  = _int("CONFLUENCE_AGGRESSIVE_MIN", 4)
+CONFLUENCE_AGGRESSIVE_EXEC = _bool("CONFLUENCE_AGGRESSIVE_EXEC", "0")
+
+# ── Concordance inter-actifs (lead/lag) — recherche EXPLORATOIRE (pré-M2, ne décide rien) ──
+# Boucle qui cherche quel actif ANTICIPE quel autre + accumule la persistance ; débrief
+# Telegram sur candidat fort+persistant. Crypto = Binance 24/7 (marché ouvert le week-end).
+LEADLAG_ENABLED  = _bool("LEADLAG_ENABLED", "0")
+LEADLAG_SYMBOLS  = _list("LEADLAG_SYMBOLS",
+                         "BTC/USDT,ETH/USDT,XRP/USDT,LTC/USDT,BCH/USDT,ADA/USDT,SOL/USDT,DOGE/USDT,BNB/USDT")
+LEADLAG_SECONDS  = _int("LEADLAG_SECONDS", 900)
+LEADLAG_MAX_LAG  = _int("LEADLAG_MAX_LAG", 12)
+# Timeframes scannés (les liens macro sont souvent plus nets en H1/H4 que sur le M15 bruité).
+LEADLAG_TFS      = _list("LEADLAG_TFS", "M15,H1,H4")
+
+# ── EventPlane B0/C0 — MIROIR read-only (fusion Hermes, plan afférent) ──
+# Publie les FAITS des moteurs (confluence…) dans core.event_plane. Strictement
+# observationnel : aucun ordre, aucun CommandGateway, aucun effet trading (contrat Codex).
+EVENTPLANE_MIRROR_ENABLED = _bool("EVENTPLANE_MIRROR_ENABLED", "0")
+EVENTPLANE_MIRROR_SECONDS = _int("EVENTPLANE_MIRROR_SECONDS", 300)
+
+# ── Risque portefeuille MT5 (R3 — audit 10/07/2026) ──
+# Plafonds d'exposition NOTIONNELLE, en % de l'equity du moteur qui veut ouvrir.
+# Vérifiés AVANT toute ouverture (swing + forex). Ex. constaté par l'audit :
+# USTECH 47 % + NAS100 47 % = 94 % sur le même cluster US_INDICES → bloqué à 60 %.
+RISK_MAX_GROSS_PCT    = _float("RISK_MAX_GROSS_PCT", 150.0)   # toutes positions confondues
+RISK_MAX_STRATEGY_PCT = _float("RISK_MAX_STRATEGY_PCT", 90.0) # par moteur (swing / forex)
+RISK_MAX_CLUSTER_PCT  = _float("RISK_MAX_CLUSTER_PCT", 60.0)  # par cluster corrélé
+RISK_MAX_NET_PCT      = _float("RISK_MAX_NET_PCT", 100.0)     # |net| portefeuille (Σ long − Σ short)
+
+# ── Scan d'opportunités périodique (cron in-app tous les N jours) ──
+# Rebalaye tout l'univers MT5, applique une porte de récence (~1 mois) pour
+# repérer les actifs qui marchent MAINTENANT, alerte + auto-intègre au moteur
+# swing (paper) les nouveaux à fort potentiel. Voir core/opportunity_scan.py.
+OPP_SCAN_ENABLED       = _bool("OPP_SCAN_ENABLED", "0")
+OPP_SCAN_HOUR_UTC      = _int("OPP_SCAN_HOUR_UTC", 0)      # 00:00 UTC = ouverture Asie (Tokyo)
+OPP_PERSIST_DAYS       = _int("OPP_PERSIST_DAYS", 3)       # scans consécutifs avant auto-intégration
+OPP_LOOKBACK_DAYS      = _int("OPP_LOOKBACK_DAYS", 30)     # porte de récence
+OPP_TOP_N              = _int("OPP_TOP_N", 20)            # deep sur le top N
+OPP_MIN_POTENTIAL      = _float("OPP_MIN_POTENTIAL", 150.0)  # seuil "fort potentiel"
+OPP_MAX_AUTO_ADD       = _int("OPP_MAX_AUTO_ADD", 5)       # cap auto-intégration
+OPP_CHECK_HOURS        = _int("OPP_CHECK_HOURS", 1)        # cadence de vérif du planning
 
 # ── STRICT TRIX ───────────────────────────────────────────────���──────────────
 STRICT_TF               = _str("STRICT_TF", "5m")
@@ -252,6 +378,13 @@ TELEGRAM_SCORE_LABELS: Dict[int, str] = {
     6: "✅ Bon setup", 7: "🔥 Setup fort", 8: "🚀 Setup optimal",
     9: "💎 Signal premium", 10: "🌟 Setup parfait", 11: "👑 Signal absolu",
 }
+
+# Alertes Telegram du MOTEUR DE CONFLUENCE (nouveaux indicateurs : 5 piliers de la
+# méthode Florent). Notifie quand ≥ MIN_PILLARS piliers s'alignent (setup en formation)
+# ET systématiquement quand une position démo s'ouvre. Anti-spam par symbole.
+TELEGRAM_CONFLUENCE_ENABLED     = _bool("TELEGRAM_CONFLUENCE_ENABLED", "1")
+TELEGRAM_CONFLUENCE_MIN_PILLARS = _int("TELEGRAM_CONFLUENCE_MIN_PILLARS", 4)
+TELEGRAM_CONFLUENCE_INTERVAL    = _int("TELEGRAM_CONFLUENCE_INTERVAL_SEC", 900)
 
 # ── WS Compression ───────────────────────────────────────────────────────────
 WS_COMPRESS           = _str("WS_COMPRESS", "off")
@@ -354,10 +487,22 @@ DD_REALTIME_ENABLED     = _bool("DD_REALTIME_ENABLED", "1")
 DD_CURVE_INTERVAL_SEC   = _int("DD_CURVE_INTERVAL_SEC", 10)
 
 # ── Serveur ─────────────────────────────────────────────────────────────────
-UVICORN_HOST      = _str("UVICORN_HOST", "0.0.0.0")
+# Sécurité (audit 10/07/2026) : bind LOCAL par défaut. NE PAS remettre 0.0.0.0
+# sans authentification — l'API expose des mutations (reset, services, git push).
+UVICORN_HOST      = _str("UVICORN_HOST", "127.0.0.1")
 UVICORN_PORT      = _int("UVICORN_PORT", 8080)
 UVICORN_LOG_LEVEL = _str("UVICORN_LOG_LEVEL", "info")
 LOG_LEVEL         = _str("LOG_LEVEL", "INFO").upper()
+# Jeton admin pour les routes de MUTATION sensibles. Défaut VIDE = fail-closed
+# (toute mutation protégée est refusée tant qu'un jeton n'est pas défini dans .env).
+# Ne jamais logguer ni exposer dans l'UI.
+ADMIN_TOKEN       = _str("ADMIN_TOKEN", "")
+
+# ── Benchmark de latence multi-plateformes ───────────────────────────────────
+LATENCY_SYMBOL          = _str("LATENCY_SYMBOL", "BTC/USDT")
+LATENCY_DEFAULT_SECONDS = _int("LATENCY_DEFAULT_SECONDS", 60)
+LATENCY_MT5_ENABLED     = _bool("LATENCY_MT5_ENABLED", "0")   # inclure Axi via MetaTrader5
+LATENCY_MT5_SYMBOL      = _str("LATENCY_MT5_SYMBOL", "BTCUSD")
 
 # ── Spectral (analyse de cycles — Phase 0) ───────────────────────────────────
 SPECTRAL_ENABLED          = _bool("SPECTRAL_ENABLED", "1")

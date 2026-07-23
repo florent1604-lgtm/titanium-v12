@@ -73,3 +73,31 @@ REVIEWS/
 
 # Worktrees Git locaux pour les chantiers agentiques isolés
 .worktrees/
+
+# ── Dépendances Node (jamais sur GitHub) ──────────────────────────────────────
+node_modules/
+
+# ── État interne des outils agentiques (jetons de session, pas le projet) ─────
+.superpowers/
+.hermes/
+.agents/
+
+# ── Sauvegardes de clés (publiques, mais une .bak n'a rien à faire dans le dépôt)
+collab/governance/*keys*.bak*
+*.bak-20*
+
+# ── Données lourdes / runtime / régénérables — JAMAIS poussées (>1 Go local) ──
+data/calibration_*/
+data/opt_cache/
+data/control_event_plane/
+data/runtime/
+data/codex_tmp/
+data/collab_hub/
+data/acl_backups/
+data/mt5_reports/
+data/*.png
+data/demo_journal.ndjson
+data/health_journal.jsonl
+data/health_status.json
+data/_relaunch_*.txt
+docs/mt5_opt_reports/

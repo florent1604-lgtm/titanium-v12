@@ -233,6 +233,25 @@ async def scan_symbol(sym: str, session: aiohttp.ClientSession) -> None:
                     if "risk_factor" in modulated:
                         ctx["risk_factor"] = modulated["risk_factor"]
 
+            # ── Filtre d'alignement momentum (strategy_lab V3, 08/07/2026) ────
+            # Veto si le signal va CONTRE la pente EMA50-H1 : c'est le pattern
+            # perdant observé en paper (31 trades 100 % SHORT, 81 % en SL).
+            # Actif par symbole via MOMENTUM_ALIGN_SYMBOLS (BTC oui, PAXG non).
+            from utils.config import MOMENTUM_ALIGN_SYMBOLS
+            if (sym in MOMENTUM_ALIGN_SYMBOLS and side in ("ACHAT", "VENTE")
+                    and effective_score > 0
+                    and df_h1 is not None and len(df_h1) >= 60):
+                try:
+                    ema50_h1 = df_h1["close"].ewm(span=50, adjust=False).mean()
+                    slope_up = float(ema50_h1.iloc[-1]) > float(ema50_h1.iloc[-6])
+                    if (side == "ACHAT") != slope_up:
+                        ctx["momentum_misaligned"] = True
+                        logger.info("[SCAN] %s %s bloqué — pente EMA50-H1 opposée "
+                                    "(filtre alignement)", sym, side)
+                        effective_score = 0
+                except Exception as e:
+                    logger.debug("[SCAN] filtre alignement %s: %s", sym, e)
+
             # ── Emit signal ───────────────────────────────────────────────────
             signal = emit_signal(sym, effective_score, side, confs, ctx, levels)
 

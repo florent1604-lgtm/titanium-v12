@@ -1558,3 +1558,73 @@ aucun appel MT5/MetaTester, aucun ordre et aucun secret exposé.
   l'analyse en 73,5 s avec code 0, sans report ni redemarrage premature.
 - Validation cible : 97 tests verts. PAPER/DEMO ONLY ; aucun moteur, flag,
   ordre, compte ou CommandGateway modifie.
+
+## 2026-07-20 - Codex - red-team CommandGateway C1
+
+- Revue independante du noyau `gateway/` livre par Claude, consolidee avec trois
+  contre-revues agents et GitNexus. Blast radius propre au lot : LOW, zero
+  processus runtime ; `detect_changes(all)` global reste CRITICAL car le
+  worktree partage contient de nombreux changements sans rapport.
+- 21/21 tests nominaux reproduits dans `venv` et `.pyembed`. Le venv de test
+  portable courant doit etre reconstruit pour prendre sa dependance `jsonschema`.
+- Probe P0 : une proposition invalide contenant un champ sensible dans `params`
+  est persistee avant son refus de schema. Transport et activation bloques.
+- Probes P1 : TTL 24 h accepte malgre limite 30 s, preuves M2/approval arbitraires
+  acceptees, `state=None` en crash, lecture disque pendant `evaluate`, rejeu avec
+  reply differente, registre en memoire mutable et journal non auto-verifiable.
+- Decision : **Section 7 avant transport**. Le noyau reste gele/dormant ; Claude
+  doit fermer les bypass JARVIS puis rendre un lot correctif C1 unique avant
+  re-revue. ACK bus `783ad742-2895-490e-96eb-9881f4d43a3a`.
+- Aucun fichier runtime, flag, compte ou ordre modifie. PAPER/DEMO ONLY ; compte
+  reel 60261188 jamais trade.
+
+## 2026-07-21 - Codex - purge, MCP singleton et reindexation coordonnee
+
+- Lot MCP singleton versionne dans `bc0c364` : garde GitNexus signe sur 4750,
+  Titanium read-only sur 8091 et Hermes sur 8766. Base44 et les transports MCP
+  concurrents restent absents du chemin actif.
+- Validation : 26/26 tests MCP, scan de secrets nul, `diff --check` propre et
+  `detect_changes(staged)` execute. Le niveau CRITICAL est borne aux wrappers
+  MCP transverses de lecture ; aucun flux de placement d'ordre ou de scoring.
+- GitNexus global `1.6.10-rc.50` restaure apres purge. Le miroir JARVIS est
+  synchronise (89 fichiers) et son index conserve 5 288 noeuds / 19 372
+  relations / 101 flux.
+- L'arret gracieux de 4747 ayant refuse avec le code 69, reprise bornee aux PID
+  valides du watcher et de `gitnexus serve`, avec garde WAL positive avant
+  reconstruction. Index Titanium v9 + PDG + FTS : 25 462 noeuds, 66 455
+  relations, 287 clusters et 300 flux ; `meta.lastCommit` aligne sur `bc0c364`.
+- Cause racine ensuite fermee dans `b204777` : GitNexus 1.6.10-rc.50 n'expose
+  pas la route `/api/shutdown` simulee par les anciens tests. Le fallback Windows
+  ne s'active que sur 404/405, valide la ligne de commande complete du PID puis
+  conserve la garde WAL fail-closed. Preuve live : arret 4747 en 0,97 s et
+  40/40 tests du superviseur.
+- Etat final : 4747, 4750, 8080, 8090, 8091, 8765, 8766 et 11434 actifs ;
+  watcher actif ; `/api/state` sans collision casefold. Compte DEMO 50061786
+  confirme par Claude ; reel 60261188 refuse. PAPER/DEMO ONLY.
+
+## 2026-07-21 - CollabHub C1 temps reel
+
+- Nouveau singleton loopback `127.0.0.1:8770` : SQLite WAL/FULL, HTTP, SSE,
+  WebSocket et MCP. Allowlist MCP exacte : publish/read/ack/presence/health.
+- Config clients ajoutee pour Claude, Codex et Hermes. Test Hermes live :
+  connexion 140 ms, cinq outils decouverts, sans authentification externe.
+- Migration idempotente du bus : 336 messages historiques utiles au total ;
+  quatre approbations GitNexus signees exclues du hub general par conception.
+- Preuves : 21 tests cibles passes, quatre singletons MCP UP, hub sain. Aucun
+  outil de trading, permission, shell, Git ou CommandGateway expose. C1 shadow.
+- Arbitrage Claude H0-H4 demande sur le bus historique et le nouveau hub ; ACK
+  encore attendu au moment de cette entree.
+
+## 2026-07-22 - Arbitrage droits Hermes rendu par Claude
+
+- Consultation Claude Code Pro executee sans outil, en mode plan, sans session
+  persistante et sans cle API Anthropic : aucune mutation possible.
+- H0 READ GLOBAL : ACCEPT sous assainissement strict et exclusion des secrets.
+- H1 COLLAB WRITE : ACCEPT, limite aux cinq outils CollabHub et aux propositions
+  C1 shadow inertes (`dispatch_permitted=false`).
+- H2 GITNEXUS : AMEND ; `rename`/`group_sync` gardes, mais double signature
+  Florent + superviseur obligatoire. Aucune degradation a un signataire.
+- H3 INTERDIT et H4 EVOLUTION : ACCEPT. Capacites dangereuses absentes ; C2
+  PAPER puis C3 DEMO seulement par paliers revus avec GO Florent distinct.
+- Conclusion Claude : Hermes est cerveau principal de confiance en C1 au sens
+  cognitif, jamais autorite d'action. Verdict relaye au bus et offset hub 340.

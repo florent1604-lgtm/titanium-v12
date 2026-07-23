@@ -21,5 +21,5 @@ def test_supervisor_uses_the_self_contained_mcp_python_for_every_listener():
     source = Path("tools/mcp_singletons.ps1").read_text(encoding="utf-8")
 
     assert r'$McpPython = Join-Path $Root "gitnexus\gate-venv\Scripts\python.exe"' in source
-    assert source.count("Python = $McpPython") == 3
+    assert source.count("Python = $McpPython") == 4
     assert r'Join-Path $Root "venv\Scripts\python.exe"' not in source

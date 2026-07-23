@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://titanium.local/contracts/titanium_snapshot_v1.json",
+  "title": "TitaniumSnapshot v1",
+  "description": "Contrat local, lecture seule et paper-only pour JARVIS, Hermes et les dashboards.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schema_version",
+    "generated_at",
+    "paper_only",
+    "status",
+    "strategies"
+  ],
+  "properties": {
+    "schema": {"const": "TitaniumSnapshot"},
+    "schema_version": {"const": "1.0"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "paper_only": {"const": true},
+    "status": {"enum": ["LIVE", "STALE", "UNAVAILABLE"]},
+    "strategies": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/$defs/strategy"}
+    }
+  },
+  "$defs": {
+    "datum": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "unit",
+        "source",
+        "source_ts",
+        "age_seconds",
+        "stale_after_seconds",
+        "status"
+      ],
+      "properties": {
+        "value": {"type": ["number", "integer", "null"]},
+        "unit": {"type": "string", "minLength": 1},
+        "source": {"type": "string", "minLength": 1},
+        "source_ts": {"type": ["string", "null"], "format": "date-time"},
+        "age_seconds": {"type": ["number", "null"], "minimum": 0},
+        "stale_after_seconds": {"type": "integer", "minimum": 1},
+        "status": {"enum": ["LIVE", "STALE", "UNAVAILABLE"]},
+        "scale_max": {"const": 16}
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "version", "updated_at", "source", "notes"],
+      "properties": {
+        "status": {"enum": ["research", "paper", "reviewed", "approved_paper", "blocked"]},
+        "version": {"type": "string", "minLength": 1},
+        "updated_at": {"type": "string", "format": "date-time"},
+        "source": {"type": "string", "minLength": 1},
+        "notes": {"type": "string"}
+      }
+    },
+    "strategy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "source",
+        "source_ts",
+        "age_seconds",
+        "stale_after_seconds",
+        "metrics",
+        "validation"
+      ],
+      "properties": {
+        "status": {"enum": ["LIVE", "STALE", "UNAVAILABLE"]},
+        "source": {"type": "string", "minLength": 1},
+        "source_ts": {"type": ["string", "null"], "format": "date-time"},
+        "age_seconds": {"type": ["number", "null"], "minimum": 0},
+        "stale_after_seconds": {"type": "integer", "minimum": 1},
+        "metrics": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["realized_pnl", "winrate_pct", "trades", "equity", "score"],
+          "properties": {
+            "realized_pnl": {"$ref": "#/$defs/datum"},
+            "winrate_pct": {"$ref": "#/$defs/datum"},
+            "trades": {"$ref": "#/$defs/datum"},
+            "equity": {"$ref": "#/$defs/datum"},
+            "score": {"$ref": "#/$defs/datum"}
+          }
+        },
+        "validation": {"$ref": "#/$defs/validation"}
+      }
+    }
+  },
+  "examples": [
+    {
+      "schema": "TitaniumSnapshot",
+      "schema_version": "1.0",
+      "generated_at": "2026-07-12T05:00:00+00:00",
+      "paper_only": true,
+      "status": "LIVE",
+      "strategies": {
+        "crypto": {
+          "status": "LIVE",
+          "source": "execution.paper_trading.PaperEngine.get_stats",
+          "source_ts": "2026-07-12T04:59:50+00:00",
+          "age_seconds": 10.0,
+          "stale_after_seconds": 60,
+          "metrics": {
+            "realized_pnl": {"value": 12.5, "unit": "USDT", "source": "execution.paper_trading.PaperEngine.get_stats", "source_ts": "2026-07-12T04:59:50+00:00", "age_seconds": 10.0, "stale_after_seconds": 60, "status": "LIVE"},
+            "winrate_pct": {"value": 55.0, "unit": "percent", "source": "execution.paper_trading.PaperEngine.get_stats", "source_ts": "2026-07-12T04:59:50+00:00", "age_seconds": 10.0, "stale_after_seconds": 60, "status": "LIVE"},
+            "trades": {"value": 20, "unit": "count", "source": "execution.paper_trading.PaperEngine.get_stats", "source_ts": "2026-07-12T04:59:50+00:00", "age_seconds": 10.0, "stale_after_seconds": 60, "status": "LIVE"},
+            "equity": {"value": 1012.5, "unit": "USDT", "source": "execution.paper_trading.PaperEngine.get_stats", "source_ts": "2026-07-12T04:59:50+00:00", "age_seconds": 10.0, "stale_after_seconds": 60, "status": "LIVE"},
+            "score": {"value": 11.64, "unit": "points", "source": "execution.signal_manager.get_all_signals", "source_ts": "2026-07-12T04:59:55+00:00", "age_seconds": 5.0, "stale_after_seconds": 60, "status": "LIVE", "scale_max": 16}
+          },
+          "validation": {
+            "status": "paper",
+            "version": "crypto-paper-r3c-rev3",
+            "updated_at": "2026-07-11T12:26:29+00:00",
+            "source": "validation/strategy_status.json",
+            "notes": "Paper only; aucune autorisation live."
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "strategies": {
+    "crypto": {
+      "status": "paper",
+      "version": "crypto-paper-r3c-rev3",
+      "updated_at": "2026-07-11T12:26:29+00:00",
+      "source": "collab/LOG.md",
+      "notes": "Garde portefeuille rev.3 approuvé; statut runtime paper, pas validation statistique live."
+    },
+    "forex": {
+      "status": "reviewed",
+      "version": "forex-native-mt5-2026-07-08",
+      "updated_at": "2026-07-08T00:00:00+00:00",
+      "source": "docs/RAPPORT_MT5_BACKTEST.md",
+      "notes": "Rapports natifs revus; le statut maximal reste forward paper."
+    },
+    "swing": {
+      "status": "research",
+      "version": "swing-research-v1",
+      "updated_at": "2026-07-11T00:00:00+00:00",
+      "source": "docs/VALIDATION_PROTOCOL.md",
+      "notes": "Validation M2 finale verrouillée non encore publiée pour l'ensemble du panier."
+    }
+  }
+}

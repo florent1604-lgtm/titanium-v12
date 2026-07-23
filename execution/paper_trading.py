@@ -361,9 +361,6 @@ class PaperEngine:
                 logger.warning("[PAPER] %s taille trop petite (%.2f$), ignoré", sym, size_usdt)
                 return None
 
-            # Déduire du cash
-            self.cash -= total_cost
-
             # Trailing stop initial
             trail_sl = 0.0
             if PAPER_TRAILING_STOP and atr > 0:
@@ -395,9 +392,23 @@ class PaperEngine:
                 adx=adx_val,
             )
 
-            self.positions[sym] = pos
-            self._last_prices[sym] = price
-            self._update_equity_curve()
+            def insert_position() -> None:
+                self.cash -= total_cost
+                self.positions[sym] = pos
+                self._last_prices[sym] = price
+                self._update_equity_curve()
+
+            # R3c : le moteur crypto partage la transaction portefeuille avec
+            # swing/forex. Le callback reste strictement synchrone, sans await.
+            from core.portfolio_risk import check_and_insert
+            ok, reason = check_and_insert(
+                "crypto", sym, size_usdt, current_eq, side, insert_position,
+                crypto_engine=self,
+            )
+            if not ok:
+                logger.info("[PAPER] %s NON ouvert — risque portefeuille: %s", sym, reason)
+                return None
+
             await self._save_state_unsafe()
 
             logger.info(

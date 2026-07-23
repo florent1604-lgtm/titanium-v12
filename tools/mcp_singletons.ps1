@@ -21,6 +21,10 @@ $Services = @(
         Name = "hermes-mcp"; Port = 8766; Python = $McpPython
         Script = Join-Path $Root "tools\hermes_mcp_http.py"
     }
+    [pscustomobject]@{
+        Name = "collab-hub"; Port = 8770; Python = $McpPython
+        Script = Join-Path $Root "tools\collab_hub_server.py"
+    }
 )
 
 function Get-ListenerPid([int]$Port) {

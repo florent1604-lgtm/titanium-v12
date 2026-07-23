@@ -1,0 +1,48 @@
+{
+ "days": 365,
+ "generated": "2026-07-08T06:39:47.351597+00:00",
+ "assets": {
+  "SOL": {
+   "bars": 8741,
+   "fees_bps": 11,
+   "variants": {
+    "V0_baseline_sl1.0_tp2.5/3.5/5": {
+     "trades": 59,
+     "winrate_pct": 23.7,
+     "expectancy_bps": -24.9,
+     "profit_factor": 0.7,
+     "total_bps": -1468.0,
+     "max_dd_bps": 1610.0,
+     "sharpe_trade": -0.143
+    },
+    "V1_respiration_sl2.0_tp1.5/2.5/4": {
+     "trades": 57,
+     "winrate_pct": 54.4,
+     "expectancy_bps": -16.3,
+     "profit_factor": 0.83,
+     "total_bps": -931.0,
+     "max_dd_bps": 1358.0,
+     "sharpe_trade": -0.081
+    },
+    "V2_regime_adx": {
+     "trades": 42,
+     "winrate_pct": 52.4,
+     "expectancy_bps": 7.8,
+     "profit_factor": 1.09,
+     "total_bps": 329.0,
+     "max_dd_bps": 1395.0,
+     "sharpe_trade": 0.038
+    },
+    "V3_alignement_ema50": {
+     "trades": 22,
+     "winrate_pct": 45.5,
+     "expectancy_bps": -33.9,
+     "profit_factor": 0.71,
+     "total_bps": -746.0,
+     "max_dd_bps": 1042.0,
+     "sharpe_trade": -0.151
+    }
+   }
+  }
+ }
+}

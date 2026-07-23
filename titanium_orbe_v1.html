@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TITANIUM · ORBE</title>
+<style>
+/* ═══════════════ TOKENS — DASH_DESIGN.md (co-signé Claude/Codex/Hermes) ═══ */
+:root{
+  --bg:#0A0E14; --panel:#0F1520; --panel2:#131C2B; --line:rgba(56,225,255,.09);
+  --ink:#C9D4E3; --dim:#5C6B80; --faint:#39465A;
+  --cyan:#38E1FF; --amber:#FFB454; --red:#FF5C5C; --green:#3FDE8C;
+  --mono:"Cascadia Mono","Consolas",monospace;
+  --disp:"Bahnschrift","Segoe UI Semibold",system-ui,sans-serif;
+  --body:"Segoe UI",system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);
+  font-size:13px;overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:1px solid var(--line);
+  border-radius:4px;padding:3px 10px;cursor:pointer}
+button:hover{border-color:var(--cyan);color:var(--cyan)}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+/* fond oscilloscope (ticks temps réel, intensité basse) */
+#scope{position:fixed;inset:0;z-index:0;opacity:.5;pointer-events:none}
+
+/* ═══════════════ STRUCTURE ═══════════════ */
+#app{position:relative;z-index:1;display:grid;height:100vh;
+  grid-template-rows:46px 1fr 120px;gap:10px;padding:10px 14px}
+
+/* ── Bandeau haut ── */
+header{display:flex;align-items:center;gap:14px;
+  border-bottom:1px solid var(--line);padding-bottom:8px}
+.wordmark{font-family:var(--disp);font-size:19px;letter-spacing:.24em;
+  color:var(--ink)}
+.wordmark b{color:var(--cyan);font-weight:600}
+.paper-badge{font-family:var(--mono);font-size:11px;letter-spacing:.14em;
+  color:var(--amber);border:1px solid var(--amber);border-radius:3px;
+  padding:3px 9px;animation:paperblink 4s ease-in-out infinite}
+@keyframes paperblink{50%{opacity:.55}}
+header .spacer{flex:1}
+.chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);
+  font-size:11px;padding:3px 9px;border:1px solid var(--line);border-radius:3px;
+  color:var(--dim);white-space:nowrap}
+.chip .dot{width:7px;height:7px;border-radius:50%;background:var(--faint)}
+.chip.live{color:var(--cyan);border-color:rgba(56,225,255,.35)}
+.chip.live .dot{background:var(--cyan);box-shadow:0 0 6px var(--cyan)}
+.chip.stale{color:var(--amber);border-color:rgba(255,180,84,.4)}
+.chip.stale .dot{background:var(--amber)}
+.chip.dead{color:var(--dim);border-color:var(--line);text-decoration:line-through}
+.chip.dead .dot{background:var(--faint)}
+.chip.alert{color:var(--red);border-color:rgba(255,92,92,.45)}
+.chip.alert .dot{background:var(--red);box-shadow:0 0 6px var(--red)}
+
+/* ── Corps : orbe | moteurs ── */
+main{display:grid;grid-template-columns:minmax(360px,44%) 1fr;gap:12px;min-height:0}
+
+/* Scène de l'orbe */
+#orbe-stage{position:relative;border:1px solid var(--line);border-radius:8px;
+  background:radial-gradient(ellipse at 50% 42%,rgba(56,225,255,.05),transparent 62%),var(--panel);
+  display:flex;flex-direction:column;min-height:0}
+#orb{width:100%;flex:1;min-height:0}
+#orbe-caption{text-align:center;padding:2px 0 6px;font-family:var(--mono);
+  font-size:11px;color:var(--dim);letter-spacing:.12em}
+#orbe-caption b{color:var(--cyan);font-weight:500}
+/* Anneau R3 : détail texte sous l'orbe */
+#r3-panel{border-top:1px solid var(--line);padding:9px 14px 11px;flex-shrink:0}
+#r3-panel h3{font-family:var(--disp);font-size:11px;letter-spacing:.22em;
+  color:var(--dim);margin-bottom:7px}
+#r3-panel h3 .src{float:right;letter-spacing:0;font-family:var(--mono);
+  font-weight:400;text-transform:none}
+.gauge{display:grid;grid-template-columns:64px 1fr 118px;gap:8px;
+  align-items:center;margin-bottom:5px;font-family:var(--mono);font-size:11px}
+.gauge .lbl{color:var(--dim)}
+.gauge .bar{height:7px;background:var(--panel2);border-radius:4px;overflow:hidden;
+  border:1px solid var(--line)}
+.gauge .fill{height:100%;background:var(--cyan);border-radius:4px;
+  transition:width .6s ease}
+.gauge.warn .fill{background:var(--amber)}
+.gauge.over .fill{background:var(--red)}
+.gauge .val{text-align:right;color:var(--ink)}
+#clusters{margin-top:7px;display:flex;flex-wrap:wrap;gap:5px}
+.cl-tag{font-family:var(--mono);font-size:10px;padding:2px 7px;
+  border:1px solid var(--line);border-radius:3px;color:var(--dim)}
+.cl-tag.sat{color:var(--red);border-color:rgba(255,92,92,.5)}
+.cl-tag.sat::after{content:" · SATURÉ — entrées bloquées"}
+
+/* Colonnes moteurs */
+#engines{display:grid;grid-template-rows:repeat(3,1fr);gap:10px;min-height:0}
+.engine{border:1px solid var(--line);border-radius:8px;background:var(--panel);
+  display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.engine>.head{display:flex;align-items:center;gap:9px;padding:7px 12px;
+  border-bottom:1px solid var(--line);flex-shrink:0}
+.engine .name{font-family:var(--disp);font-size:13px;letter-spacing:.2em}
+.engine .valid{font-family:var(--mono);font-size:10px;color:var(--dim);
+  border:1px dashed var(--line);border-radius:3px;padding:1px 6px}
+.engine .head .spacer{flex:1}
+.engine .kpis{display:flex;gap:16px;padding:7px 12px;flex-shrink:0;
+  font-family:var(--mono);font-size:11px;flex-wrap:wrap}
+.kpi .k{color:var(--dim);display:block;font-size:10px}
+.kpi .v{font-size:14px;color:var(--ink)}
+.kpi .v.pos{color:var(--green)} .kpi .v.neg{color:var(--red)}
+.engine .positions{flex:1;overflow-y:auto;padding:0 12px 8px;min-height:0}
+.engine table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px}
+.engine th{text-align:left;color:var(--faint);font-weight:400;padding:2px 6px 4px 0;
+  border-bottom:1px solid var(--line)}
+.engine td{padding:3px 6px 3px 0;color:var(--ink);border-bottom:1px solid rgba(56,225,255,.04)}
+.engine td.pos{color:var(--green)} .engine td.neg{color:var(--red)}
+.empty{color:var(--faint);font-family:var(--mono);font-size:11px;padding:8px 0}
+.unavail{color:var(--dim);text-decoration:line-through}
+.side-l{color:var(--green)} .side-s{color:var(--red)}
+
+/* ── Bandeau bas : journal ── */
+footer{border:1px solid var(--line);border-radius:8px;background:var(--panel);
+  padding:7px 12px;overflow:hidden;display:flex;flex-direction:column}
+footer h3{font-family:var(--disp);font-size:11px;letter-spacing:.22em;
+  color:var(--dim);margin-bottom:5px;flex-shrink:0}
+#journal{flex:1;overflow-y:auto;font-family:var(--mono);font-size:11px;line-height:1.75}
+#journal .t{color:var(--faint);margin-right:9px}
+#journal .eng{color:var(--cyan);margin-right:7px}
+#journal .pnl-pos{color:var(--green)} #journal .pnl-neg{color:var(--red)}
+
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:var(--panel2);border-radius:4px}
+::-webkit-scrollbar-track{background:transparent}
+
+@media (prefers-reduced-motion: reduce){
+  .paper-badge{animation:none}
+}
+@media (max-width:1000px){
+  body{overflow:auto}
+  #app{grid-template-rows:auto auto auto;height:auto}
+  main{grid-template-columns:1fr}
+  #orbe-stage{min-height:420px}
+}
+</style>
+</head>
+<body>
+<canvas id="scope" aria-hidden="true"></canvas>
+
+<div id="app">
+  <header>
+    <span class="wordmark">TITANIUM · <b>ORBE</b></span>
+    <span class="paper-badge" title="Aucun ordre réel — MT5 = données seulement">PAPER ONLY</span>
+    <span class="spacer"></span>
+    <span class="chip" id="chip-flux"><span class="dot"></span><span>FLUX —</span></span>
+    <span class="chip" id="chip-hermes"><span class="dot"></span><span>HERMES —</span></span>
+    <span class="chip" id="chip-clock"><span class="dot"></span><span>--:--:-- UTC</span></span>
+    <button id="btn-classic" onclick="location.href='/'">vue classique</button>
+  </header>
+
+  <main>
+    <!-- ══ ORBE (signature) ══ -->
+    <section id="orbe-stage" aria-label="Orbe JARVIS — état du système">
+      <canvas id="orb"></canvas>
+      <div id="orbe-caption" id="orb-state-label">ÉTAT · <b id="orb-label">INITIALISATION</b></div>
+      <div id="r3-panel">
+        <h3>ANNEAU R3 — RISQUE PORTEFEUILLE
+          <span class="src" id="r3-src">source /swing/risk/exposure · —</span></h3>
+        <div class="gauge" id="g-gross">
+          <span class="lbl">GROSS</span><div class="bar"><div class="fill" style="width:0%"></div></div>
+          <span class="val">—</span>
+        </div>
+        <div class="gauge" id="g-net">
+          <span class="lbl">NET</span><div class="bar"><div class="fill" style="width:0%"></div></div>
+          <span class="val">—</span>
+        </div>
+        <div id="clusters"></div>
+      </div>
+    </section>
+
+    <!-- ══ MOTEURS (séparés — exigence Codex n°3) ══ -->
+    <section id="engines">
+      <article class="engine" id="eng-swing">
+        <div class="head"><span class="name">SWING · H4</span>
+          <span class="valid" title="Statut statique v1 — sera servi par TitaniumSnapshot (R4)">PAPER — validé testeur natif</span>
+          <span class="spacer"></span>
+          <span class="chip" data-age><span class="dot"></span><span>—</span></span></div>
+        <div class="kpis"></div>
+        <div class="positions"><div class="empty">chargement…</div></div>
+      </article>
+      <article class="engine" id="eng-forex">
+        <div class="head"><span class="name">FOREX · H1</span>
+          <span class="valid" title="Statut statique v1 — sera servi par TitaniumSnapshot (R4)">PAPER — V3 validée lab</span>
+          <span class="spacer"></span>
+          <span class="chip" data-age><span class="dot"></span><span>—</span></span></div>
+        <div class="kpis"></div>
+        <div class="positions"><div class="empty">chargement…</div></div>
+      </article>
+      <article class="engine" id="eng-crypto">
+        <div class="head"><span class="name">CRYPTO · 30S</span>
+          <span class="valid" title="Statut statique v1 — sera servi par TitaniumSnapshot (R4)">PAPER — observation</span>
+          <span class="spacer"></span>
+          <span class="chip" data-age><span class="dot"></span><span>—</span></span></div>
+        <div class="kpis"></div>
+        <div class="positions"><div class="empty">chargement…</div></div>
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    <h3>JOURNAL — DERNIERS TRADES &amp; DÉCISIONS (3 moteurs, unités affichées, 1 USDT ≈ 1 EUR documenté)</h3>
+    <div id="journal"><span class="empty">en attente de données…</span></div>
+  </footer>
+</div>
+
+<script>
+"use strict";
+/* ═════════ Cockpit ORBE — DASH_DESIGN.md. Fail-visible : toute donnée
+   absente/périmée = gris barré ou ambre, jamais un chiffre rassurant. ═════════ */
+
+const $ = s => document.querySelector(s);
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const now = () => Date.now();
+
+/* ── état global ── */
+const S = {
+  feeds: {},        // nom -> {ok, ts(ms réception), data}
+  risk: null,
+  lastTickTs: 0,
+  hermes: "dead",   // live | dead
+  speakUntil: 0,
+  orb: "boot",      // live | warn | alert | boot
+};
+
+function ageState(name, maxMs = 15000) {
+  const f = S.feeds[name];
+  if (!f || !f.ok) return "dead";
+  return (now() - f.ts) > maxMs ? "stale" : "live";
+}
+function setChip(el, state, text) {
+  el.className = "chip " + (state === "live" ? "live" : state === "stale" ? "stale"
+    : state === "alert" ? "alert" : "dead");
+  el.lastElementChild.textContent = text;
+}
+const fmtEur = v => (v == null || !isFinite(v)) ? "—"
+  : v.toLocaleString("fr-FR", {maximumFractionDigits: 0}) + " €";
+const fmtAge = ms => ms < 1500 ? "LIVE" : ms < 60000 ? Math.round(ms/1000)+"s" : Math.round(ms/60000)+"min";
+
+/* ── fetch défensif : échec = UNAVAILABLE, jamais silencieux ── */
+async function pull(name, url) {
+  try {
+    const r = await fetch(url, {cache: "no-store"});
+    if (!r.ok) throw new Error(r.status);
+    S.feeds[name] = {ok: true, ts: now(), data: await r.json()};
+  } catch (e) {
+    S.feeds[name] = {ok: false, ts: now(), data: null};
+  }
+}
+
+/* ── moteurs ── */
+function kpi(k, v, cls) {
+  return `<span class="kpi"><span class="k">${k}</span><span class="v ${cls||""}">${v}</span></span>`;
+}
+function ageChip(card, feed) {
+  const st = ageState(feed);
+  const f = S.feeds[feed];
+  const label = st === "dead" ? "INDISPONIBLE"
+    : st === "stale" ? "STALE " + fmtAge(now() - f.ts)
+    : "LIVE · " + fmtAge(now() - f.ts);
+  setChip(card.querySelector("[data-age]"), st, label);
+  return st;
+}
+function posRow(sym, side, entry, pnl, unit) {
+  const s = (side||"").toLowerCase();
+  const sideCls = (s === "long" || s === "buy") ? "side-l" : "side-s";
+  const pnlCls = pnl > 0 ? "pos" : pnl < 0 ? "neg" : "";
+  return `<tr><td>${sym}</td><td class="${sideCls}">${(side||"?").toUpperCase()}</td>
+    <td>${entry ?? "—"}</td><td class="${pnlCls}">${pnl == null ? "—" : pnl.toFixed(2)+" "+unit}</td></tr>`;
+}
+function renderEngine(card, feedName, opts) {
+  const st = ageChip(card, feedName);
+  const kpisEl = card.querySelector(".kpis"), posEl = card.querySelector(".positions");
+  if (st === "dead") {
+    kpisEl.innerHTML = `<span class="kpi"><span class="v unavail">DONNÉES INDISPONIBLES</span></span>`;
+    posEl.innerHTML = `<div class="empty unavail">flux coupé — aucune valeur affichable</div>`;
+    return "dead";
+  }
+  const d = S.feeds[feedName].data;
+  kpisEl.innerHTML = opts.kpis(d);
+  const rows = opts.rows(d);
+  posEl.innerHTML = rows.length
+    ? `<table><tr><th>ACTIF</th><th>SENS</th><th>ENTRÉE</th><th>P&L</th></tr>${rows.join("")}</table>`
+    : `<div class="empty">aucune position ouverte</div>`;
+  return st;
+}
+
+function renderAll() {
+  const states = [];
+
+  states.push(renderEngine($("#eng-swing"), "swing", {
+    kpis: d => kpi("EQUITY", fmtEur(d.equity)) +
+      kpi("P&L", fmtEur(d.total_pnl_eur), d.total_pnl_eur > 0 ? "pos" : d.total_pnl_eur < 0 ? "neg" : "") +
+      kpi("TRADES", d.trades ?? "—") +
+      kpi("MT5", d.mt5 && d.mt5.connected ? "CONNECTÉ · DATA-ONLY" : "COUPÉ",
+          d.mt5 && d.mt5.connected ? "pos" : "neg"),
+    rows: d => Object.entries((S.feeds.swingState?.ok && S.feeds.swingState.data.positions) || {})
+      .map(([sym, p]) => posRow(sym, p.side, p.entry, p.pnl_eur, "€")),
+  }));
+
+  states.push(renderEngine($("#eng-forex"), "forex", {
+    kpis: d => kpi("EQUITY", fmtEur(d.equity)) +
+      kpi("P&L", fmtEur(d.total_pnl_eur), d.total_pnl_eur > 0 ? "pos" : d.total_pnl_eur < 0 ? "neg" : "") +
+      kpi("TRADES", d.trades ?? "—") +
+      kpi("WINRATE", d.winrate_pct == null ? "—" : d.winrate_pct + " %"),
+    rows: d => Object.entries((S.feeds.forexState?.ok && S.feeds.forexState.data.positions) || {})
+      .map(([sym, p]) => posRow(sym, p.side, p.entry, p.pnl_eur, "€")),
+  }));
+
+  states.push(renderEngine($("#eng-crypto"), "crypto", {
+    kpis: d => kpi("EQUITY", (d.equity ?? "—") + " USDT") +
+      kpi("P&L", (d.realized_pnl ?? 0).toFixed(2) + " USDT",
+          d.realized_pnl > 0 ? "pos" : d.realized_pnl < 0 ? "neg" : "") +
+      kpi("WINRATE", (d.winrate ?? "—") + " %") +
+      kpi("DRAWDOWN", (d.current_drawdown_pct ?? "—") + " %",
+          d.current_drawdown_pct > 5 ? "neg" : ""),
+    rows: d => {
+      const ps = S.feeds.cryptoPos?.ok ? S.feeds.cryptoPos.data : null;
+      const list = ps ? (Array.isArray(ps) ? ps : Object.values(ps.positions || ps || {})) : [];
+      return list.map(p => posRow(p.symbol || p.sym || "?", p.side, p.entry_price, p.unrealized_pnl, "USDT"));
+    },
+  }));
+
+  /* ── anneau R3 ── */
+  let riskAlert = false, riskDead = false;
+  const rf = S.feeds.risk;
+  if (rf && rf.ok && rf.data && rf.data.ok) {
+    const d = rf.data;
+    $("#r3-src").textContent = "source /swing/risk/exposure · " + fmtAge(now() - rf.ts);
+    const eqT = d.equity_live_eur?.total || 0;
+    const caps = d.caps_pct || {};
+    const setG = (id, val, cap) => {
+      const g = $(id), pct = cap > 0 ? Math.min(140, Math.abs(val) / cap * 100) : 0;
+      g.className = "gauge" + (pct >= 100 ? " over" : pct >= 75 ? " warn" : "");
+      g.querySelector(".fill").style.width = Math.min(100, pct) + "%";
+      g.querySelector(".val").textContent = fmtEur(Math.abs(val)) + " / " + fmtEur(cap);
+      return pct >= 100;
+    };
+    riskAlert |= setG("#g-gross", d.gross_eur, eqT * (caps.gross || 0) / 100);
+    riskAlert |= setG("#g-net", d.net_eur, eqT * (caps.net || 0) / 100);
+    // clusters : cap = % de l'equity du moteur demandeur (swing pour les indices) — estimé
+    const eqSwing = d.equity_live_eur?.swing || 0;
+    const capCl = eqSwing * (caps.cluster || 0) / 100;
+    $("#clusters").innerHTML = Object.entries(d.by_cluster || {}).map(([cl, v]) => {
+      const sat = capCl > 0 && v.gross_eur >= capCl;
+      riskAlert |= sat;
+      return `<span class="cl-tag${sat ? " sat" : ""}" title="gross ${fmtEur(v.gross_eur)} · net ${fmtEur(v.net_eur)} · plafond estimé ${fmtEur(capCl)}">${cl} ${fmtEur(v.gross_eur)}</span>`;
+    }).join("") || `<span class="cl-tag">aucune exposition</span>`;
+  } else {
+    riskDead = true;
+    $("#r3-src").textContent = "source /swing/risk/exposure · INDISPONIBLE — GARDE FAIL-CLOSED ACTIF";
+    $("#clusters").innerHTML = `<span class="cl-tag sat" style="text-decoration:line-through">ÉTAT RISQUE ILLISIBLE</span>`;
+  }
+
+  /* ── état de l'orbe : la pire nouvelle gagne (règle Hermes) ── */
+  S.orb = riskDead || rf?.data?.ok === false ? "alert"
+    : (states.includes("dead") ? "alert"
+    : (riskAlert || states.includes("stale")) ? "warn" : "live");
+  $("#orb-label").textContent =
+    S.orb === "live" ? "NOMINAL — PAPER" :
+    S.orb === "warn" ? "SURVEILLANCE — plafond saturé ou flux ralenti" :
+    "ALERTE — flux coupé ou risque illisible (fail-closed)";
+
+  /* ── journal fusionné ── */
+  const j = [];
+  const pushTrades = (eng, trades, unit) => (trades || []).slice(-8).forEach(t => j.push({
+    ts: t.closed || t.exit_ts || "", eng,
+    txt: `${t.symbol} ${(t.side||"").toUpperCase()} → ${t.exit_reason || "?"}`,
+    pnl: t.pnl_eur ?? t.pnl_usdt, unit,
+  }));
+  pushTrades("SWING", S.feeds.swingState?.ok && S.feeds.swingState.data.trades, "€");
+  pushTrades("FOREX", S.feeds.forexState?.ok && S.feeds.forexState.data.trades, "€");
+  pushTrades("CRYPTO", S.feeds.cryptoTrades?.ok && (S.feeds.cryptoTrades.data.trades || S.feeds.cryptoTrades.data), "USDT");
+  j.sort((a, b) => (b.ts || "").localeCompare(a.ts || ""));
+  $("#journal").innerHTML = j.length ? j.slice(0, 24).map(e =>
+    `<div><span class="t">${(e.ts || "").slice(11, 19) || "—"}</span><span class="eng">${e.eng}</span>${e.txt}
+     <span class="${e.pnl > 0 ? "pnl-pos" : e.pnl < 0 ? "pnl-neg" : ""}">${e.pnl == null ? "" : (e.pnl > 0 ? "+" : "") + e.pnl.toFixed(2) + " " + e.unit}</span></div>`
+  ).join("") : `<span class="empty">aucun trade clôturé pour l'instant</span>`;
+
+  /* ── chips du bandeau ── */
+  const tickAge = S.lastTickTs ? now() - S.lastTickTs : Infinity;
+  setChip($("#chip-flux"), tickAge < 5000 ? "live" : tickAge < 30000 ? "stale" : "dead",
+    "FLUX " + (tickAge === Infinity ? "—" : fmtAge(tickAge)));
+  setChip($("#chip-hermes"), S.hermes, "HERMES " + (S.hermes === "live" ? "EN LIGNE" : "HORS LIGNE"));
+}
+
+/* ── boucle de données (5 s) ── */
+async function tick() {
+  await Promise.all([
+    pull("swing", "/swing/status"),
+    pull("swingState", "/swing/state"),
+    pull("forex", "/forex/status"),
+    pull("forexState", "/forex/state"),
+    pull("crypto", "/paper/stats"),
+    pull("cryptoPos", "/paper/positions"),
+    pull("cryptoTrades", "/paper/trades"),
+    pull("risk", "/swing/risk/exposure"),
+  ]);
+  S.risk = S.feeds.risk?.data || null;
+  renderAll();
+}
+tick(); setInterval(tick, 5000);
+setInterval(() => { // horloge + fraîcheur inter-cycles
+  $("#chip-clock").lastElementChild.textContent =
+    new Date().toISOString().slice(11, 19) + " UTC";
+}, 1000);
+
+/* ── WS temps réel : oscilloscope + fraîcheur ── */
+const scope = $("#scope"), sctx = scope.getContext("2d");
+let ticksBuf = [];
+function sizeCanvas(c) { c.width = c.clientWidth * devicePixelRatio; c.height = c.clientHeight * devicePixelRatio; }
+addEventListener("resize", () => { sizeCanvas(scope); sizeCanvas(orbC); });
+function connectRealtime() {
+  try {
+    const ws = new WebSocket(`ws://${location.host}/ws/realtime`);
+    ws.onmessage = ev => {
+      S.lastTickTs = now();
+      try {
+        const d = JSON.parse(ev.data);
+        const t = (d.mt5_ticks && Object.values(d.mt5_ticks)[0]) || (d.ticks && d.ticks[0]);
+        const px = t ? (t.mid || t.bid || t.price) : null;
+        if (px) { ticksBuf.push(px); if (ticksBuf.length > 600) ticksBuf.shift(); }
+      } catch (e) {}
+    };
+    ws.onclose = () => setTimeout(connectRealtime, 4000);
+  } catch (e) { setTimeout(connectRealtime, 6000); }
+}
+connectRealtime();
+
+/* ── WS JARVIS (8765) : présence du cerveau + impulsion "parole" ── */
+function connectJarvis() {
+  try {
+    const ws = new WebSocket("ws://localhost:8765");
+    ws.onopen = () => { S.hermes = "live"; };
+    ws.onmessage = () => { S.speakUntil = now() + 2500; };
+    ws.onclose = () => { S.hermes = "dead"; setTimeout(connectJarvis, 8000); };
+    ws.onerror = () => { try { ws.close(); } catch (e) {} };
+  } catch (e) { S.hermes = "dead"; setTimeout(connectJarvis, 10000); }
+}
+connectJarvis();
+
+/* ═════════ L'ORBE — canvas (signature) ═════════ */
+const orbC = $("#orb"), octx = orbC.getContext("2d");
+sizeCanvas(scope); sizeCanvas(orbC);
+const SAT = [
+  {name: "SWING", feed: "swing", angle: -Math.PI / 2},
+  {name: "FOREX", feed: "forex", angle: Math.PI / 6},
+  {name: "CRYPTO", feed: "crypto", angle: 5 * Math.PI / 6},
+];
+const COLORS = {live: "#3FDE8C", stale: "#FFB454", dead: "#FF5C5C"};
+let t0 = performance.now();
+
+function drawOrb(nowMs) {
+  const w = orbC.width, h = orbC.height, cx = w / 2, cy = h / 2;
+  const R = Math.min(w, h) * 0.21;
+  const t = (nowMs - t0) / 1000;
+  octx.clearRect(0, 0, w, h);
+
+  const mood = S.orb === "alert" ? "#FF5C5C" : S.orb === "warn" ? "#FFB454" : "#38E1FF";
+  const speaking = now() < S.speakUntil;
+  const pulse = REDUCED ? 0 : Math.sin(t * (speaking ? 7 : S.orb === "alert" ? 4 : 1.2)) * 0.06;
+
+  // halo
+  const halo = octx.createRadialGradient(cx, cy, R * 0.2, cx, cy, R * 2.6);
+  halo.addColorStop(0, mood + "33"); halo.addColorStop(1, "transparent");
+  octx.fillStyle = halo; octx.fillRect(0, 0, w, h);
+
+  // anneaux de réflexion (rotation lente)
+  if (!REDUCED) {
+    octx.save(); octx.translate(cx, cy); octx.rotate(t * 0.22);
+    for (let i = 1; i <= 3; i++) {
+      octx.beginPath();
+      octx.arc(0, 0, R * (1.35 + i * 0.26), i * 0.9, i * 0.9 + Math.PI * (1.1 - i * 0.18));
+      octx.strokeStyle = mood + (i === 1 ? "55" : i === 2 ? "33" : "1E");
+      octx.lineWidth = Math.max(1, R * 0.012); octx.stroke();
+    }
+    octx.restore();
+  }
+
+  // cœur
+  const core = octx.createRadialGradient(cx - R * 0.25, cy - R * 0.3, R * 0.1, cx, cy, R * (1 + pulse));
+  core.addColorStop(0, "#EAFBFF"); core.addColorStop(0.35, mood); core.addColorStop(1, "#06222E");
+  octx.beginPath(); octx.arc(cx, cy, R * (1 + pulse), 0, 7);
+  octx.fillStyle = core; octx.fill();
+  octx.strokeStyle = mood + "AA"; octx.lineWidth = 1.5; octx.stroke();
+
+  // satellites moteurs
+  const orbit = R * 2.15;
+  SAT.forEach((s, i) => {
+    const a = s.angle + (REDUCED ? 0 : t * 0.1);
+    const x = cx + Math.cos(a) * orbit, y = cy + Math.sin(a) * orbit * 0.72;
+    const st = ageState(s.feed);
+    const col = COLORS[st] || "#5C6B80";
+    // lien
+    octx.beginPath(); octx.moveTo(cx + Math.cos(a) * R * 1.05, cy + Math.sin(a) * R * 0.78);
+    octx.lineTo(x, y); octx.strokeStyle = col + "2E"; octx.lineWidth = 1; octx.stroke();
+    // pastille
+    octx.beginPath(); octx.arc(x, y, R * 0.13, 0, 7);
+    octx.fillStyle = "#0F1520"; octx.fill();
+    octx.strokeStyle = col; octx.lineWidth = 2; octx.stroke();
+    if (st === "dead") { // barré (fail-visible)
+      octx.beginPath(); octx.moveTo(x - R*0.1, y - R*0.1); octx.lineTo(x + R*0.1, y + R*0.1);
+      octx.strokeStyle = col; octx.stroke();
+    }
+    octx.fillStyle = col; octx.font = `${Math.max(10, R * 0.14)}px Cascadia Mono, Consolas, monospace`;
+    octx.textAlign = "center"; octx.fillText(s.name, x, y + R * 0.34);
+  });
+
+  // anneau R3 autour du cœur : arc gross / plafond
+  const rf = S.feeds.risk;
+  if (rf && rf.ok && rf.data && rf.data.ok) {
+    const d = rf.data, eqT = d.equity_live_eur?.total || 0;
+    const cap = eqT * (d.caps_pct?.gross || 0) / 100;
+    const frac = cap > 0 ? Math.min(1, d.gross_eur / cap) : 0;
+    octx.beginPath(); octx.arc(cx, cy, R * 1.22, -Math.PI / 2, -Math.PI / 2 + frac * 2 * Math.PI);
+    octx.strokeStyle = frac >= 1 ? "#FF5C5C" : frac >= 0.75 ? "#FFB454" : mood;
+    octx.lineWidth = Math.max(2, R * 0.045); octx.stroke();
+  } else {
+    octx.setLineDash([4, 6]);
+    octx.beginPath(); octx.arc(cx, cy, R * 1.22, 0, 7);
+    octx.strokeStyle = "#5C6B80"; octx.lineWidth = 2; octx.stroke();
+    octx.setLineDash([]);
+  }
+  requestAnimationFrame(drawOrb);
+}
+requestAnimationFrame(drawOrb);
+
+/* ── oscilloscope de fond ── */
+function drawScope() {
+  const w = scope.width, h = scope.height;
+  sctx.clearRect(0, 0, w, h);
+  if (ticksBuf.length > 2) {
+    const min = Math.min(...ticksBuf), max = Math.max(...ticksBuf), span = (max - min) || 1;
+    sctx.beginPath();
+    ticksBuf.forEach((p, i) => {
+      const x = i / (ticksBuf.length - 1) * w;
+      const y = h * 0.82 - ((p - min) / span) * h * 0.16;
+      i ? sctx.lineTo(x, y) : sctx.moveTo(x, y);
+    });
+    sctx.strokeStyle = "rgba(56,225,255,.10)"; sctx.lineWidth = 1.2; sctx.stroke();
+  }
+  if (!REDUCED) requestAnimationFrame(drawScope); else setTimeout(drawScope, 2000);
+}
+drawScope();
+</script>
+</body>
+</html>

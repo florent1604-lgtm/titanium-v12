@@ -1,0 +1,32 @@
+{
+ "enabled": true,
+ "mode": "paper",
+ "capital": 10000.0,
+ "equity": 10000.0,
+ "positions": {},
+ "trades": [],
+ "last_scan": "2026-07-23T16:49:20.686351+00:00",
+ "last_signal": {
+  "EURUSD": {
+   "side": null,
+   "ts": "2026-07-23T16:49:20.557261+00:00"
+  },
+  "GBPUSD": {
+   "side": null,
+   "ts": "2026-07-23T16:49:20.573218+00:00"
+  },
+  "XAUUSD": {
+   "side": null,
+   "ts": "2026-07-23T16:49:20.686351+00:00"
+  }
+ },
+ "errors": [],
+ "scan_count": 14159,
+ "monitored": {
+  "BTCUSD": {
+   "mid": 64715.79,
+   "ts": "2026-07-23T19:49:20+00:00"
+  }
+ },
+ "last_bar": {}
+}

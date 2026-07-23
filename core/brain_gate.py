@@ -113,33 +113,46 @@ def _consensus_lookup(symbol: str) -> Optional[dict]:
         return None
 
 
-def _conviction(cons: dict, side: int) -> tuple:
-    """Conviction ∈ [0,1] pilotée par l'ÉMOTION (moteur principal) + la force technique.
-    Retourne (conviction, emotion_reason). Alignée forte → ~1 ; tiède → moyenne ; opposée →
-    plancher. L'émotion NE bloque pas (choix Florent : sizing, pas veto)."""
-    try:
-        cscore = abs(float(cons.get("consensus_score") or 0)) / 100.0
-        coverage = float(cons.get("coverage") or 0.0)
-    except (TypeError, ValueError):
-        cscore = coverage = 0.0
-    tech = max(0.0, min(1.0, coverage * cscore))              # force technique 0..1
+def _emotion_tag(cons: dict, side: int) -> str:
+    """Apport de l'émotion sur ce sens — INFORMATIF uniquement (observabilité). L'émotion
+    agit sur la décision À TRAVERS les familles du consensus, pas par un multiplicateur ici."""
+    emo_dir = int((cons.get("engine_directions") or {}).get("emotion") or 0)
+    if side and emo_dir == side:
+        return "EMO_ALIGNED"
+    if side and emo_dir == -side:
+        return "EMO_OPPOSED"
+    return "EMO_NEUTRAL"
 
-    ed = cons.get("engine_directions") or {}
-    ec = (cons.get("engine_confirmation") or {}).get("emotion") or {}
-    emo_dir = int(ed.get("emotion") or 0)
+
+def _conviction(cons: dict, side: int) -> tuple:
+    """Conviction ∈ [0,1] = ÉQUILIBRE du noyau de calcul, jamais un levier isolé.
+
+    `consensus_score` EST DÉJÀ l'agrégation pondérée des 5 familles du moteur de consensus
+    (structure, localisation/liquidité, timing, participation/régime, comportemental), et
+    l'ÉMOTION y contribue déjà : via l'arousal dans « participation/régime » et via la
+    valence dans « comportemental ». On ne la re-pondère donc PAS ici — le faire romprait
+    l'équilibre commun et referait de l'émotion le pilier décisionnaire (correction demandée
+    par Florent le 21/07/2026 : l'émotion est UNE PIÈCE du puzzle, pas le pilier).
+
+    La conviction suit la force de cet équilibre : `couverture_DIRECTIONNELLE × |score|`,
+    relevée d'un plancher pour qu'un setup faible s'ouvre petit plutôt que pas du tout.
+
+    ⚠️ On utilise `directional_coverage`, PAS `coverage` (audit Hermes 21/07/2026) : `coverage`
+    compte une famille dès qu'un moteur RÉPOND, même en votant zéro. Un actif pouvait donc
+    afficher une couverture pleine sans la moindre preuve directionnelle, et cette présence
+    se transformait en TAILLE de position. Une donnée neutre doit rester visible sans gonfler
+    l'engagement ; une donnée absente ne doit jamais être maquillée en observation.
+    Retourne (conviction, tag_émotion) — le tag ne sert qu'à VOIR l'apport de l'émotion."""
     try:
-        emo_conf = max(0.0, min(1.0, float(ec.get("confidence") or 0.0)))
+        strength = abs(float(cons.get("consensus_score") or 0)) / 100.0
+        # repli sur `coverage` seulement si le moteur est d'une version antérieure
+        raw = cons.get("directional_coverage")
+        coverage = float(raw if raw is not None else (cons.get("coverage") or 0.0))
     except (TypeError, ValueError):
-        emo_conf = 0.0
-    if emo_dir == side and side != 0:
-        emo_signed, tag = emo_conf, "EMO_ALIGNED"
-    elif emo_dir == -side and side != 0:
-        emo_signed, tag = -emo_conf, "EMO_OPPOSED"
-    else:
-        emo_signed, tag = 0.0, "EMO_NEUTRAL"
-    # Émotion = levier principal (0.40) ; technique = appoint (0.30) ; socle 0.30.
-    conv = 0.30 + 0.30 * tech + 0.40 * emo_signed
-    return max(_CONV_FLOOR, min(1.0, conv)), tag
+        strength = coverage = 0.0
+    balance = max(0.0, min(1.0, coverage * strength))
+    conv = _CONV_FLOOR + (1.0 - _CONV_FLOOR) * balance
+    return max(_CONV_FLOOR, min(1.0, conv)), _emotion_tag(cons, side)
 
 
 def gate_entry(symbol: str, proposed_side: int, *,

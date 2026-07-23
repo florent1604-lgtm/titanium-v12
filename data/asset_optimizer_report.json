@@ -1,0 +1,7610 @@
+{
+ "generated": "2026-07-08T17:18:40.203755+00:00",
+ "universe_size": 141,
+ "pass1": {
+  "EURUSD": {
+   "cost": {
+    "symbol": "EURUSD",
+    "category": "STANDARD_FX",
+    "spread_bps": 1.93,
+    "swap_bps_day": 0.588
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 2.9,
+    "carry_bps_per_bar": 0.098,
+    "is": {
+     "trades": 101,
+     "winrate_pct": 61.4,
+     "expectancy_bps": 5.45,
+     "profit_factor": 1.2,
+     "total_bps": 550.0,
+     "max_dd_bps": 791.0,
+     "sharpe_trade": 0.076
+    },
+    "oos": {
+     "trades": 41,
+     "winrate_pct": 53.7,
+     "expectancy_bps": 0.15,
+     "profit_factor": 1.01,
+     "total_bps": 6.0,
+     "max_dd_bps": 432.0,
+     "sharpe_trade": 0.002
+    },
+    "potential": 0.96,
+    "validated": true
+   }
+  },
+  "GBPUSD": {
+   "cost": {
+    "symbol": "GBPUSD",
+    "category": "STANDARD_FX",
+    "spread_bps": 1.72,
+    "swap_bps_day": 0.111
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 2.58,
+    "carry_bps_per_bar": 0.0046,
+    "is": {
+     "trades": 26,
+     "winrate_pct": 84.6,
+     "expectancy_bps": 8.71,
+     "profit_factor": 2.96,
+     "total_bps": 226.0,
+     "max_dd_bps": 51.0,
+     "sharpe_trade": 0.438
+    },
+    "oos": {
+     "trades": 8,
+     "winrate_pct": 37.5,
+     "expectancy_bps": -8.54,
+     "profit_factor": 0.42,
+     "total_bps": -68.0,
+     "max_dd_bps": 80.0,
+     "sharpe_trade": -0.404
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "USDCHF": {
+   "cost": {
+    "symbol": "USDCHF",
+    "category": "STANDARD_FX",
+    "spread_bps": 2.84,
+    "swap_bps_day": 1.523
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 4.26,
+    "carry_bps_per_bar": 0.0635,
+    "is": {
+     "trades": 20,
+     "winrate_pct": 45.0,
+     "expectancy_bps": -3.95,
+     "profit_factor": 0.73,
+     "total_bps": -79.0,
+     "max_dd_bps": 105.0,
+     "sharpe_trade": -0.13
+    },
+    "oos": {
+     "trades": 10,
+     "winrate_pct": 70.0,
+     "expectancy_bps": -0.45,
+     "profit_factor": 0.96,
+     "total_bps": -5.0,
+     "max_dd_bps": 93.0,
+     "sharpe_trade": -0.019
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "USDJPY": {
+   "cost": {
+    "symbol": "USDJPY",
+    "category": "STANDARD_FX",
+    "spread_bps": 1.35,
+    "swap_bps_day": 1.085
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 2.03,
+    "carry_bps_per_bar": 0.1808,
+    "is": {
+     "trades": 84,
+     "winrate_pct": 69.0,
+     "expectancy_bps": 17.9,
+     "profit_factor": 1.63,
+     "total_bps": 1504.0,
+     "max_dd_bps": 393.0,
+     "sharpe_trade": 0.206
+    },
+    "oos": {
+     "trades": 31,
+     "winrate_pct": 71.0,
+     "expectancy_bps": 4.24,
+     "profit_factor": 1.18,
+     "total_bps": 131.0,
+     "max_dd_bps": 181.0,
+     "sharpe_trade": 0.071
+    },
+    "potential": 23.61,
+    "validated": true
+   }
+  },
+  "USDCAD": {
+   "cost": {
+    "symbol": "USDCAD",
+    "category": "STANDARD_FX",
+    "spread_bps": 1.62,
+    "swap_bps_day": 0.687
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 2.43,
+    "carry_bps_per_bar": 0.1145,
+    "is": {
+     "trades": 80,
+     "winrate_pct": 53.8,
+     "expectancy_bps": -3.56,
+     "profit_factor": 0.87,
+     "total_bps": -285.0,
+     "max_dd_bps": 668.0,
+     "sharpe_trade": -0.059
+    },
+    "oos": {
+     "trades": 28,
+     "winrate_pct": 71.4,
+     "expectancy_bps": 12.59,
+     "profit_factor": 1.96,
+     "total_bps": 352.0,
+     "max_dd_bps": 94.0,
+     "sharpe_trade": 0.28
+    },
+    "potential": 66.62,
+    "validated": true
+   }
+  },
+  "AUDUSD": {
+   "cost": {
+    "symbol": "AUDUSD",
+    "category": "STANDARD_FX",
+    "spread_bps": 3.18,
+    "swap_bps_day": 0.508
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 4.77,
+    "carry_bps_per_bar": 0.0212,
+    "is": {
+     "trades": 228,
+     "winrate_pct": 59.2,
+     "expectancy_bps": -4.37,
+     "profit_factor": 0.71,
+     "total_bps": -995.0,
+     "max_dd_bps": 1134.0,
+     "sharpe_trade": -0.144
+    },
+    "oos": {
+     "trades": 87,
+     "winrate_pct": 59.8,
+     "expectancy_bps": -3.02,
+     "profit_factor": 0.81,
+     "total_bps": -262.0,
+     "max_dd_bps": 455.0,
+     "sharpe_trade": -0.091
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "AUDNZD": {
+   "cost": {
+    "symbol": "AUDNZD",
+    "category": "STANDARD_FX",
+    "spread_bps": 2.3,
+    "swap_bps_day": 0.549
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 3.45,
+    "carry_bps_per_bar": 0.0915,
+    "is": {
+     "trades": 86,
+     "winrate_pct": 55.8,
+     "expectancy_bps": -3.4,
+     "profit_factor": 0.87,
+     "total_bps": -292.0,
+     "max_dd_bps": 564.0,
+     "sharpe_trade": -0.062
+    },
+    "oos": {
+     "trades": 33,
+     "winrate_pct": 66.7,
+     "expectancy_bps": 8.16,
+     "profit_factor": 1.47,
+     "total_bps": 269.0,
+     "max_dd_bps": 228.0,
+     "sharpe_trade": 0.169
+    },
+    "potential": 46.88,
+    "validated": true
+   }
+  },
+  "AUDCAD": {
+   "cost": {
+    "symbol": "AUDCAD",
+    "category": "STANDARD_FX",
+    "spread_bps": 2.55,
+    "swap_bps_day": 0.828
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 3.82,
+    "carry_bps_per_bar": 0.0345,
+    "is": {
+     "trades": 184,
+     "winrate_pct": 55.4,
+     "expectancy_bps": -5.75,
+     "profit_factor": 0.55,
+     "total_bps": -1057.0,
+     "max_dd_bps": 1118.0,
+     "sharpe_trade": -0.245
+    },
+    "oos": {
+     "trades": 71,
+     "winrate_pct": 52.1,
+     "expectancy_bps": -5.41,
+     "profit_factor": 0.63,
+     "total_bps": -384.0,
+     "max_dd_bps": 377.0,
+     "sharpe_trade": -0.209
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "AUDCHF": {
+   "cost": {
+    "symbol": "AUDCHF",
+    "category": "STANDARD_FX",
+    "spread_bps": 4.46,
+    "swap_bps_day": 1.615
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 6.69,
+    "carry_bps_per_bar": 0.0673,
+    "is": {
+     "trades": 178,
+     "winrate_pct": 52.2,
+     "expectancy_bps": -6.68,
+     "profit_factor": 0.6,
+     "total_bps": -1189.0,
+     "max_dd_bps": 1311.0,
+     "sharpe_trade": -0.206
+    },
+    "oos": {
+     "trades": 72,
+     "winrate_pct": 30.6,
+     "expectancy_bps": -16.22,
+     "profit_factor": 0.24,
+     "total_bps": -1168.0,
+     "max_dd_bps": 1217.0,
+     "sharpe_trade": -0.571
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "AUDJPY": {
+   "cost": {
+    "symbol": "AUDJPY",
+    "category": "STANDARD_FX",
+    "spread_bps": 2.31,
+    "swap_bps_day": 1.168
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 3.46,
+    "carry_bps_per_bar": 0.0487,
+    "is": {
+     "trades": 180,
+     "winrate_pct": 61.7,
+     "expectancy_bps": -0.79,
+     "profit_factor": 0.95,
+     "total_bps": -142.0,
+     "max_dd_bps": 557.0,
+     "sharpe_trade": -0.02
+    },
+    "oos": {
+     "trades": 72,
+     "winrate_pct": 51.4,
+     "expectancy_bps": -4.05,
+     "profit_factor": 0.77,
+     "total_bps": -291.0,
+     "max_dd_bps": 332.0,
+     "sharpe_trade": -0.113
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "CHFJPY": {
+   "cost": {
+    "symbol": "CHFJPY",
+    "category": "STANDARD_FX",
+    "spread_bps": 1.49,
+    "swap_bps_day": 0.393
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 2.23,
+    "carry_bps_per_bar": 0.0655,
+    "is": {
+     "trades": 24,
+     "winrate_pct": 50.0,
+     "expectancy_bps": 4.37,
+     "profit_factor": 1.1,
+     "total_bps": 105.0,
+     "max_dd_bps": 487.0,
+     "sharpe_trade": 0.044
+    },
+    "oos": {
+     "trades": 14,
+     "winrate_pct": 57.1,
+     "expectancy_bps": 14.62,
+     "profit_factor": 1.57,
+     "total_bps": 205.0,
+     "max_dd_bps": 144.0,
+     "sharpe_trade": 0.218
+    },
+    "potential": 54.7,
+    "validated": true
+   }
+  },
+  "EURGBP": {
+   "cost": {
+    "symbol": "EURGBP",
+    "category": "STANDARD_FX",
+    "spread_bps": 2.81,
+    "swap_bps_day": 0.824
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 4.21,
+    "carry_bps_per_bar": 0.0343,
+    "is": {
+     "trades": 61,
+     "winrate_pct": 41.0,
+     "expectancy_bps": -3.75,
+     "profit_factor": 0.56,
+     "total_bps": -229.0,
+     "max_dd_bps": 242.0,
+     "sharpe_trade": -0.24
+    },
+    "oos": {
+     "trades": 32,
+     "winrate_pct": 37.5,
+     "expectancy_bps": -4.04,
+     "profit_factor": 0.45,
+     "total_bps": -129.0,
+     "max_dd_bps": 171.0,
+     "sharpe_trade": -0.315
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "EURAUD": {
+   "cost": {
+    "symbol": "EURAUD",
+    "category": "STANDARD_FX",
+    "spread_bps": 1.64,
+    "swap_bps_day": 0.779
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 2.46,
+    "carry_bps_per_bar": 0.0325,
+    "is": {
+     "trades": 168,
+     "winrate_pct": 56.5,
+     "expectancy_bps": -2.81,
+     "profit_factor": 0.78,
+     "total_bps": -472.0,
+     "max_dd_bps": 600.0,
+     "sharpe_trade": -0.11
+    },
+    "oos": {
+     "trades": 65,
+     "winrate_pct": 56.9,
+     "expectancy_bps": -2.5,
+     "profit_factor": 0.81,
+     "total_bps": -163.0,
+     "max_dd_bps": 211.0,
+     "sharpe_trade": -0.091
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "EURCHF": {
+   "cost": {
+    "symbol": "EURCHF",
+    "category": "STANDARD_FX",
+    "spread_bps": 2.71,
+    "swap_bps_day": 0.985
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 4.06,
+    "carry_bps_per_bar": 0.041,
+    "is": {
+     "trades": 71,
+     "winrate_pct": 52.1,
+     "expectancy_bps": -5.65,
+     "profit_factor": 0.53,
+     "total_bps": -401.0,
+     "max_dd_bps": 425.0,
+     "sharpe_trade": -0.266
+    },
+    "oos": {
+     "trades": 28,
+     "winrate_pct": 39.3,
+     "expectancy_bps": -2.19,
+     "profit_factor": 0.7,
+     "total_bps": -61.0,
+     "max_dd_bps": 90.0,
+     "sharpe_trade": -0.145
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "EURJPY": {
+   "cost": {
+    "symbol": "EURJPY",
+    "category": "STANDARD_FX",
+    "spread_bps": 1.24,
+    "swap_bps_day": 0.541
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 1.86,
+    "carry_bps_per_bar": 0.0225,
+    "is": {
+     "trades": 29,
+     "winrate_pct": 62.1,
+     "expectancy_bps": 3.19,
+     "profit_factor": 1.28,
+     "total_bps": 92.0,
+     "max_dd_bps": 115.0,
+     "sharpe_trade": 0.099
+    },
+    "oos": {
+     "trades": 13,
+     "winrate_pct": 53.8,
+     "expectancy_bps": -4.62,
+     "profit_factor": 0.63,
+     "total_bps": -60.0,
+     "max_dd_bps": 84.0,
+     "sharpe_trade": -0.214
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "EURNZD": {
+   "cost": {
+    "symbol": "EURNZD",
+    "category": "STANDARD_FX",
+    "spread_bps": 1.55,
+    "swap_bps_day": 0.371
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 2.33,
+    "carry_bps_per_bar": 0.0155,
+    "is": {
+     "trades": 170,
+     "winrate_pct": 55.3,
+     "expectancy_bps": -2.41,
+     "profit_factor": 0.81,
+     "total_bps": -409.0,
+     "max_dd_bps": 448.0,
+     "sharpe_trade": -0.093
+    },
+    "oos": {
+     "trades": 72,
+     "winrate_pct": 69.4,
+     "expectancy_bps": 0.04,
+     "profit_factor": 1.0,
+     "total_bps": 3.0,
+     "max_dd_bps": 175.0,
+     "sharpe_trade": 0.002
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "EURCAD": {
+   "cost": {
+    "symbol": "EURCAD",
+    "category": "STANDARD_FX",
+    "spread_bps": 1.55,
+    "swap_bps_day": 0.192
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 2.33,
+    "carry_bps_per_bar": 0.008,
+    "is": {
+     "trades": 28,
+     "winrate_pct": 57.1,
+     "expectancy_bps": -2.22,
+     "profit_factor": 0.79,
+     "total_bps": -62.0,
+     "max_dd_bps": 110.0,
+     "sharpe_trade": -0.097
+    },
+    "oos": {
+     "trades": 12,
+     "winrate_pct": 50.0,
+     "expectancy_bps": -4.49,
+     "profit_factor": 0.56,
+     "total_bps": -54.0,
+     "max_dd_bps": 75.0,
+     "sharpe_trade": -0.256
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "GBPCHF": {
+   "cost": {
+    "symbol": "GBPCHF",
+    "category": "STANDARD_FX",
+    "spread_bps": 2.4,
+    "swap_bps_day": 1.659
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 3.6,
+    "carry_bps_per_bar": 0.0691,
+    "is": {
+     "trades": 212,
+     "winrate_pct": 53.8,
+     "expectancy_bps": -6.64,
+     "profit_factor": 0.53,
+     "total_bps": -1408.0,
+     "max_dd_bps": 1378.0,
+     "sharpe_trade": -0.258
+    },
+    "oos": {
+     "trades": 98,
+     "winrate_pct": 49.0,
+     "expectancy_bps": -5.55,
+     "profit_factor": 0.55,
+     "total_bps": -544.0,
+     "max_dd_bps": 599.0,
+     "sharpe_trade": -0.26
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "GBPJPY": {
+   "cost": {
+    "symbol": "GBPJPY",
+    "category": "STANDARD_FX",
+    "spread_bps": 1.24,
+    "swap_bps_day": 1.132
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 1.86,
+    "carry_bps_per_bar": 0.0472,
+    "is": {
+     "trades": 177,
+     "winrate_pct": 56.5,
+     "expectancy_bps": -3.49,
+     "profit_factor": 0.79,
+     "total_bps": -617.0,
+     "max_dd_bps": 660.0,
+     "sharpe_trade": -0.101
+    },
+    "oos": {
+     "trades": 71,
+     "winrate_pct": 56.3,
+     "expectancy_bps": -2.82,
+     "profit_factor": 0.77,
+     "total_bps": -200.0,
+     "max_dd_bps": 330.0,
+     "sharpe_trade": -0.113
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "CADCHF": {
+   "cost": {
+    "symbol": "CADCHF",
+    "category": "STANDARD_FX",
+    "spread_bps": 4.2,
+    "swap_bps_day": 1.023
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 6.3,
+    "carry_bps_per_bar": 0.0426,
+    "is": {
+     "trades": 22,
+     "winrate_pct": 50.0,
+     "expectancy_bps": 0.36,
+     "profit_factor": 1.03,
+     "total_bps": 8.0,
+     "max_dd_bps": 55.0,
+     "sharpe_trade": 0.012
+    },
+    "oos": {
+     "trades": 17,
+     "winrate_pct": 23.5,
+     "expectancy_bps": -9.18,
+     "profit_factor": 0.31,
+     "total_bps": -156.0,
+     "max_dd_bps": 175.0,
+     "sharpe_trade": -0.449
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "AUDNOK": {
+   "cost": {
+    "symbol": "AUDNOK",
+    "category": "STANDARD_FX",
+    "spread_bps": 21.39,
+    "swap_bps_day": 0.589
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 32.09,
+    "carry_bps_per_bar": 0.0245,
+    "is": {
+     "trades": 203,
+     "winrate_pct": 13.3,
+     "expectancy_bps": -40.83,
+     "profit_factor": 0.05,
+     "total_bps": -8289.0,
+     "max_dd_bps": 8246.0,
+     "sharpe_trade": -1.178
+    },
+    "oos": {
+     "trades": 84,
+     "winrate_pct": 11.9,
+     "expectancy_bps": -42.89,
+     "profit_factor": 0.03,
+     "total_bps": -3603.0,
+     "max_dd_bps": 3582.0,
+     "sharpe_trade": -1.409
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "AUDSGD": {
+   "cost": {
+    "symbol": "AUDSGD",
+    "category": "STANDARD_FX",
+    "spread_bps": 3.79,
+    "swap_bps_day": 1.718
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 5.69,
+    "carry_bps_per_bar": 0.0716,
+    "is": {
+     "trades": 29,
+     "winrate_pct": 44.8,
+     "expectancy_bps": -6.26,
+     "profit_factor": 0.52,
+     "total_bps": -182.0,
+     "max_dd_bps": 200.0,
+     "sharpe_trade": -0.259
+    },
+    "oos": {
+     "trades": 13,
+     "winrate_pct": 30.8,
+     "expectancy_bps": -13.3,
+     "profit_factor": 0.26,
+     "total_bps": -173.0,
+     "max_dd_bps": 139.0,
+     "sharpe_trade": -0.575
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "CADJPY": {
+   "cost": {
+    "symbol": "CADJPY",
+    "category": "STANDARD_FX",
+    "spread_bps": 2.53,
+    "swap_bps_day": 0.614
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 3.79,
+    "carry_bps_per_bar": 0.0256,
+    "is": {
+     "trades": 227,
+     "winrate_pct": 57.3,
+     "expectancy_bps": -6.08,
+     "profit_factor": 0.67,
+     "total_bps": -1380.0,
+     "max_dd_bps": 1422.0,
+     "sharpe_trade": -0.164
+    },
+    "oos": {
+     "trades": 78,
+     "winrate_pct": 60.3,
+     "expectancy_bps": -1.06,
+     "profit_factor": 0.9,
+     "total_bps": -82.0,
+     "max_dd_bps": 242.0,
+     "sharpe_trade": -0.043
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "CADSGD": {
+   "cost": {
+    "symbol": "CADSGD",
+    "category": "STANDARD_FX",
+    "spread_bps": 3.83,
+    "swap_bps_day": 0.988
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 5.75,
+    "carry_bps_per_bar": 0.0412,
+    "is": {
+     "trades": 33,
+     "winrate_pct": 45.5,
+     "expectancy_bps": -6.3,
+     "profit_factor": 0.38,
+     "total_bps": -208.0,
+     "max_dd_bps": 241.0,
+     "sharpe_trade": -0.384
+    },
+    "oos": {
+     "trades": 13,
+     "winrate_pct": 53.8,
+     "expectancy_bps": -4.34,
+     "profit_factor": 0.52,
+     "total_bps": -56.0,
+     "max_dd_bps": 82.0,
+     "sharpe_trade": -0.271
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "CHFSEK": {
+   "cost": {
+    "symbol": "CHFSEK",
+    "category": "STANDARD_FX",
+    "spread_bps": 2.1,
+    "swap_bps_day": 1.135
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 3.15,
+    "carry_bps_per_bar": 0.0473,
+    "is": {
+     "trades": 45,
+     "winrate_pct": 55.6,
+     "expectancy_bps": -8.06,
+     "profit_factor": 0.55,
+     "total_bps": -363.0,
+     "max_dd_bps": 350.0,
+     "sharpe_trade": -0.25
+    },
+    "oos": {
+     "trades": 21,
+     "winrate_pct": 61.9,
+     "expectancy_bps": -3.78,
+     "profit_factor": 0.71,
+     "total_bps": -79.0,
+     "max_dd_bps": 196.0,
+     "sharpe_trade": -0.146
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "CHFSGD": {
+   "cost": {
+    "symbol": "CHFSGD",
+    "category": "STANDARD_FX",
+    "spread_bps": 2.38,
+    "swap_bps_day": 1.018
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 3.57,
+    "carry_bps_per_bar": 0.0424,
+    "is": {
+     "trades": 38,
+     "winrate_pct": 65.8,
+     "expectancy_bps": -2.58,
+     "profit_factor": 0.75,
+     "total_bps": -98.0,
+     "max_dd_bps": 139.0,
+     "sharpe_trade": -0.1
+    },
+    "oos": {
+     "trades": 13,
+     "winrate_pct": 53.8,
+     "expectancy_bps": -1.28,
+     "profit_factor": 0.86,
+     "total_bps": -17.0,
+     "max_dd_bps": 61.0,
+     "sharpe_trade": -0.065
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "EURCZK": {
+   "cost": {
+    "symbol": "EURCZK",
+    "category": "STANDARD_FX",
+    "spread_bps": 4.66,
+    "swap_bps_day": 0.724
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 6.99,
+    "carry_bps_per_bar": 0.0302,
+    "is": {
+     "trades": 54,
+     "winrate_pct": 22.2,
+     "expectancy_bps": -12.06,
+     "profit_factor": 0.14,
+     "total_bps": -651.0,
+     "max_dd_bps": 694.0,
+     "sharpe_trade": -0.741
+    },
+    "oos": {
+     "trades": 18,
+     "winrate_pct": 11.1,
+     "expectancy_bps": -8.9,
+     "profit_factor": 0.17,
+     "total_bps": -160.0,
+     "max_dd_bps": 164.0,
+     "sharpe_trade": -0.709
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "EURHUF": {
+   "cost": {
+    "symbol": "EURHUF",
+    "category": "STANDARD_FX",
+    "spread_bps": 7.04,
+    "swap_bps_day": 1.509
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 10.56,
+    "carry_bps_per_bar": 0.0629,
+    "is": {
+     "trades": 68,
+     "winrate_pct": 22.1,
+     "expectancy_bps": -17.65,
+     "profit_factor": 0.15,
+     "total_bps": -1200.0,
+     "max_dd_bps": 1155.0,
+     "sharpe_trade": -0.732
+    },
+    "oos": {
+     "trades": 29,
+     "winrate_pct": 31.0,
+     "expectancy_bps": -18.21,
+     "profit_factor": 0.28,
+     "total_bps": -528.0,
+     "max_dd_bps": 585.0,
+     "sharpe_trade": -0.573
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "EURNOK": {
+   "cost": {
+    "symbol": "EURNOK",
+    "category": "STANDARD_FX",
+    "spread_bps": 3.94,
+    "swap_bps_day": 0.761
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 5.91,
+    "carry_bps_per_bar": 0.1268,
+    "is": {
+     "trades": 79,
+     "winrate_pct": 58.2,
+     "expectancy_bps": -7.61,
+     "profit_factor": 0.84,
+     "total_bps": -601.0,
+     "max_dd_bps": 1040.0,
+     "sharpe_trade": -0.074
+    },
+    "oos": {
+     "trades": 29,
+     "winrate_pct": 65.5,
+     "expectancy_bps": 5.28,
+     "profit_factor": 1.17,
+     "total_bps": 153.0,
+     "max_dd_bps": 303.0,
+     "sharpe_trade": 0.066
+    },
+    "potential": 28.43,
+    "validated": true
+   }
+  },
+  "EURPLN": {
+   "cost": {
+    "symbol": "EURPLN",
+    "category": "STANDARD_FX",
+    "spread_bps": 8.12,
+    "swap_bps_day": 2.964
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 12.18,
+    "carry_bps_per_bar": 0.1235,
+    "is": {
+     "trades": 32,
+     "winrate_pct": 21.9,
+     "expectancy_bps": -16.72,
+     "profit_factor": 0.15,
+     "total_bps": -535.0,
+     "max_dd_bps": 493.0,
+     "sharpe_trade": -0.791
+    },
+    "oos": {
+     "trades": 15,
+     "winrate_pct": 6.7,
+     "expectancy_bps": -16.74,
+     "profit_factor": 0.03,
+     "total_bps": -251.0,
+     "max_dd_bps": 240.0,
+     "sharpe_trade": -1.415
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "EURSEK": {
+   "cost": {
+    "symbol": "EURSEK",
+    "category": "STANDARD_FX",
+    "spread_bps": 4.6,
+    "swap_bps_day": 0.386
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 6.9,
+    "carry_bps_per_bar": 0.0161,
+    "is": {
+     "trades": 63,
+     "winrate_pct": 39.7,
+     "expectancy_bps": -7.24,
+     "profit_factor": 0.49,
+     "total_bps": -456.0,
+     "max_dd_bps": 583.0,
+     "sharpe_trade": -0.284
+    },
+    "oos": {
+     "trades": 33,
+     "winrate_pct": 39.4,
+     "expectancy_bps": -9.79,
+     "profit_factor": 0.44,
+     "total_bps": -323.0,
+     "max_dd_bps": 325.0,
+     "sharpe_trade": -0.37
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "EURSGD": {
+   "cost": {
+    "symbol": "EURSGD",
+    "category": "STANDARD_FX",
+    "spread_bps": 2.1,
+    "swap_bps_day": 0.812
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 3.15,
+    "carry_bps_per_bar": 0.0338,
+    "is": {
+     "trades": 236,
+     "winrate_pct": 50.0,
+     "expectancy_bps": -5.48,
+     "profit_factor": 0.49,
+     "total_bps": -1294.0,
+     "max_dd_bps": 1323.0,
+     "sharpe_trade": -0.288
+    },
+    "oos": {
+     "trades": 95,
+     "winrate_pct": 43.2,
+     "expectancy_bps": -3.15,
+     "profit_factor": 0.55,
+     "total_bps": -299.0,
+     "max_dd_bps": 318.0,
+     "sharpe_trade": -0.231
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "EURZAR": {
+   "cost": {
+    "symbol": "EURZAR",
+    "category": "STANDARD_FX",
+    "spread_bps": 3.45,
+    "swap_bps_day": 1.859
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 5.18,
+    "carry_bps_per_bar": 0.0775,
+    "is": {
+     "trades": 25,
+     "winrate_pct": 68.0,
+     "expectancy_bps": 4.07,
+     "profit_factor": 1.28,
+     "total_bps": 102.0,
+     "max_dd_bps": 160.0,
+     "sharpe_trade": 0.103
+    },
+    "oos": {
+     "trades": 13,
+     "winrate_pct": 53.8,
+     "expectancy_bps": -5.33,
+     "profit_factor": 0.72,
+     "total_bps": -69.0,
+     "max_dd_bps": 156.0,
+     "sharpe_trade": -0.148
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "GBPAUD": {
+   "cost": {
+    "symbol": "GBPAUD",
+    "category": "STANDARD_FX",
+    "spread_bps": 1.5,
+    "swap_bps_day": 0.289
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 2.25,
+    "carry_bps_per_bar": 0.012,
+    "is": {
+     "trades": 220,
+     "winrate_pct": 56.4,
+     "expectancy_bps": -3.29,
+     "profit_factor": 0.74,
+     "total_bps": -723.0,
+     "max_dd_bps": 825.0,
+     "sharpe_trade": -0.131
+    },
+    "oos": {
+     "trades": 84,
+     "winrate_pct": 54.8,
+     "expectancy_bps": -3.18,
+     "profit_factor": 0.77,
+     "total_bps": -267.0,
+     "max_dd_bps": 331.0,
+     "sharpe_trade": -0.113
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "GBPCAD": {
+   "cost": {
+    "symbol": "GBPCAD",
+    "category": "STANDARD_FX",
+    "spread_bps": 1.42,
+    "swap_bps_day": 0.711
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 2.13,
+    "carry_bps_per_bar": 0.0296,
+    "is": {
+     "trades": 186,
+     "winrate_pct": 55.9,
+     "expectancy_bps": -3.72,
+     "profit_factor": 0.68,
+     "total_bps": -692.0,
+     "max_dd_bps": 730.0,
+     "sharpe_trade": -0.165
+    },
+    "oos": {
+     "trades": 74,
+     "winrate_pct": 43.2,
+     "expectancy_bps": -7.73,
+     "profit_factor": 0.41,
+     "total_bps": -572.0,
+     "max_dd_bps": 559.0,
+     "sharpe_trade": -0.404
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "GBPMXN": {
+   "cost": {
+    "symbol": "GBPMXN",
+    "category": "STANDARD_FX",
+    "spread_bps": 5.44,
+    "swap_bps_day": 1.573
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 8.16,
+    "carry_bps_per_bar": 0.0655,
+    "is": {
+     "trades": 222,
+     "winrate_pct": 48.6,
+     "expectancy_bps": -7.91,
+     "profit_factor": 0.62,
+     "total_bps": -1755.0,
+     "max_dd_bps": 1877.0,
+     "sharpe_trade": -0.185
+    },
+    "oos": {
+     "trades": 117,
+     "winrate_pct": 28.2,
+     "expectancy_bps": -14.22,
+     "profit_factor": 0.29,
+     "total_bps": -1663.0,
+     "max_dd_bps": 1669.0,
+     "sharpe_trade": -0.554
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "GBPNOK": {
+   "cost": {
+    "symbol": "GBPNOK",
+    "category": "STANDARD_FX",
+    "spread_bps": 3.5,
+    "swap_bps_day": 0.283
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 5.25,
+    "carry_bps_per_bar": 0.0472,
+    "is": {
+     "trades": 79,
+     "winrate_pct": 57.0,
+     "expectancy_bps": -11.42,
+     "profit_factor": 0.76,
+     "total_bps": -902.0,
+     "max_dd_bps": 1155.0,
+     "sharpe_trade": -0.12
+    },
+    "oos": {
+     "trades": 30,
+     "winrate_pct": 60.0,
+     "expectancy_bps": 1.64,
+     "profit_factor": 1.05,
+     "total_bps": 49.0,
+     "max_dd_bps": 494.0,
+     "sharpe_trade": 0.019
+    },
+    "potential": 8.98,
+    "validated": true
+   }
+  },
+  "GBPNZD": {
+   "cost": {
+    "symbol": "GBPNZD",
+    "category": "STANDARD_FX",
+    "spread_bps": 1.4,
+    "swap_bps_day": 0.536
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 2.1,
+    "carry_bps_per_bar": 0.0223,
+    "is": {
+     "trades": 26,
+     "winrate_pct": 69.2,
+     "expectancy_bps": 3.55,
+     "profit_factor": 1.41,
+     "total_bps": 92.0,
+     "max_dd_bps": 64.0,
+     "sharpe_trade": 0.151
+    },
+    "oos": {
+     "trades": 15,
+     "winrate_pct": 46.7,
+     "expectancy_bps": -5.51,
+     "profit_factor": 0.59,
+     "total_bps": -83.0,
+     "max_dd_bps": 145.0,
+     "sharpe_trade": -0.237
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "GBPPLN": {
+   "cost": {
+    "symbol": "GBPPLN",
+    "category": "STANDARD_FX",
+    "spread_bps": 12.47,
+    "swap_bps_day": 2.484
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 18.71,
+    "carry_bps_per_bar": 0.1035,
+    "is": {
+     "trades": 156,
+     "winrate_pct": 19.9,
+     "expectancy_bps": -22.63,
+     "profit_factor": 0.13,
+     "total_bps": -3530.0,
+     "max_dd_bps": 3533.0,
+     "sharpe_trade": -0.792
+    },
+    "oos": {
+     "trades": 95,
+     "winrate_pct": 12.6,
+     "expectancy_bps": -27.37,
+     "profit_factor": 0.06,
+     "total_bps": -2600.0,
+     "max_dd_bps": 2599.0,
+     "sharpe_trade": -1.26
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "GBPSEK": {
+   "cost": {
+    "symbol": "GBPSEK",
+    "category": "STANDARD_FX",
+    "spread_bps": 2.84,
+    "swap_bps_day": 0.861
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 4.26,
+    "carry_bps_per_bar": 0.0359,
+    "is": {
+     "trades": 231,
+     "winrate_pct": 48.5,
+     "expectancy_bps": -12.87,
+     "profit_factor": 0.4,
+     "total_bps": -2973.0,
+     "max_dd_bps": 2956.0,
+     "sharpe_trade": -0.39
+    },
+    "oos": {
+     "trades": 110,
+     "winrate_pct": 51.8,
+     "expectancy_bps": -9.53,
+     "profit_factor": 0.47,
+     "total_bps": -1049.0,
+     "max_dd_bps": 1075.0,
+     "sharpe_trade": -0.324
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "GBPSGD": {
+   "cost": {
+    "symbol": "GBPSGD",
+    "category": "STANDARD_FX",
+    "spread_bps": 1.96,
+    "swap_bps_day": 1.283
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 2.94,
+    "carry_bps_per_bar": 0.0535,
+    "is": {
+     "trades": 63,
+     "winrate_pct": 58.7,
+     "expectancy_bps": -4.56,
+     "profit_factor": 0.58,
+     "total_bps": -287.0,
+     "max_dd_bps": 291.0,
+     "sharpe_trade": -0.232
+    },
+    "oos": {
+     "trades": 35,
+     "winrate_pct": 42.9,
+     "expectancy_bps": -7.93,
+     "profit_factor": 0.33,
+     "total_bps": -278.0,
+     "max_dd_bps": 312.0,
+     "sharpe_trade": -0.466
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "NOKSEK": {
+   "cost": {
+    "symbol": "NOKSEK",
+    "category": "STANDARD_FX",
+    "spread_bps": 7.56,
+    "swap_bps_day": 0.953
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 11.34,
+    "carry_bps_per_bar": 0.0397,
+    "is": {
+     "trades": 75,
+     "winrate_pct": 38.7,
+     "expectancy_bps": -10.15,
+     "profit_factor": 0.46,
+     "total_bps": -761.0,
+     "max_dd_bps": 869.0,
+     "sharpe_trade": -0.301
+    },
+    "oos": {
+     "trades": 36,
+     "winrate_pct": 27.8,
+     "expectancy_bps": -12.68,
+     "profit_factor": 0.32,
+     "total_bps": -457.0,
+     "max_dd_bps": 497.0,
+     "sharpe_trade": -0.419
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "NZDCAD": {
+   "cost": {
+    "symbol": "NZDCAD",
+    "category": "STANDARD_FX",
+    "spread_bps": 4.21,
+    "swap_bps_day": 0.321
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 6.31,
+    "carry_bps_per_bar": 0.0134,
+    "is": {
+     "trades": 170,
+     "winrate_pct": 50.6,
+     "expectancy_bps": -5.73,
+     "profit_factor": 0.56,
+     "total_bps": -975.0,
+     "max_dd_bps": 1001.0,
+     "sharpe_trade": -0.228
+    },
+    "oos": {
+     "trades": 72,
+     "winrate_pct": 43.1,
+     "expectancy_bps": -8.75,
+     "profit_factor": 0.47,
+     "total_bps": -630.0,
+     "max_dd_bps": 690.0,
+     "sharpe_trade": -0.322
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "NZDCHF": {
+   "cost": {
+    "symbol": "NZDCHF",
+    "category": "STANDARD_FX",
+    "spread_bps": 5.64,
+    "swap_bps_day": 0.996
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 8.46,
+    "carry_bps_per_bar": 0.0415,
+    "is": {
+     "trades": 31,
+     "winrate_pct": 38.7,
+     "expectancy_bps": -5.84,
+     "profit_factor": 0.63,
+     "total_bps": -181.0,
+     "max_dd_bps": 257.0,
+     "sharpe_trade": -0.188
+    },
+    "oos": {
+     "trades": 22,
+     "winrate_pct": 31.8,
+     "expectancy_bps": -11.11,
+     "profit_factor": 0.42,
+     "total_bps": -244.0,
+     "max_dd_bps": 314.0,
+     "sharpe_trade": -0.386
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "NZDJPY": {
+   "cost": {
+    "symbol": "NZDJPY",
+    "category": "STANDARD_FX",
+    "spread_bps": 3.24,
+    "swap_bps_day": 0.81
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 4.86,
+    "carry_bps_per_bar": 0.0338,
+    "is": {
+     "trades": 22,
+     "winrate_pct": 77.3,
+     "expectancy_bps": 10.96,
+     "profit_factor": 2.54,
+     "total_bps": 241.0,
+     "max_dd_bps": 41.0,
+     "sharpe_trade": 0.376
+    },
+    "oos": {
+     "trades": 14,
+     "winrate_pct": 57.1,
+     "expectancy_bps": -0.98,
+     "profit_factor": 0.93,
+     "total_bps": -14.0,
+     "max_dd_bps": 63.0,
+     "sharpe_trade": -0.03
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "NZDUSD": {
+   "cost": {
+    "symbol": "NZDUSD",
+    "category": "STANDARD_FX",
+    "spread_bps": 4.21,
+    "swap_bps_day": 0.679
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 6.31,
+    "carry_bps_per_bar": 0.0283,
+    "is": {
+     "trades": 24,
+     "winrate_pct": 70.8,
+     "expectancy_bps": 3.47,
+     "profit_factor": 1.5,
+     "total_bps": 83.0,
+     "max_dd_bps": 86.0,
+     "sharpe_trade": 0.144
+    },
+    "oos": {
+     "trades": 12,
+     "winrate_pct": 41.7,
+     "expectancy_bps": -3.97,
+     "profit_factor": 0.78,
+     "total_bps": -48.0,
+     "max_dd_bps": 70.0,
+     "sharpe_trade": -0.119
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "SGDJPY": {
+   "cost": {
+    "symbol": "SGDJPY",
+    "category": "STANDARD_FX",
+    "spread_bps": 2.55,
+    "swap_bps_day": 0.596
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 3.82,
+    "carry_bps_per_bar": 0.0248,
+    "is": {
+     "trades": 74,
+     "winrate_pct": 59.5,
+     "expectancy_bps": -2.07,
+     "profit_factor": 0.85,
+     "total_bps": -153.0,
+     "max_dd_bps": 266.0,
+     "sharpe_trade": -0.067
+    },
+    "oos": {
+     "trades": 32,
+     "winrate_pct": 43.8,
+     "expectancy_bps": -6.59,
+     "profit_factor": 0.5,
+     "total_bps": -211.0,
+     "max_dd_bps": 270.0,
+     "sharpe_trade": -0.306
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "USDBRL": {
+   "cost": {
+    "symbol": "USDBRL",
+    "category": "STANDARD_FX",
+    "spread_bps": 8.48,
+    "swap_bps_day": 1.907
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 12.72,
+    "carry_bps_per_bar": 0.3178,
+    "is": {
+     "trades": 44,
+     "winrate_pct": 61.4,
+     "expectancy_bps": -15.29,
+     "profit_factor": 0.79,
+     "total_bps": -673.0,
+     "max_dd_bps": 1395.0,
+     "sharpe_trade": -0.098
+    },
+    "oos": {
+     "trades": 18,
+     "winrate_pct": 72.2,
+     "expectancy_bps": 18.36,
+     "profit_factor": 1.39,
+     "total_bps": 330.0,
+     "max_dd_bps": 619.0,
+     "sharpe_trade": 0.133
+    },
+    "potential": 77.89,
+    "validated": true
+   }
+  },
+  "USDCLP": {
+   "cost": {
+    "symbol": "USDCLP",
+    "category": "STANDARD_FX",
+    "spread_bps": 10.25,
+    "swap_bps_day": 0.153
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 15.38,
+    "carry_bps_per_bar": 0.0064,
+    "is": {
+     "trades": 168,
+     "winrate_pct": 45.2,
+     "expectancy_bps": -7.49,
+     "profit_factor": 0.76,
+     "total_bps": -1258.0,
+     "max_dd_bps": 2164.0,
+     "sharpe_trade": -0.096
+    },
+    "oos": {
+     "trades": 85,
+     "winrate_pct": 50.6,
+     "expectancy_bps": -20.66,
+     "profit_factor": 0.55,
+     "total_bps": -1756.0,
+     "max_dd_bps": 1848.0,
+     "sharpe_trade": -0.262
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "USDCNH": {
+   "cost": {
+    "symbol": "USDCNH",
+    "category": "STANDARD_FX",
+    "spread_bps": 1.28,
+    "swap_bps_day": 0.969
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 1.92,
+    "carry_bps_per_bar": 0.0404,
+    "is": {
+     "trades": 62,
+     "winrate_pct": 53.2,
+     "expectancy_bps": -0.17,
+     "profit_factor": 0.97,
+     "total_bps": -11.0,
+     "max_dd_bps": 169.0,
+     "sharpe_trade": -0.013
+    },
+    "oos": {
+     "trades": 28,
+     "winrate_pct": 42.9,
+     "expectancy_bps": -1.34,
+     "profit_factor": 0.72,
+     "total_bps": -37.0,
+     "max_dd_bps": 39.0,
+     "sharpe_trade": -0.14
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "USDCOP": {
+   "cost": {
+    "symbol": "USDCOP",
+    "category": "STANDARD_FX",
+    "spread_bps": 15.41,
+    "swap_bps_day": 0.026
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 23.12,
+    "carry_bps_per_bar": 0.0043,
+    "is": {
+     "trades": 23,
+     "winrate_pct": 73.9,
+     "expectancy_bps": 21.23,
+     "profit_factor": 1.54,
+     "total_bps": 488.0,
+     "max_dd_bps": 432.0,
+     "sharpe_trade": 0.159
+    },
+    "oos": {
+     "trades": 13,
+     "winrate_pct": 69.2,
+     "expectancy_bps": 45.0,
+     "profit_factor": 1.68,
+     "total_bps": 585.0,
+     "max_dd_bps": 357.0,
+     "sharpe_trade": 0.223
+    },
+    "potential": 162.25,
+    "validated": true
+   }
+  },
+  "USDCZK": {
+   "cost": {
+    "symbol": "USDCZK",
+    "category": "STANDARD_FX",
+    "spread_bps": 4.94,
+    "swap_bps_day": 0.371
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 7.41,
+    "carry_bps_per_bar": 0.0155,
+    "is": {
+     "trades": 28,
+     "winrate_pct": 60.7,
+     "expectancy_bps": -11.31,
+     "profit_factor": 0.55,
+     "total_bps": -317.0,
+     "max_dd_bps": 415.0,
+     "sharpe_trade": -0.24
+    },
+    "oos": {
+     "trades": 14,
+     "winrate_pct": 57.1,
+     "expectancy_bps": -10.3,
+     "profit_factor": 0.49,
+     "total_bps": -144.0,
+     "max_dd_bps": 182.0,
+     "sharpe_trade": -0.296
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "USDHUF": {
+   "cost": {
+    "symbol": "USDHUF",
+    "category": "STANDARD_FX",
+    "spread_bps": 6.57,
+    "swap_bps_day": 0.927
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 9.86,
+    "carry_bps_per_bar": 0.0386,
+    "is": {
+     "trades": 60,
+     "winrate_pct": 45.0,
+     "expectancy_bps": -12.32,
+     "profit_factor": 0.49,
+     "total_bps": -739.0,
+     "max_dd_bps": 813.0,
+     "sharpe_trade": -0.304
+    },
+    "oos": {
+     "trades": 36,
+     "winrate_pct": 33.3,
+     "expectancy_bps": -20.65,
+     "profit_factor": 0.28,
+     "total_bps": -744.0,
+     "max_dd_bps": 700.0,
+     "sharpe_trade": -0.468
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "USDIDR": {
+   "cost": {
+    "symbol": "USDIDR",
+    "category": "STANDARD_FX",
+    "spread_bps": 10.75,
+    "swap_bps_day": 1.819
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 16.12,
+    "carry_bps_per_bar": 0.0758,
+    "is": {
+     "trades": 22,
+     "winrate_pct": 50.0,
+     "expectancy_bps": -7.52,
+     "profit_factor": 0.57,
+     "total_bps": -165.0,
+     "max_dd_bps": 299.0,
+     "sharpe_trade": -0.241
+    },
+    "oos": {
+     "trades": 12,
+     "winrate_pct": 25.0,
+     "expectancy_bps": -24.57,
+     "profit_factor": 0.11,
+     "total_bps": -295.0,
+     "max_dd_bps": 276.0,
+     "sharpe_trade": -0.92
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "USDILS": {
+   "cost": {
+    "symbol": "USDILS",
+    "category": "STANDARD_FX",
+    "spread_bps": 6.35,
+    "swap_bps_day": 1.086
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 9.52,
+    "carry_bps_per_bar": 0.181,
+    "is": {
+     "trades": 73,
+     "winrate_pct": 56.2,
+     "expectancy_bps": -14.5,
+     "profit_factor": 0.76,
+     "total_bps": -1058.0,
+     "max_dd_bps": 2063.0,
+     "sharpe_trade": -0.118
+    },
+    "oos": {
+     "trades": 32,
+     "winrate_pct": 71.9,
+     "expectancy_bps": 26.27,
+     "profit_factor": 1.7,
+     "total_bps": 841.0,
+     "max_dd_bps": 307.0,
+     "sharpe_trade": 0.224
+    },
+    "potential": 148.61,
+    "validated": true
+   }
+  },
+  "USDINR": {
+   "cost": {
+    "symbol": "USDINR",
+    "category": "STANDARD_FX",
+    "spread_bps": 4.8,
+    "swap_bps_day": 2.295
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 7.2,
+    "carry_bps_per_bar": 0.0956,
+    "is": {
+     "trades": 163,
+     "winrate_pct": 21.5,
+     "expectancy_bps": -8.42,
+     "profit_factor": 0.17,
+     "total_bps": -1372.0,
+     "max_dd_bps": 1377.0,
+     "sharpe_trade": -0.722
+    },
+    "oos": {
+     "trades": 61,
+     "winrate_pct": 44.3,
+     "expectancy_bps": -0.51,
+     "profit_factor": 0.93,
+     "total_bps": -31.0,
+     "max_dd_bps": 166.0,
+     "sharpe_trade": -0.026
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "USDKRW": {
+   "cost": {
+    "symbol": "USDKRW",
+    "category": "STANDARD_FX",
+    "spread_bps": 6.17,
+    "swap_bps_day": 0.292
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 9.25,
+    "carry_bps_per_bar": 0.0122,
+    "is": {
+     "trades": 30,
+     "winrate_pct": 36.7,
+     "expectancy_bps": -9.25,
+     "profit_factor": 0.45,
+     "total_bps": -277.0,
+     "max_dd_bps": 326.0,
+     "sharpe_trade": -0.317
+    },
+    "oos": {
+     "trades": 16,
+     "winrate_pct": 43.8,
+     "expectancy_bps": -1.86,
+     "profit_factor": 0.9,
+     "total_bps": -30.0,
+     "max_dd_bps": 134.0,
+     "sharpe_trade": -0.041
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "USDMXN": {
+   "cost": {
+    "symbol": "USDMXN",
+    "category": "STANDARD_FX",
+    "spread_bps": 2.81,
+    "swap_bps_day": 1.464
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 4.21,
+    "carry_bps_per_bar": 0.061,
+    "is": {
+     "trades": 208,
+     "winrate_pct": 59.1,
+     "expectancy_bps": -4.15,
+     "profit_factor": 0.8,
+     "total_bps": -864.0,
+     "max_dd_bps": 1182.0,
+     "sharpe_trade": -0.092
+    },
+    "oos": {
+     "trades": 84,
+     "winrate_pct": 52.4,
+     "expectancy_bps": -6.69,
+     "profit_factor": 0.58,
+     "total_bps": -562.0,
+     "max_dd_bps": 559.0,
+     "sharpe_trade": -0.225
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "USDNOK": {
+   "cost": {
+    "symbol": "USDNOK",
+    "category": "STANDARD_FX",
+    "spread_bps": 4.29,
+    "swap_bps_day": 0.172
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 6.44,
+    "carry_bps_per_bar": 0.0072,
+    "is": {
+     "trades": 25,
+     "winrate_pct": 64.0,
+     "expectancy_bps": 2.53,
+     "profit_factor": 1.15,
+     "total_bps": 63.0,
+     "max_dd_bps": 152.0,
+     "sharpe_trade": 0.059
+    },
+    "oos": {
+     "trades": 13,
+     "winrate_pct": 53.8,
+     "expectancy_bps": -15.24,
+     "profit_factor": 0.3,
+     "total_bps": -198.0,
+     "max_dd_bps": 237.0,
+     "sharpe_trade": -0.466
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "USDPLN": {
+   "cost": {
+    "symbol": "USDPLN",
+    "category": "STANDARD_FX",
+    "spread_bps": 10.6,
+    "swap_bps_day": 0.238
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 15.9,
+    "carry_bps_per_bar": 0.0099,
+    "is": {
+     "trades": 219,
+     "winrate_pct": 32.0,
+     "expectancy_bps": -19.44,
+     "profit_factor": 0.28,
+     "total_bps": -4258.0,
+     "max_dd_bps": 4399.0,
+     "sharpe_trade": -0.512
+    },
+    "oos": {
+     "trades": 91,
+     "winrate_pct": 28.6,
+     "expectancy_bps": -18.04,
+     "profit_factor": 0.2,
+     "total_bps": -1642.0,
+     "max_dd_bps": 1614.0,
+     "sharpe_trade": -0.621
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "USDRON": {
+   "cost": {
+    "symbol": "USDRON",
+    "category": "STANDARD_FX",
+    "spread_bps": 10.25,
+    "swap_bps_day": 0.719
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 15.38,
+    "carry_bps_per_bar": 0.03,
+    "is": {
+     "trades": 189,
+     "winrate_pct": 24.3,
+     "expectancy_bps": -18.2,
+     "profit_factor": 0.18,
+     "total_bps": -3441.0,
+     "max_dd_bps": 3406.0,
+     "sharpe_trade": -0.68
+    },
+    "oos": {
+     "trades": 84,
+     "winrate_pct": 17.9,
+     "expectancy_bps": -23.23,
+     "profit_factor": 0.09,
+     "total_bps": -1951.0,
+     "max_dd_bps": 1914.0,
+     "sharpe_trade": -0.978
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "USDSEK": {
+   "cost": {
+    "symbol": "USDSEK",
+    "category": "STANDARD_FX",
+    "spread_bps": 4.12,
+    "swap_bps_day": 0.78
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 6.18,
+    "carry_bps_per_bar": 0.0325,
+    "is": {
+     "trades": 62,
+     "winrate_pct": 56.5,
+     "expectancy_bps": -5.43,
+     "profit_factor": 0.72,
+     "total_bps": -337.0,
+     "max_dd_bps": 418.0,
+     "sharpe_trade": -0.137
+    },
+    "oos": {
+     "trades": 25,
+     "winrate_pct": 48.0,
+     "expectancy_bps": -12.24,
+     "profit_factor": 0.39,
+     "total_bps": -306.0,
+     "max_dd_bps": 269.0,
+     "sharpe_trade": -0.386
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "USDSGD": {
+   "cost": {
+    "symbol": "USDSGD",
+    "category": "STANDARD_FX",
+    "spread_bps": 2.24,
+    "swap_bps_day": 1.204
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 3.36,
+    "carry_bps_per_bar": 0.0502,
+    "is": {
+     "trades": 28,
+     "winrate_pct": 57.1,
+     "expectancy_bps": 0.56,
+     "profit_factor": 1.08,
+     "total_bps": 16.0,
+     "max_dd_bps": 93.0,
+     "sharpe_trade": 0.032
+    },
+    "oos": {
+     "trades": 12,
+     "winrate_pct": 33.3,
+     "expectancy_bps": -7.71,
+     "profit_factor": 0.3,
+     "total_bps": -93.0,
+     "max_dd_bps": 89.0,
+     "sharpe_trade": -0.54
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "USDTHB": {
+   "cost": {
+    "symbol": "USDTHB",
+    "category": "STANDARD_FX",
+    "spread_bps": 2.99,
+    "swap_bps_day": 4.929
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 4.49,
+    "carry_bps_per_bar": 0.2054,
+    "is": {
+     "trades": 65,
+     "winrate_pct": 56.9,
+     "expectancy_bps": -7.88,
+     "profit_factor": 0.69,
+     "total_bps": -512.0,
+     "max_dd_bps": 662.0,
+     "sharpe_trade": -0.161
+    },
+    "oos": {
+     "trades": 24,
+     "winrate_pct": 50.0,
+     "expectancy_bps": -4.84,
+     "profit_factor": 0.74,
+     "total_bps": -116.0,
+     "max_dd_bps": 262.0,
+     "sharpe_trade": -0.132
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "USDTWD": {
+   "cost": {
+    "symbol": "USDTWD",
+    "category": "STANDARD_FX",
+    "spread_bps": 9.33,
+    "swap_bps_day": 2.395
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 14.0,
+    "carry_bps_per_bar": 0.0998,
+    "is": {
+     "trades": 70,
+     "winrate_pct": 31.4,
+     "expectancy_bps": -14.64,
+     "profit_factor": 0.3,
+     "total_bps": -1025.0,
+     "max_dd_bps": 1091.0,
+     "sharpe_trade": -0.505
+    },
+    "oos": {
+     "trades": 22,
+     "winrate_pct": 40.9,
+     "expectancy_bps": -11.1,
+     "profit_factor": 0.3,
+     "total_bps": -244.0,
+     "max_dd_bps": 307.0,
+     "sharpe_trade": -0.446
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "USDZAR": {
+   "cost": {
+    "symbol": "USDZAR",
+    "category": "STANDARD_FX",
+    "spread_bps": 4.12,
+    "swap_bps_day": 1.274
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 6.18,
+    "carry_bps_per_bar": 0.0531,
+    "is": {
+     "trades": 23,
+     "winrate_pct": 60.9,
+     "expectancy_bps": -2.82,
+     "profit_factor": 0.85,
+     "total_bps": -65.0,
+     "max_dd_bps": 136.0,
+     "sharpe_trade": -0.066
+    },
+    "oos": {
+     "trades": 10,
+     "winrate_pct": 60.0,
+     "expectancy_bps": 0.26,
+     "profit_factor": 1.01,
+     "total_bps": 3.0,
+     "max_dd_bps": 89.0,
+     "sharpe_trade": 0.006
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "XAGUSD": {
+   "cost": {
+    "symbol": "XAGUSD",
+    "category": "STANDARD_METALS",
+    "spread_bps": 7.77,
+    "swap_bps_day": 2.278
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 11.65,
+    "carry_bps_per_bar": 0.0949,
+    "is": {
+     "trades": 157,
+     "winrate_pct": 61.8,
+     "expectancy_bps": 4.48,
+     "profit_factor": 1.1,
+     "total_bps": 704.0,
+     "max_dd_bps": 1185.0,
+     "sharpe_trade": 0.041
+    },
+    "oos": {
+     "trades": 66,
+     "winrate_pct": 68.2,
+     "expectancy_bps": 22.35,
+     "profit_factor": 1.28,
+     "total_bps": 1475.0,
+     "max_dd_bps": 1141.0,
+     "sharpe_trade": 0.101
+    },
+    "potential": 181.57,
+    "validated": true
+   }
+  },
+  "XAUAUD": {
+   "cost": {
+    "symbol": "XAUAUD",
+    "category": "STANDARD_METALS",
+    "spread_bps": 0.99,
+    "swap_bps_day": 1.949
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 1.5,
+    "carry_bps_per_bar": 0.3248,
+    "is": {
+     "trades": 78,
+     "winrate_pct": 57.7,
+     "expectancy_bps": 0.81,
+     "profit_factor": 1.02,
+     "total_bps": 64.0,
+     "max_dd_bps": 728.0,
+     "sharpe_trade": 0.006
+    },
+    "oos": {
+     "trades": 26,
+     "winrate_pct": 65.4,
+     "expectancy_bps": 72.27,
+     "profit_factor": 2.3,
+     "total_bps": 1879.0,
+     "max_dd_bps": 539.0,
+     "sharpe_trade": 0.368
+    },
+    "potential": 368.51,
+    "validated": true
+   }
+  },
+  "XAUEUR": {
+   "cost": {
+    "symbol": "XAUEUR",
+    "category": "STANDARD_METALS",
+    "spread_bps": 1.41,
+    "swap_bps_day": 1.036
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 2.11,
+    "carry_bps_per_bar": 0.1727,
+    "is": {
+     "trades": 80,
+     "winrate_pct": 56.2,
+     "expectancy_bps": 0.95,
+     "profit_factor": 1.02,
+     "total_bps": 76.0,
+     "max_dd_bps": 1116.0,
+     "sharpe_trade": 0.008
+    },
+    "oos": {
+     "trades": 26,
+     "winrate_pct": 69.2,
+     "expectancy_bps": 70.12,
+     "profit_factor": 2.0,
+     "total_bps": 1823.0,
+     "max_dd_bps": 944.0,
+     "sharpe_trade": 0.307
+    },
+    "potential": 357.54,
+    "validated": true
+   }
+  },
+  "XAUGBP": {
+   "cost": {
+    "symbol": "XAUGBP",
+    "category": "STANDARD_METALS",
+    "spread_bps": 1.29,
+    "swap_bps_day": 1.521
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 1.94,
+    "carry_bps_per_bar": 0.2535,
+    "is": {
+     "trades": 77,
+     "winrate_pct": 59.7,
+     "expectancy_bps": 1.69,
+     "profit_factor": 1.04,
+     "total_bps": 130.0,
+     "max_dd_bps": 749.0,
+     "sharpe_trade": 0.015
+    },
+    "oos": {
+     "trades": 22,
+     "winrate_pct": 72.7,
+     "expectancy_bps": 79.6,
+     "profit_factor": 2.23,
+     "total_bps": 1751.0,
+     "max_dd_bps": 647.0,
+     "sharpe_trade": 0.345
+    },
+    "potential": 373.36,
+    "validated": true
+   }
+  },
+  "XAUUSD": {
+   "cost": {
+    "symbol": "XAUUSD",
+    "category": "STANDARD_METALS",
+    "spread_bps": 0.76,
+    "swap_bps_day": 1.436
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 1.5,
+    "carry_bps_per_bar": 0.2393,
+    "is": {
+     "trades": 95,
+     "winrate_pct": 51.6,
+     "expectancy_bps": -16.09,
+     "profit_factor": 0.73,
+     "total_bps": -1528.0,
+     "max_dd_bps": 1743.0,
+     "sharpe_trade": -0.135
+    },
+    "oos": {
+     "trades": 29,
+     "winrate_pct": 72.4,
+     "expectancy_bps": 51.32,
+     "profit_factor": 1.71,
+     "total_bps": 1488.0,
+     "max_dd_bps": 1224.0,
+     "sharpe_trade": 0.224
+    },
+    "potential": 276.37,
+    "validated": true
+   }
+  },
+  "XPTUSD": {
+   "cost": {
+    "symbol": "XPTUSD",
+    "category": "STANDARD_METALS",
+    "spread_bps": 42.56,
+    "swap_bps_day": 0.282
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 63.84,
+    "carry_bps_per_bar": 0.0117,
+    "is": {
+     "trades": 180,
+     "winrate_pct": 24.4,
+     "expectancy_bps": -73.13,
+     "profit_factor": 0.2,
+     "total_bps": -13163.0,
+     "max_dd_bps": 13460.0,
+     "sharpe_trade": -0.662
+    },
+    "oos": {
+     "trades": 75,
+     "winrate_pct": 45.3,
+     "expectancy_bps": -22.37,
+     "profit_factor": 0.75,
+     "total_bps": -1678.0,
+     "max_dd_bps": 2398.0,
+     "sharpe_trade": -0.113
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "BRENT.fs": {
+   "cost": {
+    "symbol": "BRENT.fs",
+    "category": "FUTURES",
+    "spread_bps": 3.8,
+    "swap_bps_day": -0.0
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 5.7,
+    "carry_bps_per_bar": -0.0,
+    "is": {
+     "trades": 22,
+     "winrate_pct": 54.5,
+     "expectancy_bps": 5.81,
+     "profit_factor": 1.14,
+     "total_bps": 128.0,
+     "max_dd_bps": 404.0,
+     "sharpe_trade": 0.052
+    },
+    "oos": {
+     "trades": 10,
+     "winrate_pct": 40.0,
+     "expectancy_bps": -77.95,
+     "profit_factor": 0.2,
+     "total_bps": -779.0,
+     "max_dd_bps": 796.0,
+     "sharpe_trade": -0.667
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "CAC40.fs": {
+   "cost": {
+    "symbol": "CAC40.fs",
+    "category": "FUTURES",
+    "spread_bps": 4.22,
+    "swap_bps_day": -0.0
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 6.33,
+    "carry_bps_per_bar": -0.0,
+    "is": {
+     "trades": 234,
+     "winrate_pct": 59.4,
+     "expectancy_bps": -7.69,
+     "profit_factor": 0.77,
+     "total_bps": -1799.0,
+     "max_dd_bps": 2436.0,
+     "sharpe_trade": -0.109
+    },
+    "oos": {
+     "trades": 93,
+     "winrate_pct": 58.1,
+     "expectancy_bps": -7.2,
+     "profit_factor": 0.77,
+     "total_bps": -670.0,
+     "max_dd_bps": 947.0,
+     "sharpe_trade": -0.113
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "CHINA50.fs": {
+   "cost": {
+    "symbol": "CHINA50.fs",
+    "category": "FUTURES",
+    "spread_bps": 10.11,
+    "swap_bps_day": -0.0
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 15.16,
+    "carry_bps_per_bar": -0.0,
+    "is": {
+     "trades": 163,
+     "winrate_pct": 38.7,
+     "expectancy_bps": -15.58,
+     "profit_factor": 0.56,
+     "total_bps": -2540.0,
+     "max_dd_bps": 2799.0,
+     "sharpe_trade": -0.227
+    },
+    "oos": {
+     "trades": 69,
+     "winrate_pct": 39.1,
+     "expectancy_bps": -20.62,
+     "profit_factor": 0.42,
+     "total_bps": -1423.0,
+     "max_dd_bps": 1627.0,
+     "sharpe_trade": -0.368
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "COCOA.fs": {
+   "cost": {
+    "symbol": "COCOA.fs",
+    "category": "FUTURES",
+    "spread_bps": 11.56,
+    "swap_bps_day": -0.0
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 17.34,
+    "carry_bps_per_bar": -0.0,
+    "is": {
+     "trades": 59,
+     "winrate_pct": 59.3,
+     "expectancy_bps": -17.05,
+     "profit_factor": 0.83,
+     "total_bps": -1006.0,
+     "max_dd_bps": 3155.0,
+     "sharpe_trade": -0.072
+    },
+    "oos": {
+     "trades": 25,
+     "winrate_pct": 44.0,
+     "expectancy_bps": -68.49,
+     "profit_factor": 0.58,
+     "total_bps": -1712.0,
+     "max_dd_bps": 2341.0,
+     "sharpe_trade": -0.257
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "COFFEE.fs": {
+   "cost": {
+    "symbol": "COFFEE.fs",
+    "category": "FUTURES",
+    "spread_bps": 9.62,
+    "swap_bps_day": -0.0
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 14.43,
+    "carry_bps_per_bar": -0.0,
+    "is": {
+     "trades": 102,
+     "winrate_pct": 56.9,
+     "expectancy_bps": 9.47,
+     "profit_factor": 1.06,
+     "total_bps": 966.0,
+     "max_dd_bps": 4261.0,
+     "sharpe_trade": 0.027
+    },
+    "oos": {
+     "trades": 45,
+     "winrate_pct": 62.2,
+     "expectancy_bps": 15.99,
+     "profit_factor": 1.1,
+     "total_bps": 720.0,
+     "max_dd_bps": 1444.0,
+     "sharpe_trade": 0.043
+    },
+    "potential": 107.26,
+    "validated": true
+   }
+  },
+  "COPPER.fs": {
+   "cost": {
+    "symbol": "COPPER.fs",
+    "category": "FUTURES",
+    "spread_bps": 4.91,
+    "swap_bps_day": -0.0
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 7.37,
+    "carry_bps_per_bar": -0.0,
+    "is": {
+     "trades": 26,
+     "winrate_pct": 69.2,
+     "expectancy_bps": 14.77,
+     "profit_factor": 1.52,
+     "total_bps": 384.0,
+     "max_dd_bps": 324.0,
+     "sharpe_trade": 0.181
+    },
+    "oos": {
+     "trades": 7,
+     "winrate_pct": 57.1,
+     "expectancy_bps": 6.41,
+     "profit_factor": 1.12,
+     "total_bps": 45.0,
+     "max_dd_bps": 359.0,
+     "sharpe_trade": 0.054
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "DAX40.fs": {
+   "cost": {
+    "symbol": "DAX40.fs",
+    "category": "FUTURES",
+    "spread_bps": 1.59,
+    "swap_bps_day": -0.0
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 2.39,
+    "carry_bps_per_bar": -0.0,
+    "is": {
+     "trades": 23,
+     "winrate_pct": 60.9,
+     "expectancy_bps": 1.77,
+     "profit_factor": 1.08,
+     "total_bps": 41.0,
+     "max_dd_bps": 163.0,
+     "sharpe_trade": 0.031
+    },
+    "oos": {
+     "trades": 10,
+     "winrate_pct": 50.0,
+     "expectancy_bps": 1.48,
+     "profit_factor": 1.04,
+     "total_bps": 15.0,
+     "max_dd_bps": 202.0,
+     "sharpe_trade": 0.017
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "DJ30.fs": {
+   "cost": {
+    "symbol": "DJ30.fs",
+    "category": "FUTURES",
+    "spread_bps": 0.76,
+    "swap_bps_day": -0.0
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 1.5,
+    "carry_bps_per_bar": -0.0,
+    "is": {
+     "trades": 20,
+     "winrate_pct": 60.0,
+     "expectancy_bps": 14.79,
+     "profit_factor": 1.34,
+     "total_bps": 296.0,
+     "max_dd_bps": 322.0,
+     "sharpe_trade": 0.133
+    },
+    "oos": {
+     "trades": 16,
+     "winrate_pct": 62.5,
+     "expectancy_bps": 26.09,
+     "profit_factor": 1.51,
+     "total_bps": 417.0,
+     "max_dd_bps": 258.0,
+     "sharpe_trade": 0.186
+    },
+    "potential": 104.36,
+    "validated": true
+   }
+  },
+  "EUSTX50.fs": {
+   "cost": {
+    "symbol": "EUSTX50.fs",
+    "category": "FUTURES",
+    "spread_bps": 4.79,
+    "swap_bps_day": -0.0
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 7.19,
+    "carry_bps_per_bar": -0.0,
+    "is": {
+     "trades": 231,
+     "winrate_pct": 57.6,
+     "expectancy_bps": -8.41,
+     "profit_factor": 0.69,
+     "total_bps": -1944.0,
+     "max_dd_bps": 2214.0,
+     "sharpe_trade": -0.145
+    },
+    "oos": {
+     "trades": 91,
+     "winrate_pct": 61.5,
+     "expectancy_bps": 3.95,
+     "profit_factor": 1.15,
+     "total_bps": 360.0,
+     "max_dd_bps": 533.0,
+     "sharpe_trade": 0.06
+    },
+    "potential": 37.68,
+    "validated": true
+   }
+  },
+  "FT100.fs": {
+   "cost": {
+    "symbol": "FT100.fs",
+    "category": "FUTURES",
+    "spread_bps": 2.38,
+    "swap_bps_day": -0.0
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 3.57,
+    "carry_bps_per_bar": -0.0,
+    "is": {
+     "trades": 176,
+     "winrate_pct": 57.4,
+     "expectancy_bps": -4.01,
+     "profit_factor": 0.8,
+     "total_bps": -707.0,
+     "max_dd_bps": 1056.0,
+     "sharpe_trade": -0.096
+    },
+    "oos": {
+     "trades": 75,
+     "winrate_pct": 58.7,
+     "expectancy_bps": -3.69,
+     "profit_factor": 0.83,
+     "total_bps": -277.0,
+     "max_dd_bps": 554.0,
+     "sharpe_trade": -0.08
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "HSI.fs": {
+   "cost": {
+    "symbol": "HSI.fs",
+    "category": "FUTURES",
+    "spread_bps": 4.17,
+    "swap_bps_day": -0.0
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 6.25,
+    "carry_bps_per_bar": -0.0,
+    "is": {
+     "trades": 109,
+     "winrate_pct": 50.5,
+     "expectancy_bps": -10.3,
+     "profit_factor": 0.9,
+     "total_bps": -1123.0,
+     "max_dd_bps": 1546.0,
+     "sharpe_trade": -0.045
+    },
+    "oos": {
+     "trades": 44,
+     "winrate_pct": 63.6,
+     "expectancy_bps": 27.73,
+     "profit_factor": 1.38,
+     "total_bps": 1220.0,
+     "max_dd_bps": 718.0,
+     "sharpe_trade": 0.144
+    },
+    "potential": 183.94,
+    "validated": true
+   }
+  },
+  "NAS100.fs": {
+   "cost": {
+    "symbol": "NAS100.fs",
+    "category": "FUTURES",
+    "spread_bps": 0.85,
+    "swap_bps_day": -0.0
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 1.5,
+    "carry_bps_per_bar": -0.0,
+    "is": {
+     "trades": 98,
+     "winrate_pct": 65.3,
+     "expectancy_bps": 50.3,
+     "profit_factor": 1.82,
+     "total_bps": 4929.0,
+     "max_dd_bps": 969.0,
+     "sharpe_trade": 0.253
+    },
+    "oos": {
+     "trades": 39,
+     "winrate_pct": 61.5,
+     "expectancy_bps": 43.62,
+     "profit_factor": 1.63,
+     "total_bps": 1701.0,
+     "max_dd_bps": 1243.0,
+     "sharpe_trade": 0.208
+    },
+    "potential": 272.41,
+    "validated": true
+   }
+  },
+  "NATGAS.fs": {
+   "cost": {
+    "symbol": "NATGAS.fs",
+    "category": "FUTURES",
+    "spread_bps": 34.07,
+    "swap_bps_day": -0.0
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 51.11,
+    "carry_bps_per_bar": -0.0,
+    "is": {
+     "trades": 209,
+     "winrate_pct": 50.7,
+     "expectancy_bps": -37.0,
+     "profit_factor": 0.64,
+     "total_bps": -7733.0,
+     "max_dd_bps": 8234.0,
+     "sharpe_trade": -0.185
+    },
+    "oos": {
+     "trades": 87,
+     "winrate_pct": 44.8,
+     "expectancy_bps": -19.01,
+     "profit_factor": 0.81,
+     "total_bps": -1654.0,
+     "max_dd_bps": 3751.0,
+     "sharpe_trade": -0.086
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "NK225.fs": {
+   "cost": {
+    "symbol": "NK225.fs",
+    "category": "FUTURES",
+    "spread_bps": 2.96,
+    "swap_bps_day": -0.0
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 4.44,
+    "carry_bps_per_bar": -0.0,
+    "is": {
+     "trades": 25,
+     "winrate_pct": 60.0,
+     "expectancy_bps": 9.3,
+     "profit_factor": 1.39,
+     "total_bps": 232.0,
+     "max_dd_bps": 157.0,
+     "sharpe_trade": 0.145
+    },
+    "oos": {
+     "trades": 7,
+     "winrate_pct": 28.6,
+     "expectancy_bps": -49.03,
+     "profit_factor": 0.3,
+     "total_bps": -343.0,
+     "max_dd_bps": 223.0,
+     "sharpe_trade": -0.599
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "S&P.fs": {
+   "cost": {
+    "symbol": "S&P.fs",
+    "category": "FUTURES",
+    "spread_bps": 1.2,
+    "swap_bps_day": -0.0
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 1.8,
+    "carry_bps_per_bar": -0.0,
+    "is": {
+     "trades": 82,
+     "winrate_pct": 59.8,
+     "expectancy_bps": 24.26,
+     "profit_factor": 1.46,
+     "total_bps": 1989.0,
+     "max_dd_bps": 793.0,
+     "sharpe_trade": 0.159
+    },
+    "oos": {
+     "trades": 34,
+     "winrate_pct": 50.0,
+     "expectancy_bps": 0.98,
+     "profit_factor": 1.02,
+     "total_bps": 33.0,
+     "max_dd_bps": 1352.0,
+     "sharpe_trade": 0.007
+    },
+    "potential": 5.71,
+    "validated": true
+   }
+  },
+  "SOYBEAN.fs": {
+   "cost": {
+    "symbol": "SOYBEAN.fs",
+    "category": "FUTURES",
+    "spread_bps": 14.34,
+    "swap_bps_day": -0.0
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 21.51,
+    "carry_bps_per_bar": -0.0,
+    "is": {
+     "trades": 61,
+     "winrate_pct": 47.5,
+     "expectancy_bps": -6.77,
+     "profit_factor": 0.77,
+     "total_bps": -413.0,
+     "max_dd_bps": 721.0,
+     "sharpe_trade": -0.109
+    },
+    "oos": {
+     "trades": 30,
+     "winrate_pct": 36.7,
+     "expectancy_bps": -16.53,
+     "profit_factor": 0.49,
+     "total_bps": -496.0,
+     "max_dd_bps": 751.0,
+     "sharpe_trade": -0.298
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "SPI200.fs": {
+   "cost": {
+    "symbol": "SPI200.fs",
+    "category": "FUTURES",
+    "spread_bps": 3.45,
+    "swap_bps_day": -0.0
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 5.18,
+    "carry_bps_per_bar": -0.0,
+    "is": {
+     "trades": 52,
+     "winrate_pct": 63.5,
+     "expectancy_bps": -2.75,
+     "profit_factor": 0.84,
+     "total_bps": -143.0,
+     "max_dd_bps": 349.0,
+     "sharpe_trade": -0.071
+    },
+    "oos": {
+     "trades": 29,
+     "winrate_pct": 51.7,
+     "expectancy_bps": -6.54,
+     "profit_factor": 0.76,
+     "total_bps": -190.0,
+     "max_dd_bps": 310.0,
+     "sharpe_trade": -0.121
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "USDINDEX.fs": {
+   "cost": {
+    "symbol": "USDINDEX.fs",
+    "category": "FUTURES",
+    "spread_bps": 3.47,
+    "swap_bps_day": -0.0
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 5.21,
+    "carry_bps_per_bar": -0.0,
+    "is": {
+     "trades": 22,
+     "winrate_pct": 54.5,
+     "expectancy_bps": -0.01,
+     "profit_factor": 1.0,
+     "total_bps": -0.0,
+     "max_dd_bps": 110.0,
+     "sharpe_trade": -0.0
+    },
+    "oos": {
+     "trades": 12,
+     "winrate_pct": 50.0,
+     "expectancy_bps": -6.94,
+     "profit_factor": 0.42,
+     "total_bps": -83.0,
+     "max_dd_bps": 105.0,
+     "sharpe_trade": -0.385
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "VIX.fs": {
+   "cost": {
+    "symbol": "VIX.fs",
+    "category": "FUTURES",
+    "spread_bps": 41.6,
+    "swap_bps_day": -0.0
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 62.4,
+    "carry_bps_per_bar": -0.0,
+    "is": {
+     "trades": 97,
+     "winrate_pct": 56.7,
+     "expectancy_bps": -82.76,
+     "profit_factor": 0.72,
+     "total_bps": -8028.0,
+     "max_dd_bps": 10896.0,
+     "sharpe_trade": -0.141
+    },
+    "oos": {
+     "trades": 38,
+     "winrate_pct": 63.2,
+     "expectancy_bps": 1.74,
+     "profit_factor": 1.01,
+     "total_bps": 66.0,
+     "max_dd_bps": 3493.0,
+     "sharpe_trade": 0.002
+    },
+    "potential": 10.73,
+    "validated": true
+   }
+  },
+  "WTI.fs": {
+   "cost": {
+    "symbol": "WTI.fs",
+    "category": "FUTURES",
+    "spread_bps": 4.03,
+    "swap_bps_day": -0.0
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 6.04,
+    "carry_bps_per_bar": -0.0,
+    "is": {
+     "trades": 97,
+     "winrate_pct": 52.6,
+     "expectancy_bps": -33.18,
+     "profit_factor": 0.8,
+     "total_bps": -3218.0,
+     "max_dd_bps": 5874.0,
+     "sharpe_trade": -0.097
+    },
+    "oos": {
+     "trades": 40,
+     "winrate_pct": 52.5,
+     "expectancy_bps": 12.12,
+     "profit_factor": 1.07,
+     "total_bps": 485.0,
+     "max_dd_bps": 1551.0,
+     "sharpe_trade": 0.027
+    },
+    "potential": 76.65,
+    "validated": true
+   }
+  },
+  "AUS200": {
+   "cost": {
+    "symbol": "AUS200",
+    "category": "CASH",
+    "spread_bps": 3.44,
+    "swap_bps_day": 0.084
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 5.16,
+    "carry_bps_per_bar": 0.0035,
+    "is": {
+     "trades": 210,
+     "winrate_pct": 58.6,
+     "expectancy_bps": -7.26,
+     "profit_factor": 0.69,
+     "total_bps": -1525.0,
+     "max_dd_bps": 1671.0,
+     "sharpe_trade": -0.145
+    },
+    "oos": {
+     "trades": 111,
+     "winrate_pct": 49.5,
+     "expectancy_bps": -10.01,
+     "profit_factor": 0.66,
+     "total_bps": -1111.0,
+     "max_dd_bps": 1464.0,
+     "sharpe_trade": -0.184
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "CN50": {
+   "cost": {
+    "symbol": "CN50",
+    "category": "CASH",
+    "spread_bps": 2.99,
+    "swap_bps_day": 0.045
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 4.49,
+    "carry_bps_per_bar": 0.0019,
+    "is": {
+     "trades": 163,
+     "winrate_pct": 52.8,
+     "expectancy_bps": -4.07,
+     "profit_factor": 0.86,
+     "total_bps": -664.0,
+     "max_dd_bps": 1048.0,
+     "sharpe_trade": -0.059
+    },
+    "oos": {
+     "trades": 67,
+     "winrate_pct": 58.2,
+     "expectancy_bps": -8.34,
+     "profit_factor": 0.69,
+     "total_bps": -559.0,
+     "max_dd_bps": 726.0,
+     "sharpe_trade": -0.16
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "EU50": {
+   "cost": {
+    "symbol": "EU50",
+    "category": "CASH",
+    "spread_bps": 5.13,
+    "swap_bps_day": 0.084
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 7.7,
+    "carry_bps_per_bar": 0.0035,
+    "is": {
+     "trades": 53,
+     "winrate_pct": 64.2,
+     "expectancy_bps": -2.37,
+     "profit_factor": 0.89,
+     "total_bps": -126.0,
+     "max_dd_bps": 411.0,
+     "sharpe_trade": -0.043
+    },
+    "oos": {
+     "trades": 21,
+     "winrate_pct": 57.1,
+     "expectancy_bps": -11.42,
+     "profit_factor": 0.63,
+     "total_bps": -240.0,
+     "max_dd_bps": 326.0,
+     "sharpe_trade": -0.184
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "FRA40": {
+   "cost": {
+    "symbol": "FRA40",
+    "category": "CASH",
+    "spread_bps": 3.67,
+    "swap_bps_day": 0.063
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 5.5,
+    "carry_bps_per_bar": 0.0026,
+    "is": {
+     "trades": 63,
+     "winrate_pct": 73.0,
+     "expectancy_bps": 11.26,
+     "profit_factor": 1.72,
+     "total_bps": 709.0,
+     "max_dd_bps": 244.0,
+     "sharpe_trade": 0.218
+    },
+    "oos": {
+     "trades": 25,
+     "winrate_pct": 56.0,
+     "expectancy_bps": 2.3,
+     "profit_factor": 1.09,
+     "total_bps": 57.0,
+     "max_dd_bps": 225.0,
+     "sharpe_trade": 0.035
+    },
+    "potential": 11.5,
+    "validated": true
+   }
+  },
+  "GER40": {
+   "cost": {
+    "symbol": "GER40",
+    "category": "CASH",
+    "spread_bps": 1.12,
+    "swap_bps_day": 0.021
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 1.68,
+    "carry_bps_per_bar": 0.0009,
+    "is": {
+     "trades": 220,
+     "winrate_pct": 63.6,
+     "expectancy_bps": 2.52,
+     "profit_factor": 1.12,
+     "total_bps": 555.0,
+     "max_dd_bps": 487.0,
+     "sharpe_trade": 0.047
+    },
+    "oos": {
+     "trades": 94,
+     "winrate_pct": 58.5,
+     "expectancy_bps": -0.08,
+     "profit_factor": 1.0,
+     "total_bps": -7.0,
+     "max_dd_bps": 454.0,
+     "sharpe_trade": -0.001
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "HK50": {
+   "cost": {
+    "symbol": "HK50",
+    "category": "CASH",
+    "spread_bps": 2.5,
+    "swap_bps_day": 0.031
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 3.75,
+    "carry_bps_per_bar": 0.0052,
+    "is": {
+     "trades": 74,
+     "winrate_pct": 56.8,
+     "expectancy_bps": 21.87,
+     "profit_factor": 1.22,
+     "total_bps": 1619.0,
+     "max_dd_bps": 1468.0,
+     "sharpe_trade": 0.088
+    },
+    "oos": {
+     "trades": 34,
+     "winrate_pct": 67.6,
+     "expectancy_bps": 57.66,
+     "profit_factor": 1.94,
+     "total_bps": 1960.0,
+     "max_dd_bps": 428.0,
+     "sharpe_trade": 0.294
+    },
+    "potential": 336.21,
+    "validated": true
+   }
+  },
+  "IT40": {
+   "cost": {
+    "symbol": "IT40",
+    "category": "CASH",
+    "spread_bps": 2.7,
+    "swap_bps_day": 0.01
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 4.05,
+    "carry_bps_per_bar": 0.0017,
+    "is": {
+     "trades": 73,
+     "winrate_pct": 53.4,
+     "expectancy_bps": 5.35,
+     "profit_factor": 1.07,
+     "total_bps": 391.0,
+     "max_dd_bps": 1140.0,
+     "sharpe_trade": 0.027
+    },
+    "oos": {
+     "trades": 32,
+     "winrate_pct": 62.5,
+     "expectancy_bps": 12.31,
+     "profit_factor": 1.22,
+     "total_bps": 394.0,
+     "max_dd_bps": 699.0,
+     "sharpe_trade": 0.088
+    },
+    "potential": 69.64,
+    "validated": true
+   }
+  },
+  "JPN225": {
+   "cost": {
+    "symbol": "JPN225",
+    "category": "CASH",
+    "spread_bps": 2.67,
+    "swap_bps_day": 0.006
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 4.0,
+    "carry_bps_per_bar": 0.0003,
+    "is": {
+     "trades": 30,
+     "winrate_pct": 60.0,
+     "expectancy_bps": 7.44,
+     "profit_factor": 1.27,
+     "total_bps": 223.0,
+     "max_dd_bps": 429.0,
+     "sharpe_trade": 0.11
+    },
+    "oos": {
+     "trades": 8,
+     "winrate_pct": 75.0,
+     "expectancy_bps": 34.98,
+     "profit_factor": 2.23,
+     "total_bps": 280.0,
+     "max_dd_bps": 151.0,
+     "sharpe_trade": 0.359
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "NETH25": {
+   "cost": {
+    "symbol": "NETH25",
+    "category": "CASH",
+    "spread_bps": 3.24,
+    "swap_bps_day": 0.049
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 4.86,
+    "carry_bps_per_bar": 0.0082,
+    "is": {
+     "trades": 87,
+     "winrate_pct": 54.0,
+     "expectancy_bps": 3.64,
+     "profit_factor": 1.04,
+     "total_bps": 317.0,
+     "max_dd_bps": 2348.0,
+     "sharpe_trade": 0.017
+    },
+    "oos": {
+     "trades": 31,
+     "winrate_pct": 74.2,
+     "expectancy_bps": 8.91,
+     "profit_factor": 1.24,
+     "total_bps": 276.0,
+     "max_dd_bps": 573.0,
+     "sharpe_trade": 0.085
+    },
+    "potential": 49.61,
+    "validated": true
+   }
+  },
+  "SGFREE": {
+   "cost": {
+    "symbol": "SGFREE",
+    "category": "CASH",
+    "spread_bps": 44.61,
+    "swap_bps_day": 1.348
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 66.91,
+    "carry_bps_per_bar": 0.0562,
+    "is": {
+     "trades": 69,
+     "winrate_pct": 8.7,
+     "expectancy_bps": -59.67,
+     "profit_factor": 0.03,
+     "total_bps": -4117.0,
+     "max_dd_bps": 4110.0,
+     "sharpe_trade": -1.192
+    },
+    "oos": {
+     "trades": 21,
+     "winrate_pct": 14.3,
+     "expectancy_bps": -59.95,
+     "profit_factor": 0.03,
+     "total_bps": -1259.0,
+     "max_dd_bps": 1259.0,
+     "sharpe_trade": -1.134
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "SPA35": {
+   "cost": {
+    "symbol": "SPA35",
+    "category": "CASH",
+    "spread_bps": 6.26,
+    "swap_bps_day": 0.027
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 9.39,
+    "carry_bps_per_bar": 0.0045,
+    "is": {
+     "trades": 78,
+     "winrate_pct": 61.5,
+     "expectancy_bps": -10.03,
+     "profit_factor": 0.87,
+     "total_bps": -783.0,
+     "max_dd_bps": 2231.0,
+     "sharpe_trade": -0.055
+    },
+    "oos": {
+     "trades": 30,
+     "winrate_pct": 63.3,
+     "expectancy_bps": 27.42,
+     "profit_factor": 1.45,
+     "total_bps": 823.0,
+     "max_dd_bps": 434.0,
+     "sharpe_trade": 0.167
+    },
+    "potential": 150.19,
+    "validated": true
+   }
+  },
+  "SWI20": {
+   "cost": {
+    "symbol": "SWI20",
+    "category": "CASH",
+    "spread_bps": 3.52,
+    "swap_bps_day": 0.021
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 5.28,
+    "carry_bps_per_bar": 0.0009,
+    "is": {
+     "trades": 217,
+     "winrate_pct": 57.1,
+     "expectancy_bps": -9.22,
+     "profit_factor": 0.69,
+     "total_bps": -2000.0,
+     "max_dd_bps": 1969.0,
+     "sharpe_trade": -0.148
+    },
+    "oos": {
+     "trades": 102,
+     "winrate_pct": 53.9,
+     "expectancy_bps": -9.41,
+     "profit_factor": 0.7,
+     "total_bps": -959.0,
+     "max_dd_bps": 1587.0,
+     "sharpe_trade": -0.16
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "UK100": {
+   "cost": {
+    "symbol": "UK100",
+    "category": "CASH",
+    "spread_bps": 2.67,
+    "swap_bps_day": 0.064
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 4.0,
+    "carry_bps_per_bar": 0.0027,
+    "is": {
+     "trades": 35,
+     "winrate_pct": 71.4,
+     "expectancy_bps": 3.76,
+     "profit_factor": 1.28,
+     "total_bps": 132.0,
+     "max_dd_bps": 276.0,
+     "sharpe_trade": 0.102
+    },
+    "oos": {
+     "trades": 14,
+     "winrate_pct": 64.3,
+     "expectancy_bps": 3.76,
+     "profit_factor": 1.22,
+     "total_bps": 53.0,
+     "max_dd_bps": 103.0,
+     "sharpe_trade": 0.081
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "UKOIL": {
+   "cost": {
+    "symbol": "UKOIL",
+    "category": "CASH",
+    "spread_bps": 3.18,
+    "swap_bps_day": 6.353
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 4.77,
+    "carry_bps_per_bar": 1.0588,
+    "is": {
+     "trades": 68,
+     "winrate_pct": 54.4,
+     "expectancy_bps": -23.19,
+     "profit_factor": 0.82,
+     "total_bps": -1577.0,
+     "max_dd_bps": 3153.0,
+     "sharpe_trade": -0.083
+    },
+    "oos": {
+     "trades": 29,
+     "winrate_pct": 55.2,
+     "expectancy_bps": 22.93,
+     "profit_factor": 1.16,
+     "total_bps": 665.0,
+     "max_dd_bps": 1613.0,
+     "sharpe_trade": 0.061
+    },
+    "potential": 123.48,
+    "validated": true
+   }
+  },
+  "US2000": {
+   "cost": {
+    "symbol": "US2000",
+    "category": "CASH",
+    "spread_bps": 7.8,
+    "swap_bps_day": 0.229
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 11.7,
+    "carry_bps_per_bar": 0.0095,
+    "is": {
+     "trades": 159,
+     "winrate_pct": 48.4,
+     "expectancy_bps": -11.35,
+     "profit_factor": 0.69,
+     "total_bps": -1804.0,
+     "max_dd_bps": 2104.0,
+     "sharpe_trade": -0.153
+    },
+    "oos": {
+     "trades": 73,
+     "winrate_pct": 50.7,
+     "expectancy_bps": -22.01,
+     "profit_factor": 0.51,
+     "total_bps": -1607.0,
+     "max_dd_bps": 1750.0,
+     "sharpe_trade": -0.28
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "US30": {
+   "cost": {
+    "symbol": "US30",
+    "category": "CASH",
+    "spread_bps": 0.54,
+    "swap_bps_day": 0.013
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 1.5,
+    "carry_bps_per_bar": 0.0022,
+    "is": {
+     "trades": 97,
+     "winrate_pct": 58.8,
+     "expectancy_bps": 10.56,
+     "profit_factor": 1.21,
+     "total_bps": 1024.0,
+     "max_dd_bps": 1049.0,
+     "sharpe_trade": 0.08
+    },
+    "oos": {
+     "trades": 43,
+     "winrate_pct": 53.5,
+     "expectancy_bps": 11.26,
+     "profit_factor": 1.21,
+     "total_bps": 484.0,
+     "max_dd_bps": 1183.0,
+     "sharpe_trade": 0.084
+    },
+    "potential": 73.84,
+    "validated": true
+   }
+  },
+  "US500": {
+   "cost": {
+    "symbol": "US500",
+    "category": "CASH",
+    "spread_bps": 3.07,
+    "swap_bps_day": 0.09
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 4.6,
+    "carry_bps_per_bar": 0.015,
+    "is": {
+     "trades": 79,
+     "winrate_pct": 55.7,
+     "expectancy_bps": 9.64,
+     "profit_factor": 1.16,
+     "total_bps": 762.0,
+     "max_dd_bps": 1139.0,
+     "sharpe_trade": 0.064
+    },
+    "oos": {
+     "trades": 33,
+     "winrate_pct": 57.6,
+     "expectancy_bps": 6.3,
+     "profit_factor": 1.12,
+     "total_bps": 208.0,
+     "max_dd_bps": 955.0,
+     "sharpe_trade": 0.047
+    },
+    "potential": 36.19,
+    "validated": true
+   }
+  },
+  "USOIL": {
+   "cost": {
+    "symbol": "USOIL",
+    "category": "CASH",
+    "spread_bps": 3.37,
+    "swap_bps_day": 6.733
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 5.05,
+    "carry_bps_per_bar": 1.1222,
+    "is": {
+     "trades": 96,
+     "winrate_pct": 56.2,
+     "expectancy_bps": -7.36,
+     "profit_factor": 0.95,
+     "total_bps": -707.0,
+     "max_dd_bps": 3647.0,
+     "sharpe_trade": -0.023
+    },
+    "oos": {
+     "trades": 43,
+     "winrate_pct": 58.1,
+     "expectancy_bps": 8.84,
+     "profit_factor": 1.07,
+     "total_bps": 380.0,
+     "max_dd_bps": 2069.0,
+     "sharpe_trade": 0.026
+    },
+    "potential": 57.97,
+    "validated": true
+   }
+  },
+  "USTECH": {
+   "cost": {
+    "symbol": "USTECH",
+    "category": "CASH",
+    "spread_bps": 0.93,
+    "swap_bps_day": 0.023
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 1.5,
+    "carry_bps_per_bar": 0.0038,
+    "is": {
+     "trades": 99,
+     "winrate_pct": 67.7,
+     "expectancy_bps": 52.5,
+     "profit_factor": 1.89,
+     "total_bps": 5197.0,
+     "max_dd_bps": 869.0,
+     "sharpe_trade": 0.268
+    },
+    "oos": {
+     "trades": 37,
+     "winrate_pct": 67.6,
+     "expectancy_bps": 57.26,
+     "profit_factor": 1.89,
+     "total_bps": 2118.0,
+     "max_dd_bps": 1122.0,
+     "sharpe_trade": 0.268
+    },
+    "potential": 348.3,
+    "validated": true
+   }
+  },
+  "AAVE-USD": {
+   "cost": {
+    "symbol": "AAVE-USD",
+    "category": "CRYPTO",
+    "spread_bps": 22.82,
+    "swap_bps_day": 22.815
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 34.23,
+    "carry_bps_per_bar": 0.9506,
+    "is": {
+     "trades": 24,
+     "winrate_pct": 70.8,
+     "expectancy_bps": 55.97,
+     "profit_factor": 1.6,
+     "total_bps": 1343.0,
+     "max_dd_bps": 894.0,
+     "sharpe_trade": 0.186
+    },
+    "oos": {
+     "trades": 16,
+     "winrate_pct": 56.2,
+     "expectancy_bps": -82.24,
+     "profit_factor": 0.45,
+     "total_bps": -1316.0,
+     "max_dd_bps": 2065.0,
+     "sharpe_trade": -0.341
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "ADAUSD": {
+   "cost": {
+    "symbol": "ADAUSD",
+    "category": "CRYPTO",
+    "spread_bps": 71.86,
+    "swap_bps_day": 119.76
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 107.79,
+    "carry_bps_per_bar": 4.99,
+    "is": {
+     "trades": 29,
+     "winrate_pct": 24.1,
+     "expectancy_bps": -172.38,
+     "profit_factor": 0.2,
+     "total_bps": -4999.0,
+     "max_dd_bps": 4691.0,
+     "sharpe_trade": -0.629
+    },
+    "oos": {
+     "trades": 12,
+     "winrate_pct": 16.7,
+     "expectancy_bps": -250.66,
+     "profit_factor": 0.08,
+     "total_bps": -3008.0,
+     "max_dd_bps": 2884.0,
+     "sharpe_trade": -1.098
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "AVAX-USD": {
+   "cost": {
+    "symbol": "AVAX-USD",
+    "category": "CRYPTO",
+    "spread_bps": 77.8,
+    "swap_bps_day": 31.119
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 116.7,
+    "carry_bps_per_bar": 1.2966,
+    "is": {
+     "trades": 59,
+     "winrate_pct": 30.5,
+     "expectancy_bps": -117.18,
+     "profit_factor": 0.35,
+     "total_bps": -6913.0,
+     "max_dd_bps": 6470.0,
+     "sharpe_trade": -0.431
+    },
+    "oos": {
+     "trades": 25,
+     "winrate_pct": 36.0,
+     "expectancy_bps": -116.11,
+     "profit_factor": 0.23,
+     "total_bps": -2903.0,
+     "max_dd_bps": 2990.0,
+     "sharpe_trade": -0.58
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "BAT-USD": {
+   "cost": {
+    "symbol": "BAT-USD",
+    "category": "CRYPTO",
+    "spread_bps": 143.37,
+    "swap_bps_day": 238.949
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 215.06,
+    "carry_bps_per_bar": 9.9562,
+    "is": {
+     "trades": 51,
+     "winrate_pct": 13.7,
+     "expectancy_bps": -238.63,
+     "profit_factor": 0.09,
+     "total_bps": -12170.0,
+     "max_dd_bps": 11390.0,
+     "sharpe_trade": -0.837
+    },
+    "oos": {
+     "trades": 26,
+     "winrate_pct": 15.4,
+     "expectancy_bps": -341.8,
+     "profit_factor": 0.03,
+     "total_bps": -8887.0,
+     "max_dd_bps": 8679.0,
+     "sharpe_trade": -1.204
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "BCH-JPY": {
+   "cost": {
+    "symbol": "BCH-JPY",
+    "category": "CRYPTO",
+    "spread_bps": 35.29,
+    "swap_bps_day": 5.229
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 52.94,
+    "carry_bps_per_bar": 0.2179,
+    "is": {
+     "trades": 23,
+     "winrate_pct": 69.6,
+     "expectancy_bps": 25.77,
+     "profit_factor": 1.38,
+     "total_bps": 593.0,
+     "max_dd_bps": 926.0,
+     "sharpe_trade": 0.13
+    },
+    "oos": {
+     "trades": 17,
+     "winrate_pct": 52.9,
+     "expectancy_bps": -17.69,
+     "profit_factor": 0.81,
+     "total_bps": -301.0,
+     "max_dd_bps": 1038.0,
+     "sharpe_trade": -0.088
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "BCHUSD": {
+   "cost": {
+    "symbol": "BCHUSD",
+    "category": "CRYPTO",
+    "spread_bps": 33.97,
+    "swap_bps_day": 0.849
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 50.95,
+    "carry_bps_per_bar": 0.0354,
+    "is": {
+     "trades": 26,
+     "winrate_pct": 61.5,
+     "expectancy_bps": 43.71,
+     "profit_factor": 1.64,
+     "total_bps": 1136.0,
+     "max_dd_bps": 923.0,
+     "sharpe_trade": 0.201
+    },
+    "oos": {
+     "trades": 16,
+     "winrate_pct": 43.8,
+     "expectancy_bps": -29.58,
+     "profit_factor": 0.73,
+     "total_bps": -473.0,
+     "max_dd_bps": 684.0,
+     "sharpe_trade": -0.133
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "BNB-USD": {
+   "cost": {
+    "symbol": "BNB-USD",
+    "category": "CRYPTO",
+    "spread_bps": 17.67,
+    "swap_bps_day": 3.535
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 26.51,
+    "carry_bps_per_bar": 0.5892,
+    "is": {
+     "trades": 91,
+     "winrate_pct": 54.9,
+     "expectancy_bps": 5.15,
+     "profit_factor": 1.03,
+     "total_bps": 469.0,
+     "max_dd_bps": 2596.0,
+     "sharpe_trade": 0.013
+    },
+    "oos": {
+     "trades": 37,
+     "winrate_pct": 64.9,
+     "expectancy_bps": 77.79,
+     "profit_factor": 1.58,
+     "total_bps": 2878.0,
+     "max_dd_bps": 1374.0,
+     "sharpe_trade": 0.186
+    },
+    "potential": 473.18,
+    "validated": true
+   }
+  },
+  "BTC-JPY": {
+   "cost": {
+    "symbol": "BTC-JPY",
+    "category": "CRYPTO",
+    "spread_bps": 3.59,
+    "swap_bps_day": 0.015
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 5.38,
+    "carry_bps_per_bar": 0.0006,
+    "is": {
+     "trades": 24,
+     "winrate_pct": 70.8,
+     "expectancy_bps": 28.69,
+     "profit_factor": 1.75,
+     "total_bps": 689.0,
+     "max_dd_bps": 519.0,
+     "sharpe_trade": 0.241
+    },
+    "oos": {
+     "trades": 7,
+     "winrate_pct": 57.1,
+     "expectancy_bps": 41.71,
+     "profit_factor": 1.66,
+     "total_bps": 292.0,
+     "max_dd_bps": 280.0,
+     "sharpe_trade": 0.24
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "BTCUSD": {
+   "cost": {
+    "symbol": "BTCUSD",
+    "category": "CRYPTO",
+    "spread_bps": 4.36,
+    "swap_bps_day": 0.032
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 6.54,
+    "carry_bps_per_bar": 0.0013,
+    "is": {
+     "trades": 59,
+     "winrate_pct": 59.3,
+     "expectancy_bps": -3.16,
+     "profit_factor": 0.94,
+     "total_bps": -186.0,
+     "max_dd_bps": 569.0,
+     "sharpe_trade": -0.029
+    },
+    "oos": {
+     "trades": 26,
+     "winrate_pct": 73.1,
+     "expectancy_bps": 51.77,
+     "profit_factor": 2.39,
+     "total_bps": 1346.0,
+     "max_dd_bps": 531.0,
+     "sharpe_trade": 0.379
+    },
+    "potential": 263.98,
+    "validated": true
+   }
+  },
+  "COMP-USD": {
+   "cost": {
+    "symbol": "COMP-USD",
+    "category": "CRYPTO",
+    "spread_bps": 105.51,
+    "swap_bps_day": 117.233
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 158.27,
+    "carry_bps_per_bar": 4.8847,
+    "is": {
+     "trades": 30,
+     "winrate_pct": 36.7,
+     "expectancy_bps": -106.81,
+     "profit_factor": 0.33,
+     "total_bps": -3204.0,
+     "max_dd_bps": 2670.0,
+     "sharpe_trade": -0.437
+    },
+    "oos": {
+     "trades": 12,
+     "winrate_pct": 8.3,
+     "expectancy_bps": -124.75,
+     "profit_factor": 0.13,
+     "total_bps": -1497.0,
+     "max_dd_bps": 1360.0,
+     "sharpe_trade": -0.685
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "CRV-USD": {
+   "cost": {
+    "symbol": "CRV-USD",
+    "category": "CRYPTO",
+    "spread_bps": 98.04,
+    "swap_bps_day": 980.392
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 147.06,
+    "carry_bps_per_bar": 40.8497,
+    "is": {
+     "trades": 26,
+     "winrate_pct": 7.7,
+     "expectancy_bps": -528.34,
+     "profit_factor": 0.01,
+     "total_bps": -13737.0,
+     "max_dd_bps": 13303.0,
+     "sharpe_trade": -1.307
+    },
+    "oos": {
+     "trades": 15,
+     "winrate_pct": 0.0,
+     "expectancy_bps": -872.26,
+     "profit_factor": 0.0,
+     "total_bps": -13084.0,
+     "max_dd_bps": 12633.0,
+     "sharpe_trade": -1.457
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "DOGUSD": {
+   "cost": {
+    "symbol": "DOGUSD",
+    "category": "CRYPTO",
+    "spread_bps": 48.35,
+    "swap_bps_day": 27.626
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 72.53,
+    "carry_bps_per_bar": 1.1511,
+    "is": {
+     "trades": 161,
+     "winrate_pct": 44.1,
+     "expectancy_bps": -72.61,
+     "profit_factor": 0.53,
+     "total_bps": -11691.0,
+     "max_dd_bps": 11632.0,
+     "sharpe_trade": -0.257
+    },
+    "oos": {
+     "trades": 80,
+     "winrate_pct": 35.0,
+     "expectancy_bps": -98.49,
+     "profit_factor": 0.27,
+     "total_bps": -7879.0,
+     "max_dd_bps": 7772.0,
+     "sharpe_trade": -0.495
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "DOTUSD": {
+   "cost": {
+    "symbol": "DOTUSD",
+    "category": "CRYPTO",
+    "spread_bps": 120.92,
+    "swap_bps_day": 241.838
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 181.38,
+    "carry_bps_per_bar": 10.0766,
+    "is": {
+     "trades": 21,
+     "winrate_pct": 14.3,
+     "expectancy_bps": -283.5,
+     "profit_factor": 0.03,
+     "total_bps": -5953.0,
+     "max_dd_bps": 5790.0,
+     "sharpe_trade": -1.071
+    },
+    "oos": {
+     "trades": 13,
+     "winrate_pct": 7.7,
+     "expectancy_bps": -394.89,
+     "profit_factor": 0.02,
+     "total_bps": -5134.0,
+     "max_dd_bps": 4948.0,
+     "sharpe_trade": -1.546
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "ETH-JPY": {
+   "cost": {
+    "symbol": "ETH-JPY",
+    "category": "CRYPTO",
+    "spread_bps": 14.73,
+    "swap_bps_day": 0.532
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 22.09,
+    "carry_bps_per_bar": 0.0887,
+    "is": {
+     "trades": 33,
+     "winrate_pct": 48.5,
+     "expectancy_bps": -23.15,
+     "profit_factor": 0.89,
+     "total_bps": -764.0,
+     "max_dd_bps": 2227.0,
+     "sharpe_trade": -0.053
+    },
+    "oos": {
+     "trades": 13,
+     "winrate_pct": 69.2,
+     "expectancy_bps": 125.22,
+     "profit_factor": 1.77,
+     "total_bps": 1628.0,
+     "max_dd_bps": 1224.0,
+     "sharpe_trade": 0.254
+    },
+    "potential": 451.49,
+    "validated": true
+   }
+  },
+  "ETHUSD": {
+   "cost": {
+    "symbol": "ETHUSD",
+    "category": "CRYPTO",
+    "spread_bps": 7.21,
+    "swap_bps_day": 0.115
+   },
+   "best": {
+    "style": "swing",
+    "tf": "H4",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.5,
+    "tp_ladder": [
+     2.0,
+     3.5,
+     6.0
+    ],
+    "fees_bps": 10.81,
+    "carry_bps_per_bar": 0.0192,
+    "is": {
+     "trades": 32,
+     "winrate_pct": 62.5,
+     "expectancy_bps": 70.5,
+     "profit_factor": 1.47,
+     "total_bps": 2256.0,
+     "max_dd_bps": 1115.0,
+     "sharpe_trade": 0.171
+    },
+    "oos": {
+     "trades": 16,
+     "winrate_pct": 62.5,
+     "expectancy_bps": 49.66,
+     "profit_factor": 1.26,
+     "total_bps": 795.0,
+     "max_dd_bps": 2161.0,
+     "sharpe_trade": 0.103
+    },
+    "potential": 198.64,
+    "validated": true
+   }
+  },
+  "KSM-USD": {
+   "cost": {
+    "symbol": "KSM-USD",
+    "category": "CRYPTO",
+    "spread_bps": 433.44,
+    "swap_bps_day": 619.195
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 650.16,
+    "carry_bps_per_bar": 25.7998,
+    "is": {
+     "trades": 209,
+     "winrate_pct": 0.0,
+     "expectancy_bps": -959.64,
+     "profit_factor": 0.0,
+     "total_bps": -200565.0,
+     "max_dd_bps": 200096.0,
+     "sharpe_trade": -2.484
+    },
+    "oos": {
+     "trades": 97,
+     "winrate_pct": 1.0,
+     "expectancy_bps": -758.47,
+     "profit_factor": 0.0,
+     "total_bps": -73572.0,
+     "max_dd_bps": 72404.0,
+     "sharpe_trade": -2.55
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "LNKUSD": {
+   "cost": {
+    "symbol": "LNKUSD",
+    "category": "CRYPTO",
+    "spread_bps": 32.88,
+    "swap_bps_day": 26.3
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 49.32,
+    "carry_bps_per_bar": 1.0958,
+    "is": {
+     "trades": 70,
+     "winrate_pct": 52.9,
+     "expectancy_bps": -42.47,
+     "profit_factor": 0.68,
+     "total_bps": -2973.0,
+     "max_dd_bps": 2465.0,
+     "sharpe_trade": -0.154
+    },
+    "oos": {
+     "trades": 25,
+     "winrate_pct": 52.0,
+     "expectancy_bps": -31.46,
+     "profit_factor": 0.65,
+     "total_bps": -786.0,
+     "max_dd_bps": 852.0,
+     "sharpe_trade": -0.173
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "LRC-USD": {
+   "cost": {
+    "symbol": "LRC-USD",
+    "category": "CRYPTO",
+    "spread_bps": 1032.86,
+    "swap_bps_day": 1877.934
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 1549.29,
+    "carry_bps_per_bar": 78.2472,
+    "is": {
+     "trades": 76,
+     "winrate_pct": 0.0,
+     "expectancy_bps": -2594.31,
+     "profit_factor": 0.0,
+     "total_bps": -197168.0,
+     "max_dd_bps": 195614.0,
+     "sharpe_trade": -3.252
+    },
+    "oos": {
+     "trades": 33,
+     "winrate_pct": 0.0,
+     "expectancy_bps": -2546.43,
+     "profit_factor": 0.0,
+     "total_bps": -84032.0,
+     "max_dd_bps": 82037.0,
+     "sharpe_trade": -2.672
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "LTC-JPY": {
+   "cost": {
+    "symbol": "LTC-JPY",
+    "category": "CRYPTO",
+    "spread_bps": 84.77,
+    "swap_bps_day": 2.826
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 127.16,
+    "carry_bps_per_bar": 0.1178,
+    "is": {
+     "trades": 27,
+     "winrate_pct": 33.3,
+     "expectancy_bps": -127.67,
+     "profit_factor": 0.34,
+     "total_bps": -3447.0,
+     "max_dd_bps": 4081.0,
+     "sharpe_trade": -0.428
+    },
+    "oos": {
+     "trades": 11,
+     "winrate_pct": 18.2,
+     "expectancy_bps": -170.98,
+     "profit_factor": 0.01,
+     "total_bps": -1881.0,
+     "max_dd_bps": 1793.0,
+     "sharpe_trade": -1.248
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "LTCUSD": {
+   "cost": {
+    "symbol": "LTCUSD",
+    "category": "CRYPTO",
+    "spread_bps": 41.32,
+    "swap_bps_day": 4.591
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 61.98,
+    "carry_bps_per_bar": 0.1913,
+    "is": {
+     "trades": 72,
+     "winrate_pct": 45.8,
+     "expectancy_bps": -64.98,
+     "profit_factor": 0.53,
+     "total_bps": -4679.0,
+     "max_dd_bps": 5339.0,
+     "sharpe_trade": -0.24
+    },
+    "oos": {
+     "trades": 27,
+     "winrate_pct": 44.4,
+     "expectancy_bps": -71.79,
+     "profit_factor": 0.42,
+     "total_bps": -1938.0,
+     "max_dd_bps": 2705.0,
+     "sharpe_trade": -0.377
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "MANA-USD": {
+   "cost": {
+    "symbol": "MANA-USD",
+    "category": "CRYPTO",
+    "spread_bps": 140.85,
+    "swap_bps_day": 281.69
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 211.27,
+    "carry_bps_per_bar": 11.7371,
+    "is": {
+     "trades": 64,
+     "winrate_pct": 14.1,
+     "expectancy_bps": -302.3,
+     "profit_factor": 0.05,
+     "total_bps": -19347.0,
+     "max_dd_bps": 18709.0,
+     "sharpe_trade": -1.129
+    },
+    "oos": {
+     "trades": 32,
+     "winrate_pct": 9.4,
+     "expectancy_bps": -341.95,
+     "profit_factor": 0.05,
+     "total_bps": -10942.0,
+     "max_dd_bps": 10834.0,
+     "sharpe_trade": -1.174
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "SAND-USD": {
+   "cost": {
+    "symbol": "SAND-USD",
+    "category": "CRYPTO",
+    "spread_bps": 5263.16,
+    "swap_bps_day": 4210.526
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 7894.74,
+    "carry_bps_per_bar": 175.4386,
+    "is": {
+     "trades": 212,
+     "winrate_pct": 0.0,
+     "expectancy_bps": -9797.78,
+     "profit_factor": 0.0,
+     "total_bps": -2077129.0,
+     "max_dd_bps": 2069562.0,
+     "sharpe_trade": -5.238
+    },
+    "oos": {
+     "trades": 105,
+     "winrate_pct": 0.0,
+     "expectancy_bps": -9621.86,
+     "profit_factor": 0.0,
+     "total_bps": -1010295.0,
+     "max_dd_bps": 1001062.0,
+     "sharpe_trade": -6.885
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "SOL-USD": {
+   "cost": {
+    "symbol": "SOL-USD",
+    "category": "CRYPTO",
+    "spread_bps": 51.8,
+    "swap_bps_day": 2.59
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 77.7,
+    "carry_bps_per_bar": 0.1079,
+    "is": {
+     "trades": 56,
+     "winrate_pct": 37.5,
+     "expectancy_bps": -78.3,
+     "profit_factor": 0.47,
+     "total_bps": -4385.0,
+     "max_dd_bps": 4992.0,
+     "sharpe_trade": -0.302
+    },
+    "oos": {
+     "trades": 28,
+     "winrate_pct": 32.1,
+     "expectancy_bps": -111.03,
+     "profit_factor": 0.25,
+     "total_bps": -3109.0,
+     "max_dd_bps": 2927.0,
+     "sharpe_trade": -0.604
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "SUSHI-USD": {
+   "cost": {
+    "symbol": "SUSHI-USD",
+    "category": "CRYPTO",
+    "spread_bps": 250.0,
+    "swap_bps_day": 1250.0
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 375.0,
+    "carry_bps_per_bar": 52.0833,
+    "is": {
+     "trades": 28,
+     "winrate_pct": 0.0,
+     "expectancy_bps": -915.68,
+     "profit_factor": 0.0,
+     "total_bps": -25639.0,
+     "max_dd_bps": 24825.0,
+     "sharpe_trade": -1.833
+    },
+    "oos": {
+     "trades": 15,
+     "winrate_pct": 0.0,
+     "expectancy_bps": -1071.27,
+     "profit_factor": 0.0,
+     "total_bps": -16069.0,
+     "max_dd_bps": 15205.0,
+     "sharpe_trade": -2.429
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "TRUMP": {
+   "cost": {
+    "symbol": "TRUMP",
+    "category": "CRYPTO",
+    "spread_bps": 3099.81,
+    "swap_bps_day": 123.993
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 4649.72,
+    "carry_bps_per_bar": 5.1664,
+    "is": {
+     "trades": 139,
+     "winrate_pct": 0.0,
+     "expectancy_bps": -4674.03,
+     "profit_factor": 0.0,
+     "total_bps": -649690.0,
+     "max_dd_bps": 645156.0,
+     "sharpe_trade": -15.769
+    },
+    "oos": {
+     "trades": 78,
+     "winrate_pct": 0.0,
+     "expectancy_bps": -4789.81,
+     "profit_factor": 0.0,
+     "total_bps": -373605.0,
+     "max_dd_bps": 369070.0,
+     "sharpe_trade": -14.689
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "UNI-USD": {
+   "cost": {
+    "symbol": "UNI-USD",
+    "category": "CRYPTO",
+    "spread_bps": 60.48,
+    "swap_bps_day": 60.478
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 90.72,
+    "carry_bps_per_bar": 2.5199,
+    "is": {
+     "trades": 173,
+     "winrate_pct": 32.4,
+     "expectancy_bps": -151.08,
+     "profit_factor": 0.32,
+     "total_bps": -26136.0,
+     "max_dd_bps": 27169.0,
+     "sharpe_trade": -0.458
+    },
+    "oos": {
+     "trades": 68,
+     "winrate_pct": 32.4,
+     "expectancy_bps": -116.51,
+     "profit_factor": 0.29,
+     "total_bps": -7923.0,
+     "max_dd_bps": 7779.0,
+     "sharpe_trade": -0.496
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "XLMUSD": {
+   "cost": {
+    "symbol": "XLMUSD",
+    "category": "CRYPTO",
+    "spread_bps": 12.63,
+    "swap_bps_day": 10.985
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 18.95,
+    "carry_bps_per_bar": 0.4577,
+    "is": {
+     "trades": 212,
+     "winrate_pct": 59.9,
+     "expectancy_bps": -14.64,
+     "profit_factor": 0.88,
+     "total_bps": -3105.0,
+     "max_dd_bps": 4632.0,
+     "sharpe_trade": -0.051
+    },
+    "oos": {
+     "trades": 92,
+     "winrate_pct": 57.6,
+     "expectancy_bps": 6.49,
+     "profit_factor": 1.06,
+     "total_bps": 597.0,
+     "max_dd_bps": 1625.0,
+     "sharpe_trade": 0.026
+    },
+    "potential": 62.25,
+    "validated": true
+   }
+  },
+  "XRP-JPY": {
+   "cost": {
+    "symbol": "XRP-JPY",
+    "category": "CRYPTO",
+    "spread_bps": 16.5,
+    "swap_bps_day": 1.138
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 24.75,
+    "carry_bps_per_bar": 0.0474,
+    "is": {
+     "trades": 25,
+     "winrate_pct": 56.0,
+     "expectancy_bps": 4.47,
+     "profit_factor": 1.04,
+     "total_bps": 112.0,
+     "max_dd_bps": 1104.0,
+     "sharpe_trade": 0.016
+    },
+    "oos": {
+     "trades": 13,
+     "winrate_pct": 76.9,
+     "expectancy_bps": 10.81,
+     "profit_factor": 1.2,
+     "total_bps": 141.0,
+     "max_dd_bps": 478.0,
+     "sharpe_trade": 0.066
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "XRPUSD": {
+   "cost": {
+    "symbol": "XRPUSD",
+    "category": "CRYPTO",
+    "spread_bps": 29.59,
+    "swap_bps_day": 1.85
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": true,
+    "rsi_gate": false,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 44.38,
+    "carry_bps_per_bar": 0.0771,
+    "is": {
+     "trades": 150,
+     "winrate_pct": 51.3,
+     "expectancy_bps": -41.57,
+     "profit_factor": 0.66,
+     "total_bps": -6235.0,
+     "max_dd_bps": 6781.0,
+     "sharpe_trade": -0.165
+    },
+    "oos": {
+     "trades": 68,
+     "winrate_pct": 48.5,
+     "expectancy_bps": -32.99,
+     "profit_factor": 0.59,
+     "total_bps": -2244.0,
+     "max_dd_bps": 3349.0,
+     "sharpe_trade": -0.202
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  },
+  "XTZ-USD": {
+   "cost": {
+    "symbol": "XTZ-USD",
+    "category": "CRYPTO",
+    "spread_bps": 61.09,
+    "swap_bps_day": 81.45
+   },
+   "best": {
+    "style": "intraday",
+    "tf": "H1",
+    "align_ema50": false,
+    "rsi_gate": true,
+    "sl_atr": 2.0,
+    "tp_ladder": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "fees_bps": 91.64,
+    "carry_bps_per_bar": 3.3938,
+    "is": {
+     "trades": 71,
+     "winrate_pct": 28.2,
+     "expectancy_bps": -145.23,
+     "profit_factor": 0.27,
+     "total_bps": -10311.0,
+     "max_dd_bps": 9684.0,
+     "sharpe_trade": -0.555
+    },
+    "oos": {
+     "trades": 21,
+     "winrate_pct": 38.1,
+     "expectancy_bps": -117.84,
+     "profit_factor": 0.28,
+     "total_bps": -2475.0,
+     "max_dd_bps": 3062.0,
+     "sharpe_trade": -0.55
+    },
+    "potential": -1000000000.0,
+    "validated": false
+   }
+  }
+ },
+ "pass2": {
+  "BNB-USD": {
+   "cost": {
+    "symbol": "BNB-USD",
+    "category": "CRYPTO",
+    "spread_bps": 17.67,
+    "swap_bps_day": 3.535
+   },
+   "styles": {
+    "scalp": {
+     "style": "scalp",
+     "tf": "M15",
+     "align_ema50": true,
+     "rsi_gate": false,
+     "sl_atr": 0.5,
+     "tp_ladder": [
+      1.0,
+      1.5,
+      2.5
+     ],
+     "fees_bps": 26.51,
+     "carry_bps_per_bar": 0.0368,
+     "is": {
+      "trades": 158,
+      "winrate_pct": 21.5,
+      "expectancy_bps": -21.18,
+      "profit_factor": 0.15,
+      "total_bps": -3346.0,
+      "max_dd_bps": 3302.0,
+      "sharpe_trade": -0.877
+     },
+     "oos": {
+      "trades": 62,
+      "winrate_pct": 22.6,
+      "expectancy_bps": -23.58,
+      "profit_factor": 0.24,
+      "total_bps": -1462.0,
+      "max_dd_bps": 1593.0,
+      "sharpe_trade": -0.654
+     },
+     "potential": -1000000000.0,
+     "validated": false
+    },
+    "intraday": {
+     "style": "intraday",
+     "tf": "H1",
+     "align_ema50": true,
+     "rsi_gate": true,
+     "sl_atr": 3.0,
+     "tp_ladder": [
+      2.3,
+      3.45,
+      5.75
+     ],
+     "fees_bps": 26.51,
+     "carry_bps_per_bar": 0.1473,
+     "is": {
+      "trades": 23,
+      "winrate_pct": 73.9,
+      "expectancy_bps": 61.29,
+      "profit_factor": 2.11,
+      "total_bps": 1410.0,
+      "max_dd_bps": 609.0,
+      "sharpe_trade": 0.321
+     },
+     "oos": {
+      "trades": 13,
+      "winrate_pct": 69.2,
+      "expectancy_bps": 67.14,
+      "profit_factor": 2.31,
+      "total_bps": 873.0,
+      "max_dd_bps": 460.0,
+      "sharpe_trade": 0.363
+     },
+     "potential": -1000000000.0,
+     "validated": false
+    },
+    "swing": {
+     "style": "swing",
+     "tf": "H4",
+     "align_ema50": false,
+     "rsi_gate": false,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      3.45,
+      5.75,
+      9.2
+     ],
+     "fees_bps": 26.51,
+     "carry_bps_per_bar": 0.5892,
+     "is": {
+      "trades": 85,
+      "winrate_pct": 49.4,
+      "expectancy_bps": 51.42,
+      "profit_factor": 1.28,
+      "total_bps": 4371.0,
+      "max_dd_bps": 1993.0,
+      "sharpe_trade": 0.104
+     },
+     "oos": {
+      "trades": 35,
+      "winrate_pct": 54.3,
+      "expectancy_bps": 94.6,
+      "profit_factor": 1.55,
+      "total_bps": 3311.0,
+      "max_dd_bps": 2182.0,
+      "sharpe_trade": 0.178
+     },
+     "potential": 559.66,
+     "validated": true
+    }
+   }
+  },
+  "ETH-JPY": {
+   "cost": {
+    "symbol": "ETH-JPY",
+    "category": "CRYPTO",
+    "spread_bps": 14.73,
+    "swap_bps_day": 0.532
+   },
+   "styles": {
+    "scalp": {
+     "style": "scalp",
+     "tf": "M15",
+     "align_ema50": false,
+     "rsi_gate": true,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      1.72,
+      2.88,
+      4.6
+     ],
+     "fees_bps": 22.09,
+     "carry_bps_per_bar": 0.0055,
+     "is": {
+      "trades": 50,
+      "winrate_pct": 48.0,
+      "expectancy_bps": -12.53,
+      "profit_factor": 0.61,
+      "total_bps": -626.0,
+      "max_dd_bps": 810.0,
+      "sharpe_trade": -0.183
+     },
+     "oos": {
+      "trades": 24,
+      "winrate_pct": 37.5,
+      "expectancy_bps": -29.63,
+      "profit_factor": 0.42,
+      "total_bps": -711.0,
+      "max_dd_bps": 835.0,
+      "sharpe_trade": -0.383
+     },
+     "potential": -1000000000.0,
+     "validated": false
+    },
+    "intraday": {
+     "style": "intraday",
+     "tf": "H1",
+     "align_ema50": false,
+     "rsi_gate": true,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      1.0,
+      2.0,
+      3.5
+     ],
+     "fees_bps": 22.09,
+     "carry_bps_per_bar": 0.0222,
+     "is": {
+      "trades": 66,
+      "winrate_pct": 63.6,
+      "expectancy_bps": -24.71,
+      "profit_factor": 0.68,
+      "total_bps": -1631.0,
+      "max_dd_bps": 2227.0,
+      "sharpe_trade": -0.146
+     },
+     "oos": {
+      "trades": 33,
+      "winrate_pct": 39.4,
+      "expectancy_bps": -75.51,
+      "profit_factor": 0.22,
+      "total_bps": -2492.0,
+      "max_dd_bps": 2752.0,
+      "sharpe_trade": -0.558
+     },
+     "potential": -1000000000.0,
+     "validated": false
+    },
+    "swing": {
+     "style": "swing",
+     "tf": "H4",
+     "align_ema50": true,
+     "rsi_gate": false,
+     "sl_atr": 3.0,
+     "tp_ladder": [
+      3.0,
+      5.0,
+      8.0
+     ],
+     "fees_bps": 22.09,
+     "carry_bps_per_bar": 0.0887,
+     "is": {
+      "trades": 64,
+      "winrate_pct": 43.8,
+      "expectancy_bps": 30.66,
+      "profit_factor": 1.11,
+      "total_bps": 1962.0,
+      "max_dd_bps": 3837.0,
+      "sharpe_trade": 0.047
+     },
+     "oos": {
+      "trades": 25,
+      "winrate_pct": 32.0,
+      "expectancy_bps": -181.69,
+      "profit_factor": 0.53,
+      "total_bps": -4542.0,
+      "max_dd_bps": 5663.0,
+      "sharpe_trade": -0.28
+     },
+     "potential": -1000000000.0,
+     "validated": false
+    }
+   }
+  },
+  "XAUGBP": {
+   "cost": {
+    "symbol": "XAUGBP",
+    "category": "STANDARD_METALS",
+    "spread_bps": 1.29,
+    "swap_bps_day": 1.521
+   },
+   "styles": {
+    "scalp": {
+     "style": "scalp",
+     "tf": "M15",
+     "align_ema50": true,
+     "rsi_gate": true,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      1.0,
+      1.5,
+      2.5
+     ],
+     "fees_bps": 2.0,
+     "carry_bps_per_bar": 0.0158,
+     "is": {
+      "trades": 25,
+      "winrate_pct": 76.0,
+      "expectancy_bps": 9.17,
+      "profit_factor": 1.95,
+      "total_bps": 229.0,
+      "max_dd_bps": 111.0,
+      "sharpe_trade": 0.267
+     },
+     "oos": {
+      "trades": 13,
+      "winrate_pct": 46.2,
+      "expectancy_bps": -9.48,
+      "profit_factor": 0.48,
+      "total_bps": -123.0,
+      "max_dd_bps": 202.0,
+      "sharpe_trade": -0.338
+     },
+     "potential": -1000000000.0,
+     "validated": false
+    },
+    "intraday": {
+     "style": "intraday",
+     "tf": "H1",
+     "align_ema50": true,
+     "rsi_gate": false,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      2.3,
+      3.45,
+      5.75
+     ],
+     "fees_bps": 1.94,
+     "carry_bps_per_bar": 0.0634,
+     "is": {
+      "trades": 147,
+      "winrate_pct": 50.3,
+      "expectancy_bps": 8.5,
+      "profit_factor": 1.32,
+      "total_bps": 1250.0,
+      "max_dd_bps": 393.0,
+      "sharpe_trade": 0.123
+     },
+     "oos": {
+      "trades": 74,
+      "winrate_pct": 45.9,
+      "expectancy_bps": 5.91,
+      "profit_factor": 1.13,
+      "total_bps": 437.0,
+      "max_dd_bps": 640.0,
+      "sharpe_trade": 0.054
+     },
+     "potential": 50.84,
+     "validated": true
+    },
+    "swing": {
+     "style": "swing",
+     "tf": "H4",
+     "align_ema50": true,
+     "rsi_gate": false,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      1.27,
+      2.55,
+      4.25
+     ],
+     "fees_bps": 1.94,
+     "carry_bps_per_bar": 0.2535,
+     "is": {
+      "trades": 93,
+      "winrate_pct": 66.7,
+      "expectancy_bps": 14.85,
+      "profit_factor": 1.49,
+      "total_bps": 1381.0,
+      "max_dd_bps": 353.0,
+      "sharpe_trade": 0.169
+     },
+     "oos": {
+      "trades": 23,
+      "winrate_pct": 78.3,
+      "expectancy_bps": 43.91,
+      "profit_factor": 2.05,
+      "total_bps": 1010.0,
+      "max_dd_bps": 488.0,
+      "sharpe_trade": 0.272
+     },
+     "potential": 210.58,
+     "validated": true
+    }
+   }
+  },
+  "XAUAUD": {
+   "cost": {
+    "symbol": "XAUAUD",
+    "category": "STANDARD_METALS",
+    "spread_bps": 0.99,
+    "swap_bps_day": 1.949
+   },
+   "styles": {
+    "scalp": {
+     "style": "scalp",
+     "tf": "M15",
+     "align_ema50": true,
+     "rsi_gate": false,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      1.0,
+      1.5,
+      2.5
+     ],
+     "fees_bps": 2.0,
+     "carry_bps_per_bar": 0.0203,
+     "is": {
+      "trades": 130,
+      "winrate_pct": 74.6,
+      "expectancy_bps": 10.03,
+      "profit_factor": 1.73,
+      "total_bps": 1304.0,
+      "max_dd_bps": 408.0,
+      "sharpe_trade": 0.203
+     },
+     "oos": {
+      "trades": 67,
+      "winrate_pct": 71.6,
+      "expectancy_bps": 2.23,
+      "profit_factor": 1.18,
+      "total_bps": 150.0,
+      "max_dd_bps": 195.0,
+      "sharpe_trade": 0.068
+     },
+     "potential": 18.25,
+     "validated": true
+    },
+    "intraday": {
+     "style": "intraday",
+     "tf": "H1",
+     "align_ema50": true,
+     "rsi_gate": false,
+     "sl_atr": 3.0,
+     "tp_ladder": [
+      2.3,
+      3.45,
+      5.75
+     ],
+     "fees_bps": 1.5,
+     "carry_bps_per_bar": 0.0812,
+     "is": {
+      "trades": 140,
+      "winrate_pct": 65.7,
+      "expectancy_bps": 13.31,
+      "profit_factor": 1.45,
+      "total_bps": 1864.0,
+      "max_dd_bps": 523.0,
+      "sharpe_trade": 0.162
+     },
+     "oos": {
+      "trades": 56,
+      "winrate_pct": 60.7,
+      "expectancy_bps": 13.87,
+      "profit_factor": 1.3,
+      "total_bps": 777.0,
+      "max_dd_bps": 420.0,
+      "sharpe_trade": 0.116
+     },
+     "potential": 103.79,
+     "validated": true
+    },
+    "swing": {
+     "style": "swing",
+     "tf": "H4",
+     "align_ema50": true,
+     "rsi_gate": false,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      1.72,
+      3.45,
+      5.75
+     ],
+     "fees_bps": 1.5,
+     "carry_bps_per_bar": 0.3248,
+     "is": {
+      "trades": 80,
+      "winrate_pct": 65.0,
+      "expectancy_bps": 10.45,
+      "profit_factor": 1.24,
+      "total_bps": 836.0,
+      "max_dd_bps": 636.0,
+      "sharpe_trade": 0.09
+     },
+     "oos": {
+      "trades": 28,
+      "winrate_pct": 71.4,
+      "expectancy_bps": 43.81,
+      "profit_factor": 1.84,
+      "total_bps": 1227.0,
+      "max_dd_bps": 391.0,
+      "sharpe_trade": 0.264
+     },
+     "potential": 231.82,
+     "validated": true
+    }
+   }
+  },
+  "XAUEUR": {
+   "cost": {
+    "symbol": "XAUEUR",
+    "category": "STANDARD_METALS",
+    "spread_bps": 1.41,
+    "swap_bps_day": 1.036
+   },
+   "styles": {
+    "scalp": {
+     "style": "scalp",
+     "tf": "M15",
+     "align_ema50": true,
+     "rsi_gate": false,
+     "sl_atr": 1.5,
+     "tp_ladder": [
+      1.27,
+      2.12,
+      3.4
+     ],
+     "fees_bps": 2.11,
+     "carry_bps_per_bar": 0.0108,
+     "is": {
+      "trades": 144,
+      "winrate_pct": 61.1,
+      "expectancy_bps": 9.22,
+      "profit_factor": 1.62,
+      "total_bps": 1328.0,
+      "max_dd_bps": 265.0,
+      "sharpe_trade": 0.179
+     },
+     "oos": {
+      "trades": 67,
+      "winrate_pct": 44.8,
+      "expectancy_bps": -4.3,
+      "profit_factor": 0.76,
+      "total_bps": -288.0,
+      "max_dd_bps": 499.0,
+      "sharpe_trade": -0.123
+     },
+     "potential": -1000000000.0,
+     "validated": false
+    },
+    "intraday": {
+     "style": "intraday",
+     "tf": "H1",
+     "align_ema50": true,
+     "rsi_gate": true,
+     "sl_atr": 3.0,
+     "tp_ladder": [
+      2.0,
+      3.0,
+      5.0
+     ],
+     "fees_bps": 2.11,
+     "carry_bps_per_bar": 0.0432,
+     "is": {
+      "trades": 28,
+      "winrate_pct": 67.9,
+      "expectancy_bps": 12.65,
+      "profit_factor": 1.48,
+      "total_bps": 354.0,
+      "max_dd_bps": 220.0,
+      "sharpe_trade": 0.181
+     },
+     "oos": {
+      "trades": 10,
+      "winrate_pct": 20.0,
+      "expectancy_bps": -85.66,
+      "profit_factor": 0.15,
+      "total_bps": -857.0,
+      "max_dd_bps": 919.0,
+      "sharpe_trade": -0.996
+     },
+     "potential": -1000000000.0,
+     "validated": false
+    },
+    "swing": {
+     "style": "swing",
+     "tf": "H4",
+     "align_ema50": true,
+     "rsi_gate": false,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      2.0,
+      3.5,
+      6.0
+     ],
+     "fees_bps": 2.11,
+     "carry_bps_per_bar": 0.1727,
+     "is": {
+      "trades": 80,
+      "winrate_pct": 56.2,
+      "expectancy_bps": 0.95,
+      "profit_factor": 1.02,
+      "total_bps": 76.0,
+      "max_dd_bps": 1116.0,
+      "sharpe_trade": 0.008
+     },
+     "oos": {
+      "trades": 26,
+      "winrate_pct": 69.2,
+      "expectancy_bps": 70.12,
+      "profit_factor": 2.0,
+      "total_bps": 1823.0,
+      "max_dd_bps": 944.0,
+      "sharpe_trade": 0.307
+     },
+     "potential": 357.54,
+     "validated": true
+    }
+   }
+  },
+  "USTECH": {
+   "cost": {
+    "symbol": "USTECH",
+    "category": "CASH",
+    "spread_bps": 0.93,
+    "swap_bps_day": 0.023
+   },
+   "styles": {
+    "scalp": {
+     "style": "scalp",
+     "tf": "M15",
+     "align_ema50": false,
+     "rsi_gate": true,
+     "sl_atr": 1.5,
+     "tp_ladder": [
+      1.72,
+      2.88,
+      4.6
+     ],
+     "fees_bps": 2.0,
+     "carry_bps_per_bar": 0.0002,
+     "is": {
+      "trades": 51,
+      "winrate_pct": 54.9,
+      "expectancy_bps": 2.67,
+      "profit_factor": 1.24,
+      "total_bps": 136.0,
+      "max_dd_bps": 159.0,
+      "sharpe_trade": 0.09
+     },
+     "oos": {
+      "trades": 23,
+      "winrate_pct": 39.1,
+      "expectancy_bps": 0.15,
+      "profit_factor": 1.01,
+      "total_bps": 4.0,
+      "max_dd_bps": 191.0,
+      "sharpe_trade": 0.004
+     },
+     "potential": -1000000000.0,
+     "validated": false
+    },
+    "intraday": {
+     "style": "intraday",
+     "tf": "H1",
+     "align_ema50": true,
+     "rsi_gate": false,
+     "sl_atr": 1.0,
+     "tp_ladder": [
+      2.3,
+      3.45,
+      5.75
+     ],
+     "fees_bps": 1.5,
+     "carry_bps_per_bar": 0.001,
+     "is": {
+      "trades": 179,
+      "winrate_pct": 36.3,
+      "expectancy_bps": 5.87,
+      "profit_factor": 1.28,
+      "total_bps": 1051.0,
+      "max_dd_bps": 354.0,
+      "sharpe_trade": 0.092
+     },
+     "oos": {
+      "trades": 69,
+      "winrate_pct": 44.9,
+      "expectancy_bps": 14.81,
+      "profit_factor": 1.69,
+      "total_bps": 1022.0,
+      "max_dd_bps": 279.0,
+      "sharpe_trade": 0.223
+     },
+     "potential": 123.02,
+     "validated": true
+    },
+    "swing": {
+     "style": "swing",
+     "tf": "H4",
+     "align_ema50": false,
+     "rsi_gate": false,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      3.45,
+      5.75,
+      9.2
+     ],
+     "fees_bps": 1.5,
+     "carry_bps_per_bar": 0.0038,
+     "is": {
+      "trades": 86,
+      "winrate_pct": 55.8,
+      "expectancy_bps": 68.7,
+      "profit_factor": 1.9,
+      "total_bps": 5908.0,
+      "max_dd_bps": 795.0,
+      "sharpe_trade": 0.275
+     },
+     "oos": {
+      "trades": 33,
+      "winrate_pct": 63.6,
+      "expectancy_bps": 96.83,
+      "profit_factor": 2.3,
+      "total_bps": 3195.0,
+      "max_dd_bps": 680.0,
+      "sharpe_trade": 0.339
+     },
+     "potential": 556.25,
+     "validated": true
+    }
+   }
+  },
+  "HK50": {
+   "cost": {
+    "symbol": "HK50",
+    "category": "CASH",
+    "spread_bps": 2.5,
+    "swap_bps_day": 0.031
+   },
+   "styles": {
+    "scalp": {
+     "style": "scalp",
+     "tf": "M15",
+     "align_ema50": true,
+     "rsi_gate": false,
+     "sl_atr": 0.5,
+     "tp_ladder": [
+      1.72,
+      2.88,
+      4.6
+     ],
+     "fees_bps": 3.75,
+     "carry_bps_per_bar": 0.0003,
+     "is": {
+      "trades": 132,
+      "winrate_pct": 26.5,
+      "expectancy_bps": -0.8,
+      "profit_factor": 0.92,
+      "total_bps": -106.0,
+      "max_dd_bps": 341.0,
+      "sharpe_trade": -0.033
+     },
+     "oos": {
+      "trades": 52,
+      "winrate_pct": 30.8,
+      "expectancy_bps": -0.01,
+      "profit_factor": 1.0,
+      "total_bps": -1.0,
+      "max_dd_bps": 177.0,
+      "sharpe_trade": -0.001
+     },
+     "potential": -1000000000.0,
+     "validated": false
+    },
+    "intraday": {
+     "style": "intraday",
+     "tf": "H1",
+     "align_ema50": true,
+     "rsi_gate": true,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      2.3,
+      3.45,
+      5.75
+     ],
+     "fees_bps": 3.75,
+     "carry_bps_per_bar": 0.0013,
+     "is": {
+      "trades": 23,
+      "winrate_pct": 73.9,
+      "expectancy_bps": 49.71,
+      "profit_factor": 3.58,
+      "total_bps": 1143.0,
+      "max_dd_bps": 231.0,
+      "sharpe_trade": 0.537
+     },
+     "oos": {
+      "trades": 9,
+      "winrate_pct": 66.7,
+      "expectancy_bps": 28.9,
+      "profit_factor": 2.41,
+      "total_bps": 260.0,
+      "max_dd_bps": 185.0,
+      "sharpe_trade": 0.399
+     },
+     "potential": -1000000000.0,
+     "validated": false
+    },
+    "swing": {
+     "style": "swing",
+     "tf": "H4",
+     "align_ema50": false,
+     "rsi_gate": false,
+     "sl_atr": 1.5,
+     "tp_ladder": [
+      3.0,
+      5.0,
+      8.0
+     ],
+     "fees_bps": 3.75,
+     "carry_bps_per_bar": 0.0052,
+     "is": {
+      "trades": 100,
+      "winrate_pct": 44.0,
+      "expectancy_bps": 37.9,
+      "profit_factor": 1.48,
+      "total_bps": 3790.0,
+      "max_dd_bps": 1155.0,
+      "sharpe_trade": 0.162
+     },
+     "oos": {
+      "trades": 44,
+      "winrate_pct": 40.9,
+      "expectancy_bps": 30.76,
+      "profit_factor": 1.43,
+      "total_bps": 1353.0,
+      "max_dd_bps": 790.0,
+      "sharpe_trade": 0.146
+     },
+     "potential": 204.04,
+     "validated": true
+    }
+   }
+  },
+  "XAUUSD": {
+   "cost": {
+    "symbol": "XAUUSD",
+    "category": "STANDARD_METALS",
+    "spread_bps": 0.76,
+    "swap_bps_day": 1.436
+   },
+   "styles": {
+    "scalp": {
+     "style": "scalp",
+     "tf": "M15",
+     "align_ema50": true,
+     "rsi_gate": false,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      1.72,
+      2.88,
+      4.6
+     ],
+     "fees_bps": 2.0,
+     "carry_bps_per_bar": 0.015,
+     "is": {
+      "trades": 137,
+      "winrate_pct": 56.9,
+      "expectancy_bps": 12.41,
+      "profit_factor": 1.59,
+      "total_bps": 1700.0,
+      "max_dd_bps": 471.0,
+      "sharpe_trade": 0.168
+     },
+     "oos": {
+      "trades": 68,
+      "winrate_pct": 52.9,
+      "expectancy_bps": -0.66,
+      "profit_factor": 0.97,
+      "total_bps": -45.0,
+      "max_dd_bps": 444.0,
+      "sharpe_trade": -0.013
+     },
+     "potential": -1000000000.0,
+     "validated": false
+    },
+    "intraday": {
+     "style": "intraday",
+     "tf": "H1",
+     "align_ema50": true,
+     "rsi_gate": true,
+     "sl_atr": 3.0,
+     "tp_ladder": [
+      2.3,
+      3.45,
+      5.75
+     ],
+     "fees_bps": 1.5,
+     "carry_bps_per_bar": 0.0598,
+     "is": {
+      "trades": 31,
+      "winrate_pct": 71.0,
+      "expectancy_bps": 40.39,
+      "profit_factor": 2.78,
+      "total_bps": 1252.0,
+      "max_dd_bps": 227.0,
+      "sharpe_trade": 0.517
+     },
+     "oos": {
+      "trades": 12,
+      "winrate_pct": 41.7,
+      "expectancy_bps": -22.01,
+      "profit_factor": 0.69,
+      "total_bps": -264.0,
+      "max_dd_bps": 418.0,
+      "sharpe_trade": -0.164
+     },
+     "potential": -1000000000.0,
+     "validated": false
+    },
+    "swing": {
+     "style": "swing",
+     "tf": "H4",
+     "align_ema50": false,
+     "rsi_gate": false,
+     "sl_atr": 3.5,
+     "tp_ladder": [
+      2.55,
+      4.25,
+      6.8
+     ],
+     "fees_bps": 1.5,
+     "carry_bps_per_bar": 0.2393,
+     "is": {
+      "trades": 89,
+      "winrate_pct": 55.1,
+      "expectancy_bps": -6.76,
+      "profit_factor": 0.91,
+      "total_bps": -602.0,
+      "max_dd_bps": 1211.0,
+      "sharpe_trade": -0.042
+     },
+     "oos": {
+      "trades": 33,
+      "winrate_pct": 72.7,
+      "expectancy_bps": 94.49,
+      "profit_factor": 2.31,
+      "total_bps": 3118.0,
+      "max_dd_bps": 1308.0,
+      "sharpe_trade": 0.38
+     },
+     "potential": 542.8,
+     "validated": true
+    }
+   }
+  },
+  "NAS100.fs": {
+   "cost": {
+    "symbol": "NAS100.fs",
+    "category": "FUTURES",
+    "spread_bps": 0.85,
+    "swap_bps_day": -0.0
+   },
+   "styles": {
+    "scalp": {
+     "style": "scalp",
+     "tf": "M15",
+     "align_ema50": false,
+     "rsi_gate": true,
+     "sl_atr": 1.5,
+     "tp_ladder": [
+      1.72,
+      2.88,
+      4.6
+     ],
+     "fees_bps": 2.0,
+     "carry_bps_per_bar": -0.0,
+     "is": {
+      "trades": 49,
+      "winrate_pct": 57.1,
+      "expectancy_bps": 2.16,
+      "profit_factor": 1.2,
+      "total_bps": 106.0,
+      "max_dd_bps": 110.0,
+      "sharpe_trade": 0.08
+     },
+     "oos": {
+      "trades": 26,
+      "winrate_pct": 38.5,
+      "expectancy_bps": -1.73,
+      "profit_factor": 0.91,
+      "total_bps": -45.0,
+      "max_dd_bps": 225.0,
+      "sharpe_trade": -0.041
+     },
+     "potential": -1000000000.0,
+     "validated": false
+    },
+    "intraday": {
+     "style": "intraday",
+     "tf": "H1",
+     "align_ema50": true,
+     "rsi_gate": false,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      2.0,
+      3.0,
+      5.0
+     ],
+     "fees_bps": 1.5,
+     "carry_bps_per_bar": -0.0,
+     "is": {
+      "trades": 162,
+      "winrate_pct": 56.2,
+      "expectancy_bps": 3.22,
+      "profit_factor": 1.09,
+      "total_bps": 521.0,
+      "max_dd_bps": 1015.0,
+      "sharpe_trade": 0.038
+     },
+     "oos": {
+      "trades": 68,
+      "winrate_pct": 60.3,
+      "expectancy_bps": 5.98,
+      "profit_factor": 1.16,
+      "total_bps": 407.0,
+      "max_dd_bps": 527.0,
+      "sharpe_trade": 0.066
+     },
+     "potential": 49.31,
+     "validated": true
+    },
+    "swing": {
+     "style": "swing",
+     "tf": "H4",
+     "align_ema50": false,
+     "rsi_gate": false,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      3.45,
+      5.75,
+      9.2
+     ],
+     "fees_bps": 1.5,
+     "carry_bps_per_bar": -0.0,
+     "is": {
+      "trades": 83,
+      "winrate_pct": 56.6,
+      "expectancy_bps": 74.32,
+      "profit_factor": 1.99,
+      "total_bps": 6169.0,
+      "max_dd_bps": 847.0,
+      "sharpe_trade": 0.295
+     },
+     "oos": {
+      "trades": 35,
+      "winrate_pct": 62.9,
+      "expectancy_bps": 83.14,
+      "profit_factor": 2.12,
+      "total_bps": 2910.0,
+      "max_dd_bps": 943.0,
+      "sharpe_trade": 0.305
+     },
+     "potential": 491.86,
+     "validated": true
+    }
+   }
+  },
+  "BTCUSD": {
+   "cost": {
+    "symbol": "BTCUSD",
+    "category": "CRYPTO",
+    "spread_bps": 4.36,
+    "swap_bps_day": 0.032
+   },
+   "styles": {
+    "scalp": {
+     "style": "scalp",
+     "tf": "M15",
+     "align_ema50": false,
+     "rsi_gate": true,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      1.72,
+      2.88,
+      4.6
+     ],
+     "fees_bps": 6.54,
+     "carry_bps_per_bar": 0.0003,
+     "is": {
+      "trades": 55,
+      "winrate_pct": 61.8,
+      "expectancy_bps": 5.08,
+      "profit_factor": 1.27,
+      "total_bps": 279.0,
+      "max_dd_bps": 210.0,
+      "sharpe_trade": 0.094
+     },
+     "oos": {
+      "trades": 29,
+      "winrate_pct": 62.1,
+      "expectancy_bps": -0.96,
+      "profit_factor": 0.96,
+      "total_bps": -28.0,
+      "max_dd_bps": 583.0,
+      "sharpe_trade": -0.015
+     },
+     "potential": -1000000000.0,
+     "validated": false
+    },
+    "intraday": {
+     "style": "intraday",
+     "tf": "H1",
+     "align_ema50": false,
+     "rsi_gate": true,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      2.0,
+      3.0,
+      5.0
+     ],
+     "fees_bps": 6.54,
+     "carry_bps_per_bar": 0.0013,
+     "is": {
+      "trades": 59,
+      "winrate_pct": 52.5,
+      "expectancy_bps": 0.82,
+      "profit_factor": 1.01,
+      "total_bps": 48.0,
+      "max_dd_bps": 595.0,
+      "sharpe_trade": 0.006
+     },
+     "oos": {
+      "trades": 26,
+      "winrate_pct": 69.2,
+      "expectancy_bps": 71.03,
+      "profit_factor": 2.73,
+      "total_bps": 1847.0,
+      "max_dd_bps": 406.0,
+      "sharpe_trade": 0.439
+     },
+     "potential": 362.18,
+     "validated": true
+    },
+    "swing": {
+     "style": "swing",
+     "tf": "H4",
+     "align_ema50": true,
+     "rsi_gate": true,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      3.45,
+      5.75,
+      9.2
+     ],
+     "fees_bps": 6.54,
+     "carry_bps_per_bar": 0.0053,
+     "is": {
+      "trades": 22,
+      "winrate_pct": 72.7,
+      "expectancy_bps": 205.2,
+      "profit_factor": 3.44,
+      "total_bps": 4514.0,
+      "max_dd_bps": 436.0,
+      "sharpe_trade": 0.573
+     },
+     "oos": {
+      "trades": 8,
+      "winrate_pct": 37.5,
+      "expectancy_bps": -9.88,
+      "profit_factor": 0.95,
+      "total_bps": -79.0,
+      "max_dd_bps": 890.0,
+      "sharpe_trade": -0.026
+     },
+     "potential": -1000000000.0,
+     "validated": false
+    }
+   }
+  },
+  "ETHUSD": {
+   "cost": {
+    "symbol": "ETHUSD",
+    "category": "CRYPTO",
+    "spread_bps": 7.21,
+    "swap_bps_day": 0.115
+   },
+   "styles": {
+    "scalp": {
+     "style": "scalp",
+     "tf": "M15",
+     "align_ema50": true,
+     "rsi_gate": false,
+     "sl_atr": 1.0,
+     "tp_ladder": [
+      0.92,
+      1.72,
+      2.88
+     ],
+     "fees_bps": 10.81,
+     "carry_bps_per_bar": 0.0012,
+     "is": {
+      "trades": 151,
+      "winrate_pct": 44.4,
+      "expectancy_bps": -7.04,
+      "profit_factor": 0.67,
+      "total_bps": -1063.0,
+      "max_dd_bps": 1327.0,
+      "sharpe_trade": -0.164
+     },
+     "oos": {
+      "trades": 75,
+      "winrate_pct": 44.0,
+      "expectancy_bps": -14.02,
+      "profit_factor": 0.57,
+      "total_bps": -1052.0,
+      "max_dd_bps": 1102.0,
+      "sharpe_trade": -0.235
+     },
+     "potential": -1000000000.0,
+     "validated": false
+    },
+    "intraday": {
+     "style": "intraday",
+     "tf": "H1",
+     "align_ema50": true,
+     "rsi_gate": true,
+     "sl_atr": 1.5,
+     "tp_ladder": [
+      2.3,
+      3.45,
+      5.75
+     ],
+     "fees_bps": 10.81,
+     "carry_bps_per_bar": 0.0048,
+     "is": {
+      "trades": 21,
+      "winrate_pct": 52.4,
+      "expectancy_bps": 20.05,
+      "profit_factor": 1.28,
+      "total_bps": 421.0,
+      "max_dd_bps": 619.0,
+      "sharpe_trade": 0.111
+     },
+     "oos": {
+      "trades": 13,
+      "winrate_pct": 69.2,
+      "expectancy_bps": 78.9,
+      "profit_factor": 2.68,
+      "total_bps": 1026.0,
+      "max_dd_bps": 423.0,
+      "sharpe_trade": 0.434
+     },
+     "potential": -1000000000.0,
+     "validated": false
+    },
+    "swing": {
+     "style": "swing",
+     "tf": "H4",
+     "align_ema50": false,
+     "rsi_gate": true,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      3.45,
+      5.75,
+      9.2
+     ],
+     "fees_bps": 10.81,
+     "carry_bps_per_bar": 0.0192,
+     "is": {
+      "trades": 32,
+      "winrate_pct": 62.5,
+      "expectancy_bps": 206.46,
+      "profit_factor": 2.37,
+      "total_bps": 6607.0,
+      "max_dd_bps": 1115.0,
+      "sharpe_trade": 0.373
+     },
+     "oos": {
+      "trades": 16,
+      "winrate_pct": 56.2,
+      "expectancy_bps": 175.38,
+      "profit_factor": 1.85,
+      "total_bps": 2806.0,
+      "max_dd_bps": 2356.0,
+      "sharpe_trade": 0.273
+     },
+     "potential": 701.52,
+     "validated": true
+    }
+   }
+  },
+  "HSI.fs": {
+   "cost": {
+    "symbol": "HSI.fs",
+    "category": "FUTURES",
+    "spread_bps": 4.17,
+    "swap_bps_day": -0.0
+   },
+   "styles": {
+    "scalp": {
+     "style": "scalp",
+     "tf": "M15",
+     "align_ema50": true,
+     "rsi_gate": false,
+     "sl_atr": 0.5,
+     "tp_ladder": [
+      1.15,
+      1.72,
+      2.88
+     ],
+     "fees_bps": 6.25,
+     "carry_bps_per_bar": -0.0,
+     "is": {
+      "trades": 138,
+      "winrate_pct": 34.8,
+      "expectancy_bps": -4.02,
+      "profit_factor": 0.64,
+      "total_bps": -555.0,
+      "max_dd_bps": 627.0,
+      "sharpe_trade": -0.205
+     },
+     "oos": {
+      "trades": 52,
+      "winrate_pct": 32.7,
+      "expectancy_bps": -4.65,
+      "profit_factor": 0.58,
+      "total_bps": -242.0,
+      "max_dd_bps": 262.0,
+      "sharpe_trade": -0.256
+     },
+     "potential": -1000000000.0,
+     "validated": false
+    },
+    "intraday": {
+     "style": "intraday",
+     "tf": "H1",
+     "align_ema50": true,
+     "rsi_gate": false,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      2.0,
+      3.0,
+      5.0
+     ],
+     "fees_bps": 6.25,
+     "carry_bps_per_bar": -0.0,
+     "is": {
+      "trades": 154,
+      "winrate_pct": 60.4,
+      "expectancy_bps": 5.7,
+      "profit_factor": 1.11,
+      "total_bps": 878.0,
+      "max_dd_bps": 1223.0,
+      "sharpe_trade": 0.047
+     },
+     "oos": {
+      "trades": 67,
+      "winrate_pct": 58.2,
+      "expectancy_bps": -1.86,
+      "profit_factor": 0.96,
+      "total_bps": -125.0,
+      "max_dd_bps": 1015.0,
+      "sharpe_trade": -0.02
+     },
+     "potential": -1000000000.0,
+     "validated": false
+    },
+    "swing": {
+     "style": "swing",
+     "tf": "H4",
+     "align_ema50": true,
+     "rsi_gate": false,
+     "sl_atr": 3.0,
+     "tp_ladder": [
+      1.5,
+      3.0,
+      5.0
+     ],
+     "fees_bps": 6.25,
+     "carry_bps_per_bar": -0.0,
+     "is": {
+      "trades": 81,
+      "winrate_pct": 71.6,
+      "expectancy_bps": 23.02,
+      "profit_factor": 1.3,
+      "total_bps": 1864.0,
+      "max_dd_bps": 1022.0,
+      "sharpe_trade": 0.109
+     },
+     "oos": {
+      "trades": 35,
+      "winrate_pct": 80.0,
+      "expectancy_bps": 65.38,
+      "profit_factor": 2.34,
+      "total_bps": 2288.0,
+      "max_dd_bps": 615.0,
+      "sharpe_trade": 0.366
+     },
+     "potential": 386.79,
+     "validated": true
+    }
+   }
+  },
+  "XAGUSD": {
+   "cost": {
+    "symbol": "XAGUSD",
+    "category": "STANDARD_METALS",
+    "spread_bps": 7.77,
+    "swap_bps_day": 2.278
+   },
+   "styles": {
+    "scalp": {
+     "style": "scalp",
+     "tf": "M15",
+     "align_ema50": true,
+     "rsi_gate": false,
+     "sl_atr": 1.5,
+     "tp_ladder": [
+      1.72,
+      2.88,
+      4.6
+     ],
+     "fees_bps": 11.65,
+     "carry_bps_per_bar": 0.0237,
+     "is": {
+      "trades": 128,
+      "winrate_pct": 50.8,
+      "expectancy_bps": 23.29,
+      "profit_factor": 1.47,
+      "total_bps": 2982.0,
+      "max_dd_bps": 771.0,
+      "sharpe_trade": 0.145
+     },
+     "oos": {
+      "trades": 69,
+      "winrate_pct": 33.3,
+      "expectancy_bps": -32.44,
+      "profit_factor": 0.45,
+      "total_bps": -2238.0,
+      "max_dd_bps": 2482.0,
+      "sharpe_trade": -0.364
+     },
+     "potential": -1000000000.0,
+     "validated": false
+    },
+    "intraday": {
+     "style": "intraday",
+     "tf": "H1",
+     "align_ema50": true,
+     "rsi_gate": false,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      1.5,
+      2.5,
+      4.0
+     ],
+     "fees_bps": 11.65,
+     "carry_bps_per_bar": 0.0949,
+     "is": {
+      "trades": 157,
+      "winrate_pct": 61.8,
+      "expectancy_bps": 4.48,
+      "profit_factor": 1.1,
+      "total_bps": 704.0,
+      "max_dd_bps": 1185.0,
+      "sharpe_trade": 0.041
+     },
+     "oos": {
+      "trades": 66,
+      "winrate_pct": 68.2,
+      "expectancy_bps": 22.35,
+      "profit_factor": 1.28,
+      "total_bps": 1475.0,
+      "max_dd_bps": 1141.0,
+      "sharpe_trade": 0.101
+     },
+     "potential": 181.57,
+     "validated": true
+    },
+    "swing": {
+     "style": "swing",
+     "tf": "H4",
+     "align_ema50": false,
+     "rsi_gate": false,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      1.5,
+      3.0,
+      5.0
+     ],
+     "fees_bps": 11.65,
+     "carry_bps_per_bar": 0.3797,
+     "is": {
+      "trades": 100,
+      "winrate_pct": 62.0,
+      "expectancy_bps": -14.55,
+      "profit_factor": 0.85,
+      "total_bps": -1455.0,
+      "max_dd_bps": 2643.0,
+      "sharpe_trade": -0.069
+     },
+     "oos": {
+      "trades": 39,
+      "winrate_pct": 69.2,
+      "expectancy_bps": -21.7,
+      "profit_factor": 0.88,
+      "total_bps": -846.0,
+      "max_dd_bps": 3953.0,
+      "sharpe_trade": -0.044
+     },
+     "potential": -1000000000.0,
+     "validated": false
+    }
+   }
+  },
+  "USDCOP": {
+   "cost": {
+    "symbol": "USDCOP",
+    "category": "STANDARD_FX",
+    "spread_bps": 15.41,
+    "swap_bps_day": 0.026
+   },
+   "styles": {
+    "scalp": {
+     "style": "scalp",
+     "tf": "M15",
+     "align_ema50": false,
+     "rsi_gate": true,
+     "sl_atr": 2.0,
+     "tp_ladder": [
+      1.72,
+      2.88,
+      4.6
+     ],
+     "fees_bps": 23.12,
+     "carry_bps_per_bar": 0.0003,
+     "is": {
+      "trades": 38,
+      "winrate_pct": 57.9,
+      "expectancy_bps": -0.01,
+      "profit_factor": 1.0,
+      "total_bps": -0.0,
+      "max_dd_bps": 301.0,
+      "sharpe_trade": -0.0
+     },
+     "oos": {
+      "trades": 21,
+      "winrate_pct": 66.7,
+      "expectancy_bps": -0.69,
+      "profit_factor": 0.97,
+      "total_bps": -15.0,
+      "max_dd_bps": 226.0,
+      "sharpe_trade": -0.013
+     },
+     "potential": -1000000000.0,
+     "validated": false
+    },
+    "intraday": {
+     "style": "intraday",
+     "tf": "H1",
+     "align_ema50": false,
+     "rsi_gate": false,
+     "sl_atr": 1.5,
+     "tp_ladder": [
+      2.3,
+      3.45,
+      5.75
+     ],
+     "fees_bps": 23.12,
+     "carry_bps_per_bar": 0.0011,
+     "is": {
+      "trades": 192,
+      "winrate_pct": 38.0,
+      "expectancy_bps": -6.17,
+      "profit_factor": 0.83,
+      "total_bps": -1185.0,
+      "max_dd_bps": 3271.0,
+      "sharpe_trade": -0.071
+     },
+     "oos": {
+      "trades": 78,
+      "winrate_pct": 38.5,
+      "expectancy_bps": -24.85,
+      "profit_factor": 0.61,
+      "total_bps": -1938.0,
+      "max_dd_bps": 2702.0,
+      "sharpe_trade": -0.224
+     },
+     "potential": -1000000000.0,
+     "validated": false
+    },
+    "swing": {
+     "style": "swing",
+     "tf": "H4",
+     "align_ema50": false,
+     "rsi_gate": true,
+     "sl_atr": 2.5,
+     "tp_ladder": [
+      1.5,
+      3.0,
+      5.0
+     ],
+     "fees_bps": 23.12,
+     "carry_bps_per_bar": 0.0043,
+     "is": {
+      "trades": 23,
+      "winrate_pct": 65.2,
+      "expectancy_bps": 23.08,
+      "profit_factor": 1.95,
+      "total_bps": 531.0,
+      "max_dd_bps": 445.0,
+      "sharpe_trade": 0.246
+     },
+     "oos": {
+      "trades": 14,
+      "winrate_pct": 78.6,
+      "expectancy_bps": 38.04,
+      "profit_factor": 1.79,
+      "total_bps": 533.0,
+      "max_dd_bps": 337.0,
+      "sharpe_trade": 0.224
+     },
+     "potential": 142.33,
+     "validated": true
+    }
+   }
+  },
+  "SPA35": {
+   "cost": {
+    "symbol": "SPA35",
+    "category": "CASH",
+    "spread_bps": 6.26,
+    "swap_bps_day": 0.027
+   },
+   "styles": {
+    "scalp": {
+     "style": "scalp",
+     "tf": "M15",
+     "align_ema50": false,
+     "rsi_gate": true,
+     "sl_atr": 1.5,
+     "tp_ladder": [
+      1.72,
+      2.88,
+      4.6
+     ],
+     "fees_bps": 9.39,
+     "carry_bps_per_bar": 0.0003,
+     "is": {
+      "trades": 65,
+      "winrate_pct": 46.2,
+      "expectancy_bps": -2.26,
+      "profit_factor": 0.86,
+      "total_bps": -147.0,
+      "max_dd_bps": 345.0,
+      "sharpe_trade": -0.066
+     },
+     "oos": {
+      "trades": 26,
+      "winrate_pct": 38.5,
+      "expectancy_bps": -16.72,
+      "profit_factor": 0.31,
+      "total_bps": -435.0,
+      "max_dd_bps": 340.0,
+      "sharpe_trade": -0.5
+     },
+     "potential": -1000000000.0,
+     "validated": false
+    },
+    "intraday": {
+     "style": "intraday",
+     "tf": "H1",
+     "align_ema50": true,
+     "rsi_gate": true,
+     "sl_atr": 1.0,
+     "tp_ladder": [
+      1.5,
+      2.5,
+      4.0
+     ],
+     "fees_bps": 9.39,
+     "carry_bps_per_bar": 0.0011,
+     "is": {
+      "trades": 28,
+      "winrate_pct": 50.0,
+      "expectancy_bps": -0.9,
+      "profit_factor": 0.96,
+      "total_bps": -25.0,
+      "max_dd_bps": 200.0,
+      "sharpe_trade": -0.017
+     },
+     "oos": {
+      "trades": 7,
+      "winrate_pct": 57.1,
+      "expectancy_bps": -18.92,
+      "profit_factor": 0.22,
+      "total_bps": -132.0,
+      "max_dd_bps": 94.0,
+      "sharpe_trade": -0.574
+     },
+     "potential": -1000000000.0,
+     "validated": false
+    },
+    "swing": {
+     "style": "swing",
+     "tf": "H4",
+     "align_ema50": true,
+     "rsi_gate": false,
+     "sl_atr": 3.5,
+     "tp_ladder": [
+      2.3,
+      4.02,
+      6.9
+     ],
+     "fees_bps": 9.39,
+     "carry_bps_per_bar": 0.0045,
+     "is": {
+      "trades": 69,
+      "winrate_pct": 69.6,
+      "expectancy_bps": 28.11,
+      "profit_factor": 1.43,
+      "total_bps": 1940.0,
+      "max_dd_bps": 1055.0,
+      "sharpe_trade": 0.132
+     },
+     "oos": {
+      "trades": 27,
+      "winrate_pct": 63.0,
+      "expectancy_bps": 22.77,
+      "profit_factor": 1.28,
+      "total_bps": 615.0,
+      "max_dd_bps": 637.0,
+      "sharpe_trade": 0.109
+     },
+     "potential": 118.32,
+     "validated": true
+    }
+   }
+  }
+ }
+}

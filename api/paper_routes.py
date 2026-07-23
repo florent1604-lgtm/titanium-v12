@@ -11,15 +11,17 @@ Endpoints :
 """
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi import Request as FARequest
 from fastapi.responses import JSONResponse
 
+from api.auth import require_admin
 from utils.config import TRADING_MODE, SYMBOLS
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/paper", tags=["paper"])
+_ADMIN = [Depends(require_admin)]
 
 
 def _exec():
@@ -92,7 +94,7 @@ async def paper_equity_curve(last_n: int = 200):
 
 # ── POST /paper/reset ─────────────────────────────────────────────────────────
 
-@router.post("/reset")
+@router.post("/reset", dependencies=_ADMIN)
 async def paper_reset(request: FARequest):
     """Remet le compte paper à zéro — IRRÉVERSIBLE.
 
@@ -115,7 +117,7 @@ async def paper_reset(request: FARequest):
 
 # ── POST /paper/reset-circuit-breaker ────────────────────────────────────────
 
-@router.post("/reset-circuit-breaker")
+@router.post("/reset-circuit-breaker", dependencies=_ADMIN)
 async def reset_circuit_breaker():
     """Désactive le circuit breaker sur tous les symboles et remet signal_history à zéro.
 
@@ -142,7 +144,7 @@ async def reset_circuit_breaker():
 
 # ── POST /paper/close/{symbol} ────────────────────────────────────────────────
 
-@router.post("/close/{symbol}")
+@router.post("/close/{symbol}", dependencies=_ADMIN)
 async def paper_close(symbol: str, request: FARequest):
     """Ferme manuellement une position au prix indiqué.
 

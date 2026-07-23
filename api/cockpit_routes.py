@@ -10,8 +10,10 @@ Endpoints :
 """
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
+
+from api.auth import require_admin
 
 from utils.config import (
     GUARD_CORRELATED_EXPOSURE_ENABLED, GUARD_CORRELATED_EXPOSURE_MAX_PCT,
@@ -22,6 +24,7 @@ from utils.event_bus import get_recent, subscribe, unsubscribe
 
 logger = get_logger(__name__)
 router = APIRouter(tags=["cockpit"])
+_ADMIN = [Depends(require_admin)]
 
 
 # ── GET /spectral/state ───────────────────────────────────────────────────────
@@ -64,7 +67,7 @@ async def journal(limit: int = 100):
     })
 
 
-@router.post("/journal/{trade_hash}/approve")
+@router.post("/journal/{trade_hash}/approve", dependencies=_ADMIN)
 async def journal_approve(trade_hash: str):
     if not JOURNAL_STAGING_ENABLED:
         raise HTTPException(400, "JOURNAL_STAGING_ENABLED=0 — aucune approbation requise")
