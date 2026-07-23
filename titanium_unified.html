@@ -1275,7 +1275,6 @@ async function fetchSysteme(){
           <span class="led ${on?'on':'off'}"></span><b class="mono" style="font-size:12px;letter-spacing:.1em">${esc(name.toUpperCase())}</b></div>
         <div class="kv">${typeof s==='object'?kvTags(s):`<span>état <b>${esc(s)}</b></span>`}</div>
         <div style="margin-top:8px;display:flex;gap:6px">
-          ${s?.url?`<a class="btn" href="${esc(s.url)}">Ouvrir</a>`:''}
           <button class="btn ok" onclick="post('/services/${esc(name)}/start','s-svc-msg')">Start</button>
           <button class="btn danger" onclick="post('/services/${esc(name)}/stop','s-svc-msg')">Stop</button></div></div>`;}).join('')
       +'<div id="s-svc-msg" class="list"></div>';

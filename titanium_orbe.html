@@ -553,7 +553,7 @@ function connectRT(){try{const ws=new WebSocket(`ws://${location.host}/ws/realti
   ws.onmessage=()=>{S.lastTickTs=now();};
   ws.onclose=()=>setTimeout(connectRT,4000);}catch(e){setTimeout(connectRT,6000);}}
 connectRT();
-function connectJarvis(){try{const ws=new WebSocket("ws://localhost:8765");
+function connectJarvis(){try{const ws=new WebSocket("ws://127.0.0.1:8765");
   ws.onopen=()=>{S.hermes=true;};
   ws.onmessage=()=>{S.speakUntil=now()+2600;};
   ws.onclose=()=>{S.hermes=false;setTimeout(connectJarvis,8000);};
