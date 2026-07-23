@@ -385,6 +385,7 @@ from api.snapshot_routes import (
     router as snapshot_router,
 )
 from api.consensus_routes import router as consensus_router
+from api.geometry_routes import router as geometry_router
 from assistant.alexa_connector import router as alexa_router
 
 app.include_router(fundamentals_router)
@@ -402,6 +403,7 @@ app.include_router(emotion_router)
 app.include_router(snapshot_router)
 app.include_router(snapshot_canonical_router)
 app.include_router(consensus_router)
+app.include_router(geometry_router)
 app.include_router(alexa_router)
 
 
