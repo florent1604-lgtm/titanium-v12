@@ -187,6 +187,12 @@ def passage() -> dict:
                         f"Le service est éteint ou a planté.", urgent=True)
         elif svc["url"]:
             ok, secondes = endpoint_repond(svc["url"], svc["delai"])
+            if not ok:
+                # Un blip (cycle de scan lourd, GC) ne prouve pas un gel : on RETENTE
+                # avant d'alarmer. Un vrai gel échoue les deux fois ; un transitoire
+                # passe au rattrapage → plus de fausse alerte « FIGÉ » (demande Florent).
+                time.sleep(1.5)
+                ok, secondes = endpoint_repond(svc["url"], svc["delai"])
             info["etat"] = "ok" if ok else "fige"
             info["latence_s"] = round(secondes, 2)
             if not ok:
