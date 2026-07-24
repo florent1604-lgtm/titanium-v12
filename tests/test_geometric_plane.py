@@ -4,6 +4,8 @@ Vérifie le moteur en ISOLATION : régime calculé, bornes respectées, robustes
 sur cas dégénérés, et invariants des modulateurs (non câblés mais testés pour
 l'étape 3 post-M2). Aucune écriture EventPlane, aucune décision.
 """
+import math
+
 import numpy as np
 import pytest
 
@@ -69,6 +71,9 @@ class TestGeometricPlaneAnalyze:
         if regime.branch == "CLIFFORD":
             assert regime.clifford_xyz != (0.0, 0.0, 0.0)
             assert regime.curvature > 0.0
+            # GREFFE 24/07 : coords renormalisées sur S³ → norme ≈ 1
+            x, y, z = regime.clifford_xyz
+            assert abs(math.sqrt(x * x + y * y + z * z) - 1.0) < 0.01
 
     def test_grassmann_or_classic_on_fragmentation(self, gp, mock_returns_60x4):
         np.random.seed(99)
@@ -147,15 +152,19 @@ class TestStaticModulators:
         reg = GeometricRegime("BTC/USDT", 0.0, "CLASSIC", topology_alert=True)
         assert GeometricPlane.consensus_modulator(reg, 50.0) == 0.0
 
-    def test_gate_blocks_swing_on_short_lyapunov(self):
+    def test_gate_no_longer_vetoes_on_short_lyapunov(self):
+        """GREFFE 24/07 : le proxy Lyapunov ne VÉTO plus (trop fragile — [12..60]
+        selon la graine sur du bruit iid). Un horizon court laisse passer le swing ;
+        il ne fait plus que réduire la TAILLE (cf. test_sizing_lyapunov_reduces)."""
         reg = GeometricRegime("BTC/USDT", 0.0, "CLASSIC", lyapunov_horizon=1)
         permitted, reason = GeometricPlane.gate_permitted(reg, "swing")
-        assert permitted is False and "LYAPUNOV" in reason
+        assert permitted is True and reason == "GEOM_OK"
 
-    def test_gate_allows_scalp_on_short_lyapunov(self):
-        reg = GeometricRegime("BTC/USDT", 0.0, "CLASSIC", lyapunov_horizon=1)
-        permitted, _ = GeometricPlane.gate_permitted(reg, "scalp")
-        assert permitted is True
+    def test_sizing_lyapunov_reduces(self):
+        """Le proxy Lyapunov court reste un modulateur de TAILLE (véto retiré)."""
+        court = GeometricRegime("BTC/USDT", 0.0, "CLASSIC", lyapunov_horizon=2)
+        long = GeometricRegime("BTC/USDT", 0.0, "CLASSIC", lyapunov_horizon=30)
+        assert GeometricPlane.sizing_factor(court) < GeometricPlane.sizing_factor(long)
 
 
 class TestRobustness:

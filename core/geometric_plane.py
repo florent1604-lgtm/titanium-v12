@@ -250,13 +250,18 @@ class GeometricPlane:
 
     @staticmethod
     def gate_permitted(regime: GeometricRegime, trade_horizon: str) -> Tuple[bool, str]:
-        """Filtre proposé pour brain_gate (retourne (permitted, reason)). (Non câblé.)"""
+        """Filtre pour brain_gate → (permitted, reason).
+
+        ⚠️ GREFFE 24/07/2026 : le proxy Lyapunov (`lyapunov_horizon`) NE bloque PLUS
+        (aligné sur la v2 de Kimi + ma propre alerte C3). Sur du bruit iid il donne
+        [12..60] selon la graine — trop fragile pour un veto. Il ne fait désormais que
+        RÉDUIRE la taille via `sizing_factor` (<3 → ×0.50, <5 → ×0.75). Restent
+        décisifs ici : rupture topologique, rotation Grassmann trop rapide, régime
+        Fisher inconnu (proxys plus stables)."""
         if regime.topology_alert:
             return False, "GEOM_TOPOLOGY_ALERT"
         if regime.branch == "GRASSMANN" and regime.grassmann_rotation > 30.0:
             return False, "GEOM_GRASSMANN_ROTATION_TOO_FAST"
-        if trade_horizon != "scalp" and regime.lyapunov_horizon < 2:
-            return False, "GEOM_LYAPUNOV_TOO_SHORT_FOR_SWING"
         if regime.fisher_distance > 8.0 and trade_horizon != "scalp":
             return False, "GEOM_FISHER_UNKNOWN_REGIME"
         return True, "GEOM_OK"
@@ -296,6 +301,9 @@ class GeometricPlane:
         x = math.cos(u) / W
         y = (math.sin(u) * math.cos(t) - math.sin(v) * math.sin(t)) / W
         z = math.cos(v) / W
+        norm = math.sqrt(x * x + y * y + z * z)   # renorm S³ (greffe 24/07) : coords viz normalisées sur la sphère
+        if norm > 1e-12:
+            x, y, z = x / norm, y / norm, z / norm
         curvature = min(1.0, abs(1.0 / W))
         return (x, y, z), curvature
 
@@ -339,7 +347,7 @@ class GeometricPlane:
                         divergences.append(math.log(d1 / d0))
         if not divergences:
             return 30
-        lyap = float(np.mean(divergences))
+        lyap = float(np.median(divergences))     # médiane (greffe 24/07) : plus robuste au bruit que la moyenne
         if lyap <= 0:
             return 60
         horizon = int(math.log(2.0) / lyap)
