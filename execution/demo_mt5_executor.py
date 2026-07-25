@@ -65,6 +65,11 @@ class DemoGuards:
     # sizing normal inchangé. Borné par min_lot_max_risk_pct (plafond de sécurité).
     min_lot_test: bool = os.getenv("DEMO_MIN_LOT_TEST", "0") == "1"
     min_lot_max_risk_pct: float = _cfg_float("DEMO_MIN_LOT_MAX_RISK_PCT", 5.0)
+    # Garde de spread ADAPTATIF par actif, équilibré à la POSITION (Florent 25/07) : le
+    # spread ne bloque que s'il dépasse cette FRACTION de la distance de SL (propre à chaque
+    # actif via l'ATR). Si la position est viable (spread petit vs son risque), elle PASSE —
+    # quel que soit le % absolu. `max_spread_pct` ne reste qu'un plafond de sanité (cote cassée).
+    max_spread_frac_of_sl: float = _cfg_float("DEMO_MAX_SPREAD_FRAC_OF_SL", 0.75)
 
     @classmethod
     def from_env(cls) -> "DemoGuards":
@@ -79,6 +84,7 @@ class DemoGuards:
             risk_tolerance=_cfg_float("DEMO_RISK_TOLERANCE", 1.15),
             min_lot_test=os.getenv("DEMO_MIN_LOT_TEST", "0") == "1",
             min_lot_max_risk_pct=_cfg_float("DEMO_MIN_LOT_MAX_RISK_PCT", 5.0),
+            max_spread_frac_of_sl=_cfg_float("DEMO_MAX_SPREAD_FRAC_OF_SL", 0.75),
         )
 
 
@@ -298,17 +304,41 @@ def place_market_order(mt5: Any, symbol: str, side: str, atr: float,
     if tick is None or not (tick.ask and tick.bid):
         return {"sent": False, "reason": f"MARKET_CLOSED: pas de cotation {symbol}."}
 
-    # Spread en POURCENTAGE du prix (comparable BTC ↔ EURUSD, contrairement aux « points »).
+    # Plafond de SANITÉ absolu (cote cassée). Le vrai garde de spread est ADAPTATIF
+    # (équilibré à la position), calculé plus bas une fois le SL connu.
     mid = (tick.ask + tick.bid) / 2.0
-    spread_pct = ((tick.ask - tick.bid) / mid * 100.0) if mid > 0 else 1e9
+    spread_abs = tick.ask - tick.bid
+    spread_pct = (spread_abs / mid * 100.0) if mid > 0 else 1e9
     if spread_pct > guards.max_spread_pct:
-        return {"sent": False, "reason": f"RISK_SPREAD: {spread_pct:.3f}% > "
-                                         f"{guards.max_spread_pct}%."}
+        return {"sent": False, "reason": f"RISK_SPREAD_ABS: {spread_pct:.3f}% > "
+                                         f"{guards.max_spread_pct}% (cote anormale) pour {symbol}."}
 
     price = tick.ask if is_long else tick.bid
     sign = 1 if is_long else -1
     sl = price - sign * sl_atr_mult * atr
     tp = price + sign * tp_atr_mult * atr
+    # Distance MINIMALE de stop du broker (sinon retcode 10016 « Invalid stops »,
+    # fréquent le week-end quand l'ATR est petit face à un spread large). On élargit
+    # SL/TP au besoin ; compute_lot resize ensuite le lot -> le RISQUE reste borné.
+    try:
+        _pt = float(getattr(si, "point", 0) or 0)
+        _stops = float(getattr(si, "trade_stops_level", 0) or 0)
+        _min_dist = max(_stops * _pt, float(tick.ask - tick.bid)) * 1.5
+        if _min_dist > 0:
+            if abs(price - sl) < _min_dist:
+                sl = price - sign * _min_dist
+            if abs(price - tp) < _min_dist:
+                tp = price + sign * _min_dist
+    except Exception:  # noqa: BLE001 — l'ajustement ne doit jamais bloquer un ordre
+        pass
+    # Garde de spread ADAPTATIF (équilibré à la position, Florent) : ne bloque QUE si le
+    # spread dépasse une fraction de la distance de SL — propre à chaque actif via l'ATR.
+    # Si la position est viable (spread petit vs son risque), elle PASSE.
+    _sl_dist = abs(price - sl)
+    _spread_frac = (spread_abs / _sl_dist) if _sl_dist > 0 else 1e9
+    if _spread_frac > guards.max_spread_frac_of_sl:
+        return {"sent": False, "reason": f"RISK_SPREAD_REL: spread = {_spread_frac * 100:.0f}% du SL "
+                f"(> {guards.max_spread_frac_of_sl * 100:.0f}%) pour {symbol}."}
     risk_money = equity * guards.risk_pct / 100.0 * size_factor   # conviction → taille
     # PHASE DE TEST (DEMO_MIN_LOT_TEST) : si le budget ne couvre pas le LOT MINIMUM de
     # l'actif, on l'adapte AUTOMATIQUEMENT (par actif) pour placer un lot min — MAIS borné
