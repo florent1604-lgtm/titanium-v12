@@ -22,6 +22,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Dict, Optional
 
+from core.instruments import from_binance
+
 _ROOT = Path(__file__).resolve().parent.parent
 _MASTER_PATH = _ROOT / "data" / "brain_master.json"
 _GLOBAL_KEY = "*"
@@ -37,6 +39,12 @@ _SIDE = {"long": 1, "short": -1, "neutral": 0}
 _CONV_FLOOR = 0.20            # taille plancher (émotion opposée) — on n'annule pas, on réduit
 _lock = threading.Lock()
 _masters: Optional[Dict[str, str]] = None
+
+# Alias explicites pour harmoniser les univers Binance -> MT5 côté cerveau.
+_BRAIN_SYMBOL_ALIASES: Dict[str, str] = {
+    "PAXG/USDT": "XAUUSD",
+    "XAU/USD": "XAUUSD",
+}
 
 
 @dataclass(frozen=True)
@@ -108,7 +116,36 @@ def reset_cache() -> None:
 def _consensus_lookup(symbol: str) -> Optional[dict]:
     try:
         from core.consensus_engine import LAST_RESULTS
-        return LAST_RESULTS.get(symbol)
+
+        # 1) lookup direct (chemin historique)
+        direct = LAST_RESULTS.get(symbol)
+        if direct:
+            return direct
+
+        s = str(symbol).strip().upper()
+
+        # 2) alias explicites (ex: PAXG/USDT -> XAUUSD)
+        aliased = _BRAIN_SYMBOL_ALIASES.get(s)
+        if aliased:
+            hit = LAST_RESULTS.get(aliased)
+            if hit:
+                return hit
+
+        # 3) normalisation via référentiel instruments (Binance -> MT5)
+        inst = from_binance(s)
+        if inst:
+            hit = LAST_RESULTS.get(inst.symbol)
+            if hit:
+                return hit
+
+        # 4) fallback best-effort générique (BTC/USDT -> BTCUSD)
+        if "/" in s:
+            compact = s.replace("/", "")
+            hit = LAST_RESULTS.get(compact)
+            if hit:
+                return hit
+
+        return None
     except Exception:
         return None
 

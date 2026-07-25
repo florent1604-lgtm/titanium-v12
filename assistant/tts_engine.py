@@ -19,6 +19,7 @@ import io
 import logging
 import struct
 import subprocess
+import sys
 import time
 import wave
 from pathlib import Path
@@ -235,10 +236,16 @@ class PiperTTS:
         try:
             import subprocess
             ps_cmd = f'Add-Type -AssemblyName System.Speech; $s = New-Object System.Speech.Synthesis.SpeechSynthesizer; $s.Speak("{text}")'
+            kwargs = {
+                "stdout": subprocess.DEVNULL,
+                "stderr": subprocess.DEVNULL,
+            }
+            if sys.platform == "win32":
+                kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
+
             subprocess.Popen(
-                ["powershell", "-Command", ps_cmd],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
+                ["powershell", "-NoProfile", "-WindowStyle", "Hidden", "-Command", ps_cmd],
+                **kwargs,
             )
         except Exception:
             logger.warning("[TTS] Aucun TTS disponible (Piper + SAPI échoués)")

@@ -15,7 +15,7 @@ import asyncio
 import logging
 from typing import Optional
 
-from assistant.config import TITAN_WINDOW_WIDTH
+from assistant.config import TITAN_POPUP_AUTO_SHOW
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class PopupManager:
         self,
         text: str,
         expression: str = "neutral",
-        show_window: bool = True,
+        show_window: bool = TITAN_POPUP_AUTO_SHOW,
     ) -> None:
         """Fait parler Titan avec animation avatar synchronisée.
 

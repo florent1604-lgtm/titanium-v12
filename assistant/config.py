@@ -12,6 +12,7 @@ Variables .env supportées :
   TITAN_AVATAR_FILE      Nom du fichier VRM (défaut : VRoid_V110_Male_v1.1.3.vrm)
   TITAN_REPORT_HOUR      Heure rapport quotidien (défaut : 20)
   TITAN_REPORT_MIN       Minute rapport quotidien (défaut : 0)
+    TITAN_POPUP_AUTO_SHOW  1 pour afficher la fenêtre à chaque réponse vocale (défaut : 1)
   TITAN_WINDOW_WIDTH     Largeur fenêtre popup (défaut : 420)
   TITAN_WINDOW_HEIGHT    Hauteur fenêtre popup (défaut : 620)
   TITAN_API_BASE         URL de l'API Titanium (défaut : http://localhost:8080)
@@ -34,6 +35,13 @@ Variables .env supportées :
 from __future__ import annotations
 import os
 from pathlib import Path
+
+try:
+    from dotenv import load_dotenv
+    _env = Path(__file__).resolve().parent.parent / ".env"
+    load_dotenv(_env if _env.exists() else None)
+except Exception:
+    pass
 
 # Chemin de base du projet
 _BASE = Path(__file__).resolve().parent.parent
@@ -92,6 +100,7 @@ TITAN_WINDOW_HEIGHT  = _int("TITAN_WINDOW_HEIGHT", 620)
 TITAN_REPORT_HOUR    = _int("TITAN_REPORT_HOUR", 20)
 TITAN_REPORT_MIN     = _int("TITAN_REPORT_MIN", 0)
 TITAN_REPORT_ENABLED = _bool("TITAN_REPORT_ENABLED", "1")
+TITAN_POPUP_AUTO_SHOW = _bool("TITAN_POPUP_AUTO_SHOW", "1")
 
 # ── API interne ───────────────────────────────────────────────────────────────
 TITAN_API_BASE       = _str("TITAN_API_BASE", "http://localhost:8080")

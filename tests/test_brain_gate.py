@@ -1,5 +1,8 @@
 """Porte neuronale v2 : le cerveau (consensus) FILTRE, l'émotion pilote la CONVICTION (taille),
 le master (Florent) prime. Fail-safe."""
+import sys
+from types import SimpleNamespace
+
 from core import brain_gate as bg
 
 
@@ -110,3 +113,37 @@ def test_store_master_set_get_reset(tmp_path, monkeypatch):
     assert bg.get_master("XAUUSD") == bg.FORCE_SHORT
     bg.set_master("XAUUSD", bg.AUTO)
     assert "XAUUSD" not in bg.all_masters()
+
+
+def test_lookup_normalise_binance_vers_mt5(monkeypatch):
+    fake = SimpleNamespace(LAST_RESULTS={
+        "BTCUSD": {"status": "UNCONFIRMED", "side": "short", "consensus_score": 40, "coverage": 0.7, "conflict": False},
+    })
+    monkeypatch.setitem(sys.modules, "core.consensus_engine", fake)
+    hit = bg._consensus_lookup("BTC/USDT")
+    assert hit and hit["side"] == "short"
+
+
+def test_lookup_alias_paxg_vers_xau(monkeypatch):
+    fake = SimpleNamespace(LAST_RESULTS={
+        "XAUUSD": {"status": "UNCONFIRMED", "side": "long", "consensus_score": 45, "coverage": 0.8, "conflict": False},
+    })
+    monkeypatch.setitem(sys.modules, "core.consensus_engine", fake)
+    hit = bg._consensus_lookup("PAXG/USDT")
+    assert hit and hit["side"] == "long"
+
+
+def test_gate_entry_binance_symbol_ne_retombe_pas_no_coverage(monkeypatch):
+    fake = SimpleNamespace(LAST_RESULTS={
+        "BTCUSD": {
+            "status": "UNCONFIRMED",
+            "side": "long",
+            "consensus_score": 55,
+            "coverage": 0.8,
+            "conflict": False,
+            "engine_directions": {},
+        },
+    })
+    monkeypatch.setitem(sys.modules, "core.consensus_engine", fake)
+    g = bg.gate_entry("BTC/USDT", 1, master_fn=_master(bg.AUTO))
+    assert g.allow and "BRAIN_NO_COVERAGE" not in g.reason_codes
