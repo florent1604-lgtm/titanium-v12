@@ -9,6 +9,12 @@ aiohttp>=3.9.0
 python-dotenv>=1.0.0
 jsonschema>=4.23.0,<5.0.0
 
+# MCP / multi-agents (collab_hub/mcp.py, mcp_server.py, mcp_base44.py — serveurs stdio)
+mcp>=1.27.0                    # requis par collab_hub ; son absence bloquait `pytest tests/` (test_collab_hub_api)
+
+# Broker data (data/mt5_provider.py — DATA-ONLY, Windows uniquement ; correction Copilot 2026-07-25)
+MetaTrader5>=5.0.45 ; platform_system == "Windows"
+
 # Data & calcul
 numpy>=1.26.0
 scipy>=1.11.0

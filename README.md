@@ -59,6 +59,22 @@ API Gateway (FastAPI :8080)
 pip install fastapi uvicorn aiohttp numpy pandas pandas-ta python-dotenv
 ```
 
+### Windows PowerShell (no Docker)
+
+```powershell
+git clone https://github.com/florent1604-lgtm/titanium-v12.git
+cd titanium-v12
+
+# one-command setup + optional smoke tests + run
+powershell -ExecutionPolicy Bypass -File .\tools\run_local_windows.ps1
+```
+
+Install-only mode (recommended on a machine where live bot already runs on 8090):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tools\run_local_windows.ps1 -InstallOnly
+```
+
 ### 2. Configure
 
 ```bash
@@ -70,7 +86,7 @@ cp .env.example .env
 
 ```bash
 python main.py
-# Dashboard → http://localhost:8080
+# Dashboard -> http://localhost:8090
 ```
 
 ## Supported Assets
