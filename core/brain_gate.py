@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Callable, Dict, Optional
 
 from core.instruments import from_binance
+from utils.config import BRAIN_GATE_PERMISSIVE
 
 _ROOT = Path(__file__).resolve().parent.parent
 _MASTER_PATH = _ROOT / "data" / "brain_master.json"
@@ -212,19 +213,34 @@ def gate_entry(symbol: str, proposed_side: int, *,
     # 2. AUTO → le CERVEAU filtre.
     cons = getcons(symbol)
     if not cons:
+        # Mode test démo permissif : sans couverture, suivre le cœur (conviction plancher).
+        if BRAIN_GATE_PERMISSIVE and proposed_side:
+            return BrainGate(True, proposed_side, _CONV_FLOOR, "BRAIN", None,
+                             ("BRAIN_PERMISSIVE_NOCOV",))
         return BrainGate(False, 0, 0.0, "BRAIN", None, ("BRAIN_NO_COVERAGE",))
     status = cons.get("status")
-    if status in ("INSUFFICIENT", "ERROR", None):
+    if status in ("ERROR", None):
+        # ERROR reste fail-closed même en permissif : état anormal, pas une simple indécision.
         return BrainGate(False, 0, 0.0, "BRAIN", status, (f"BRAIN_{status or 'UNKNOWN'}",))
+    if status == "INSUFFICIENT":
+        if BRAIN_GATE_PERMISSIVE and proposed_side:
+            return BrainGate(True, proposed_side, _CONV_FLOOR, "BRAIN", status,
+                             ("BRAIN_PERMISSIVE_INSUFF",))
+        return BrainGate(False, 0, 0.0, "BRAIN", status, ("BRAIN_INSUFFICIENT",))
     cside = _SIDE.get(cons.get("side"), 0)
     side = proposed_side or cside                # sans réflexe, on suit le sens du cerveau
     if side == 0:
         return BrainGate(False, 0, 0.0, "BRAIN", status, ("BRAIN_NO_SIDE",))
-    # Le cerveau BLOQUE s'il est en conflit interne ou s'oppose franchement au sens proposé.
-    if bool(cons.get("conflict")) or status == "CONFLICT":
-        return BrainGate(False, 0, 0.0, "BRAIN", status, ("BRAIN_CONFLICT",))
-    if cside != 0 and cside == -side:
+    # Opposition RÉELLE de direction = veto conservé même en permissif.
+    if (cside != 0 and cside == -side) or (cons.get("opposing_engines") or []):
         return BrainGate(False, 0, 0.0, "BRAIN", status, ("BRAIN_SIDE_CONFLICT",))
+    # Conflit INTERNE de familles (sans opposition de sens) : bloque en normal,
+    # laisse passer à conviction plancher en permissif (test démo).
+    if bool(cons.get("conflict")) or status == "CONFLICT":
+        if BRAIN_GATE_PERMISSIVE:
+            return BrainGate(True, side, _CONV_FLOOR, "BRAIN", status,
+                             ("BRAIN_PERMISSIVE_SOFTCONFLICT",))
+        return BrainGate(False, 0, 0.0, "BRAIN", status, ("BRAIN_CONFLICT",))
 
     # 3. Autorisé — l'ÉMOTION pilote la conviction/taille.
     conv, emo_tag = _conviction(cons, side)

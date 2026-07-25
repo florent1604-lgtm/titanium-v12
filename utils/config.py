@@ -258,6 +258,13 @@ FORWARD_PAPER_SECONDS = _int("FORWARD_PAPER_SECONDS", 3600)
 # DÉSARMÉ par défaut ; les ordres exigent EN PLUS `DEMO_EXEC_ENABLED=1` + le mur
 # démo↔réel (refus absolu hors compte démo). Décision sur bougies CLÔTURÉES.
 CONFLUENCE_DEMO_ENABLED = _bool("CONFLUENCE_DEMO_ENABLED", "0")
+# Mode TEST DÉMO (décision Florent 25/07) : laisser passer PLUS de trades pour
+# tester l'exécution sur MT5 démo. En permissif, quand le cerveau n'a PAS d'opinion
+# (NO_COVERAGE / INSUFFICIENT / conflit interne de familles SANS opposition de sens),
+# on suit le cœur à conviction plancher au lieu de bloquer. On GARDE le veto sur
+# opposition RÉELLE de direction (moteurs opposés / cside == -side) et le MASTER.
+# Défaut OFF → production strictement inchangée. Réversible (flag .env + restart).
+BRAIN_GATE_PERMISSIVE = _bool("BRAIN_GATE_PERMISSIVE", "0")
 CONFLUENCE_DEMO_SYMBOLS = _list("CONFLUENCE_DEMO_SYMBOLS", "XAUUSD,EURUSD,US500.fs")
 CONFLUENCE_DEMO_LTF     = _str("CONFLUENCE_DEMO_LTF", "M15")
 CONFLUENCE_DEMO_HTF     = _str("CONFLUENCE_DEMO_HTF", "H4")
