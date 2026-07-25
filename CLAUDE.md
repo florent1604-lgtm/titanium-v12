@@ -77,6 +77,15 @@ Segments récents (07/2026) non détaillés plus bas mais actifs :
   to `stdio_server()` is a silent breakage (fixed 07/2026, don't reintroduce).
 - **Console encoding is cp1252**: scripts printing unicode (─, ↔, é) crash unless run
   with `PYTHONIOENCODING=utf-8`.
+- **`requirements.txt` drift (fixed 07-25)**: `mcp` and `MetaTrader5` ran in the venv but were
+  **undeclared** → a clean `pip install -r requirements.txt` (e.g. `tools/run_local_windows.ps1`
+  bootstrapping a fresh copy) produced a bot with missing deps *or* placeholder `.env` keys (the
+  `.env.example` copy → `TWELVEDATA_API_KEY=your…` → **401 loops**). Both now declared; and never
+  auto-run `main.py` on a copy whose `.env` was just seeded from `.env.example`.
+- **Centre de Contrôle** (`centre_controle.py`, launch `pythonw centre_controle.py`): pywebview
+  desktop panel — live service status + one-click surfaces + launch/restart bot. Any subprocess it
+  polls (e.g. `tasklist`) MUST pass `creationflags=CREATE_NO_WINDOW`, else it flashes a black
+  console every 5 s under `pythonw` (the status probe runs on a timer).
 
 ---
 
@@ -234,6 +243,28 @@ even a logical ALLOW returns `dispatch_permitted=false`. Own frozen registry
 no runtime code** (`grep` confirms) = zero effect. **Never advance the palier (C1→C2→C3) without
 Florent's explicit per-palier go**; Hermes/LLM are never on the trigger.
 
+### M2-1 shadow observer — measuring signal↔brain divergence before wiring (Lot C/C2, 07/2026)
+Before wiring any DecisionKernel that would gate emission on the brain (the proposed **Lot D**),
+`core/shadow_divergence.py::observe()` records — in **pure observation** (fail-safe, `to_thread`,
+**never alters emission/state**) — what `brain_gate.gate_entry` WOULD say for each directional
+candidate. Appended to `data/shadow_divergence.ndjson`; dépouiller with `divergence_summary()`.
+Wired in two paths: `core/signal_engine.py` after `emit_signal` (crypto/Binance) and
+`core/confluence_demo_engine.py::run_once` (`shadow_observer` param, MT5/demo). Findings that
+**gate Lot D** — do not wire the kernel without addressing them:
+- **Crypto path = 100 % `BRAIN_NO_COVERAGE`** — `_consensus_lookup` keys `consensus_engine.LAST_RESULTS`
+  by the confluence/**MT5** ticker (`BTCUSD`), but `signal_engine` asks with the **Binance** ticker
+  (`BTC/USDT`) → miss. It is a **ticker-naming mismatch**, not brain blindness (a Binance→MT5
+  normalization map would fix it). The crypto path is also **dormant** (scores plateau ≪ threshold,
+  100 % one-sided). Wiring it to the brain as-is would **freeze crypto**.
+- **Brain cold-start race** — `LAST_RESULTS` is EMPTY for ~5 min after every restart (populated by
+  the consensus/mirror loop, `EVENTPLANE_MIRROR_SECONDS=300`): `NO_COVERAGE` for everything at boot,
+  while `confluence_demo` places demo trades within seconds. The kernel's no-coverage fallback MUST
+  distinguish "never covered" from "warming up".
+- **Warm demo path** — when the brain has a side it largely AGREES with the confluence
+  (e.g. LTCUSD 20/20); its dominant effect is BLOCKING on `BRAIN_CONFLICT`/`BRAIN_INSUFFICIENT`
+  (~64 % of proposals), i.e. it acts as a consensus gate that would sharply cut entry count. Weigh
+  quality vs over-restriction under M2 before wiring.
+
 ---
 
 ## Key Concepts
@@ -323,12 +354,16 @@ of this; after `symbol_select` the history syncs on demand (retry `copy_rates`).
 
 ## Multi-Agent Collaboration (`collab/`)
 
-Titanium is co-developed by three AI agents, arbitrated by Florent:
+Titanium is co-developed by several AI agents, arbitrated by Florent:
 **Claude Code** (technical governor / architect / implementer), **Codex CLI**
 (auditor-red-team / executor — reach it via `codex exec`, reviews via `codex review`),
 **Hermes Agent** (orchestrator brain + memory, talks to Florent over Telegram;
 MCP server `hermes` registered in `.mcp.json` / `.codex/config.toml`, see
 `collab/HERMES_BRIDGE.md`).
+**GitHub Copilot** joined 2026-07-25 (admin rights on the v12 code; reachable on the collab bus
+as `copilot`, i.e. `--from/--to copilot`). ⚠️ **Codex is DOWN until 2026-07-28** — during that
+window Claude and Copilot **cross-review each other** (the independent red-team is unavailable),
+so hold any trading-logic change to the M2 harness + both reviews + Florent's per-lot go.
 
 - Source of truth: `collab/PLAN.md` (direction), `collab/TASKS.md` (statuses —
   latest addendum wins), `collab/LOG.md` (decisions), `collab/REVIEWS.md` (cross-reviews).
