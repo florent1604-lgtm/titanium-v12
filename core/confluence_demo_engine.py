@@ -153,6 +153,7 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
                    rates_fn: Optional[Callable] = None,
                    place_fn: Optional[Callable[..., Awaitable]] = None,
                    notify_fn: Optional[Callable[..., Awaitable]] = None,
+                   shadow_observer: Optional[Callable[..., object]] = None,
                    ref_fn: Optional[Callable] = None,
                    sl_atr_mult: float = 1.5, tp_atr_mult: float = 3.0,
                    tp_ladder=(1.5, 2.5, 4.0),
@@ -179,6 +180,12 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
     if notify_fn is None:
         from notifications.telegram import send_confluence_alert as _notify
         notify_fn = _notify
+    if shadow_observer is None:
+        try:
+            from core.shadow_divergence import observe as _observe
+            shadow_observer = _observe
+        except Exception:
+            shadow_observer = None
     if entry_gate is None:
         from core.brain_gate import gate_entry as entry_gate
 
@@ -268,6 +275,28 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
                                                   "lot": aggressive["placed"].get("lot"),
                                                   "price": aggressive["placed"].get("price"),
                                                   "mode": "aggressive", "gate_source": gate.source})
+
+            # Lot C2 (M2): observateur SHADOW additif sur chemin confluence_demo.
+            # Zéro impact décision/exécution : best-effort, jamais bloquant.
+            if shadow_observer is not None and int(decision.side or 0) != 0:
+                try:
+                    emitted = bool((placed or {}).get("sent")) or bool(((aggressive or {}).get("placed") or {}).get("sent"))
+                    await asyncio.to_thread(
+                        shadow_observer,
+                        symbol,
+                        int(decision.side or 0),
+                        float(getattr(decision, "rank", 0.0) or 0.0),
+                        emitted=emitted,
+                        score_min=None,
+                        extra={
+                            "path": "confluence_demo",
+                            "venue": venue,
+                            "decision_code": getattr(decision, "code", ""),
+                            "brain_source": gate.source,
+                        },
+                    )
+                except Exception:
+                    pass
 
             summary = _summary(symbol, ltf_tf, htf_tf, venue, decision, feats, placed,
                                levels, reference, aggressive)

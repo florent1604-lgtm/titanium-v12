@@ -372,3 +372,68 @@ def test_status_snapshot_expose_les_decisions():
                             now=now, rates_fn=lambda s, tf, n: f[tf], place_fn=place_fn))
     snap = de.status_snapshot()
     assert "GBPUSD" in snap["symbols"] and snap["recent"]
+
+
+def test_shadow_observer_est_appele_en_observation_pure():
+    now = _now(); f = _frames(now)
+    calls = []
+
+    async def place_fn(symbol, side, atr, **k):
+        return {"sent": True, "lot": 0.1, "price": 111.0}
+
+    def shadow_observer(symbol, side, score, *, emitted, score_min=None, extra=None):
+        calls.append({
+            "symbol": symbol,
+            "side": side,
+            "score": score,
+            "emitted": emitted,
+            "score_min": score_min,
+            "extra": extra,
+        })
+        return "AGREE_ALLOW"
+
+    import core.confluence_gate as cg
+
+    class _Dec:
+        verdict = "ENTER"; side = 1; code = "ENTER_CONFLUENCE"; mode = "explore"
+        rank = 2.0; decision_id = "obs"; decided_at = now.isoformat(); reasons = []
+        gates = []; setup_family = "continuation"; entered = True
+
+    orig = cg.evaluate
+    cg.evaluate = lambda feats, **k: _Dec()
+    try:
+        asyncio.run(de.run_once(
+            [{"symbol": "XAUUSD", "ltf": "M15", "htf": "H4", "venue": "cfd"}],
+            now=now,
+            rates_fn=lambda s, tf, n: f[tf],
+            place_fn=place_fn,
+            shadow_observer=shadow_observer,
+            entry_gate=_allow_gate,
+        ))
+    finally:
+        cg.evaluate = orig
+
+    assert len(calls) == 1
+    assert calls[0]["symbol"] == "XAUUSD"
+    assert calls[0]["side"] == 1
+    assert calls[0]["emitted"] is True
+    assert calls[0]["extra"]["path"] == "confluence_demo"
+
+
+def test_shadow_observer_en_erreur_ne_casse_pas_le_cycle():
+    now = _now(); f = _frames(now)
+
+    def shadow_observer(*a, **k):
+        raise RuntimeError("observer down")
+
+    async def place_fn(*a, **k):
+        return {"sent": False, "reason": "DEMO_DISARMED"}
+
+    rep = asyncio.run(de.run_once(
+        [{"symbol": "XAUUSD", "ltf": "M15", "htf": "H4", "venue": "cfd"}],
+        now=now,
+        rates_fn=lambda s, tf, n: f[tf],
+        place_fn=place_fn,
+        shadow_observer=shadow_observer,
+    ))
+    assert rep["decisions"][0]["verdict"] != "ERROR"
