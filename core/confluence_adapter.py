@@ -32,6 +32,7 @@ from core import closed_bars, volume_profile, fib_ote, sr_levels, candlestick_en
 from core import smc_engine as smc
 
 ADAPTER_VERSION = "1.2.0"
+_FRESHNESS_TFS = ("M5", "M15", "H1", "H4", "D1")
 
 
 def _weekend_block(now: datetime, venue: str) -> bool:
@@ -54,21 +55,91 @@ def _is_weekend_window(now: datetime) -> bool:
     return wd == 4 and now.hour >= 20
 
 
-def _ltf_max_stale_bars(now: datetime) -> float:
-    """Seuil de fraîcheur des bougies LTF (M15). Normal = 3.0 (≈ 60 min pour M15).
-    PHASE DE TEST (décision Florent 25/07) : si DEMO_STALE_RELAX=1 ET pendant la
-    fenêtre week-end UNIQUEMENT, on l'allonge (DEMO_STALE_RELAX_BARS, défaut 20 ≈ 5h)
-    pour tolérer les M15 clairsemées du week-end et tester la plomberie d'exécution.
-    Restauration AUTOMATIQUE à l'ouverture lundi (la fenêtre week-end se termine) —
-    aucune intervention manuelle. Hors week-end ou flag OFF → seuil normal inchangé."""
-    if os.getenv("DEMO_STALE_RELAX", "0") == "1" and _is_weekend_window(now):
-        # Marche forcée week-end : défaut très large (~10 j) pour accepter les M15
-        # figées du week-end (marché Axi fermé). Ajustable via DEMO_STALE_RELAX_BARS.
+def _stale_relax_enabled(now: datetime) -> bool:
+    return os.getenv("DEMO_STALE_RELAX", "0") == "1" and _is_weekend_window(now)
+
+
+def freshness_timeframes(timeframe: str, htf_timeframe: str) -> list[str]:
+    """Chaîne canonique de fraîcheur entre la TF d'entrée et la TF haute."""
+    lo = closed_bars.bar_duration_minutes(timeframe)
+    hi = closed_bars.bar_duration_minutes(htf_timeframe)
+    if lo is None or hi is None:
+        return [timeframe] if timeframe == htf_timeframe else [timeframe, htf_timeframe]
+    if lo > hi:
+        lo, hi = hi, lo
+    chain = [tf for tf in _FRESHNESS_TFS
+             if (dur := closed_bars.bar_duration_minutes(tf)) is not None and lo <= dur <= hi]
+    if timeframe not in chain:
+        chain.insert(0, timeframe)
+    if htf_timeframe not in chain:
+        chain.append(htf_timeframe)
+    out = []
+    for tf in chain:
+        if tf not in out:
+            out.append(tf)
+    return out
+
+
+def _resample_for_freshness(df: Optional[pd.DataFrame], timeframe: str) -> Optional[pd.DataFrame]:
+    """Reconstruit une TF intermédiaire depuis la LTF quand le provider ne l'a pas fournie."""
+    if df is None or len(df) == 0:
+        return df
+    dur = closed_bars.bar_duration_minutes(timeframe)
+    if dur is None or not isinstance(df.index, pd.DatetimeIndex):
+        return None
+    agg = {"open": "first", "high": "max", "low": "min", "close": "last"}
+    if "v" in df.columns:
+        agg["v"] = "sum"
+    out = df.resample(f"{dur}min", label="left", closed="left").agg(agg)
+    return out.dropna(subset=["open", "high", "low", "close"])
+
+
+def _tf_max_stale_bars(timeframe: str, now: datetime) -> float:
+    """Seuil de fraîcheur cohérent par TF.
+
+    Normal = 3 barres sur toute la chaîne de décision. En phase de test week-end,
+    DEMO_STALE_RELAX allonge ce seuil pour toute la chaîne MTF, puis le mode strict
+    revient automatiquement lundi.
+    """
+    if _stale_relax_enabled(now):
         try:
             return float(os.getenv("DEMO_STALE_RELAX_BARS", "1000"))
         except (TypeError, ValueError):
             return 1000.0
     return 3.0
+
+
+def _ltf_max_stale_bars(now: datetime) -> float:
+    """Compatibilité historique: la LTF suit maintenant la politique globale."""
+    return _tf_max_stale_bars("M15", now)
+
+
+def _freshness_snapshot(df_ltf: pd.DataFrame, df_htf: pd.DataFrame, *,
+                        timeframe: str, htf_timeframe: str, now: datetime,
+                        freshness_frames: Optional[dict[str, Optional[pd.DataFrame]]] = None) -> dict:
+    chain = freshness_timeframes(timeframe, htf_timeframe)
+    frames = dict(freshness_frames or {})
+    frames.setdefault(timeframe, df_ltf)
+    frames.setdefault(htf_timeframe, df_htf)
+    by_tf = {}
+    for tf in chain:
+        frame = frames.get(tf)
+        if frame is None and tf != htf_timeframe:
+            frame = _resample_for_freshness(df_ltf, tf)
+        ok, code = closed_bars.validate_frame(frame, tf, now=now, min_len=20,
+                                              max_stale_bars=_tf_max_stale_bars(tf, now))
+        by_tf[tf] = code if ok else code
+    return {
+        "timeframes": chain,
+        "by_tf": by_tf,
+        "forced": _stale_relax_enabled(now),
+        "all_ok": all(code == "OK" for code in by_tf.values()),
+    }
+
+
+def _freshness_reason(snapshot: dict) -> str:
+    detail = "|".join(f"{tf}:{snapshot['by_tf'].get(tf)}" for tf in snapshot.get("timeframes", []))
+    return f"TF_FRESHNESS:{detail}"
 
 
 def _trend(df_htf: pd.DataFrame) -> int:
@@ -228,7 +299,8 @@ def _setup_family(setup_side: Optional[int], trend: int) -> Optional[str]:
 def build_feats(df_ltf: Optional[pd.DataFrame], df_htf: Optional[pd.DataFrame], *,
                 price: float, symbol: str, timeframe: str, htf_timeframe: str,
                 venue: str = "crypto", now: Optional[datetime] = None,
-                run_emotion: bool = True) -> dict:
+                run_emotion: bool = True,
+                freshness_frames: Optional[dict[str, Optional[pd.DataFrame]]] = None) -> dict:
     """Détecteurs → dict `feats` pour confluence_gate.evaluate(). FAIL-CLOSED sur les
     données non clôturées, invalides, gelées ou temporellement incohérentes."""
     now = now or datetime.now(timezone.utc)
@@ -240,11 +312,20 @@ def build_feats(df_ltf: Optional[pd.DataFrame], df_htf: Optional[pd.DataFrame], 
     htf = closed_bars.closed_only(df_htf, htf_timeframe, now)
     if ltf is None or htf is None or len(ltf) < 20 or len(htf) < 20:
         return {"data_valid": False, "reason": "CLOSED_BARS_UNAVAILABLE"}
-    ok_l, code_l = closed_bars.validate_frame(ltf, timeframe, now=now, min_len=20,
-                                              max_stale_bars=_ltf_max_stale_bars(now))
-    ok_h, code_h = closed_bars.validate_frame(htf, htf_timeframe, now=now, min_len=20)
-    if not ok_l or not ok_h:
-        return {"data_valid": False, "reason": f"LTF:{code_l} HTF:{code_h}"}
+    freshness = _freshness_snapshot(ltf, htf, timeframe=timeframe, htf_timeframe=htf_timeframe,
+                                    now=now, freshness_frames=freshness_frames)
+    if not freshness["all_ok"]:
+        return {
+            "data_valid": False,
+            "reason": _freshness_reason(freshness),
+            "_trace": {
+                "version": ADAPTER_VERSION,
+                "symbol": symbol,
+                "venue": venue,
+                "timeframes": {"ltf": timeframe, "htf": htf_timeframe},
+                "freshness": freshness,
+            },
+        }
 
     # (3) Cohérence temporelle : as-of par TF, alignement HTF/LTF, prix de référence closed-bar.
     ltf_close = _last_close_time(ltf, timeframe)
@@ -312,6 +393,7 @@ def build_feats(df_ltf: Optional[pd.DataFrame], df_htf: Optional[pd.DataFrame], 
             "decided_at": decided_at.isoformat(),
             "ref_price": ref_price, "price_input": float(price),
             "timeframes": {"ltf": timeframe, "htf": htf_timeframe},
+            "freshness": freshness,
             "as_of": {"ltf_close": ltf_close.isoformat() if ltf_close is not None else None,
                       "htf_close": htf_close.isoformat() if htf_close is not None else None,
                       "htf_ltf_aligned": htf_ltf_aligned},

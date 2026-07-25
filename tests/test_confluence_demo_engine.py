@@ -213,6 +213,83 @@ def test_panne_reference_binance_ne_bloque_pas_le_symbole_crypto():
     assert rep["decisions"][0]["reference"] is None
 
 
+def test_summary_marque_explicitement_le_marche_ferme():
+    from core.confluence_demo_engine import _summary
+
+    now = _now()
+    decision = type("D", (), {
+        "verdict": "BLOCK", "side": 0, "code": "BLOCK_DATA_INVALID", "mode": "explore",
+        "rank": 0.0, "decision_id": "m1", "decided_at": now.isoformat(),
+        "reasons": ["G0 données invalides → BLOCK"], "gates": [], "setup_family": "",
+    })()
+    feats = {"data_valid": False, "reason": "CLOSED_BARS_UNAVAILABLE", "_trace": {}}
+
+    summary = _summary("XAUUSD", "M15", "H4", "cfd", decision, feats, None)
+
+    assert summary["market_status"] == {
+        "state": "closed",
+        "reason": "CLOSED_BARS_UNAVAILABLE",
+        "freshness": None,
+        "forced": False,
+        "open": False,
+    }
+
+
+def test_summary_marque_explicitement_un_marche_thin():
+    from core.confluence_demo_engine import _summary
+
+    now = _now()
+    decision = type("D", (), {
+        "verdict": "BLOCK", "side": 0, "code": "BLOCK_DATA_INVALID", "mode": "explore",
+        "rank": 0.0, "decision_id": "m2", "decided_at": now.isoformat(),
+        "reasons": ["fraicheur incoherente"], "gates": [], "setup_family": "",
+    })()
+    feats = {
+        "data_valid": False,
+        "reason": "TF_FRESHNESS:M15:STALE|H1:STALE|H4:OK",
+        "_trace": {"freshness": {"by_tf": {"M15": "STALE", "H1": "STALE", "H4": "OK"},
+                                  "forced": False}},
+    }
+
+    summary = _summary("BTCUSD", "M15", "H4", "crypto", decision, feats, None)
+
+    assert summary["market_status"] == {
+        "state": "thin",
+        "reason": "TF_FRESHNESS:M15:STALE|H1:STALE|H4:OK",
+        "freshness": {"M15": "STALE", "H1": "STALE", "H4": "OK"},
+        "forced": False,
+        "open": False,
+    }
+
+
+def test_status_snapshot_agrege_les_etats_de_marche():
+    from core import confluence_demo_engine as de
+
+    orig_last = dict(de.LAST_DECISION)
+    orig_recent = list(de.RECENT)
+    try:
+        de.LAST_DECISION.clear()
+        de.LAST_DECISION.update({
+            "XAUUSD": {"market_status": {"state": "closed"}},
+            "BTCUSD": {"market_status": {"state": "open"}},
+            "ETHUSD": {"market_status": {"state": "thin"}},
+            "EURUSD": {"market_status": {"state": "unavailable"}},
+        })
+        snap = de.status_snapshot()
+    finally:
+        de.LAST_DECISION.clear()
+        de.LAST_DECISION.update(orig_last)
+        de.RECENT.clear()
+        de.RECENT.extend(orig_recent)
+
+    assert snap["market_status"]["state"] == "mixed"
+    assert snap["market_status"]["counts"] == {"open": 1, "thin": 1, "closed": 1, "unavailable": 1}
+    assert set(snap["market_status"]["closed_symbols"]) == {"XAUUSD"}
+    assert set(snap["market_status"]["open_symbols"]) == {"BTCUSD"}
+    assert set(snap["market_status"]["thin_symbols"]) == {"ETHUSD"}
+    assert set(snap["market_status"]["unavailable_symbols"]) == {"EURUSD"}
+
+
 def test_aggressive_eligible_respecte_veto_emotion_et_cout():
     from core.confluence_demo_engine import _aggressive_eligible
 

@@ -42,6 +42,20 @@ def test_fail_closed_sur_frame_incoherente():
     assert feats["data_valid"] is False
 
 
+def test_fail_closed_detaille_la_fraicheur_multi_tf():
+    now = datetime(2026, 7, 20, 12, 5, tzinfo=timezone.utc)
+    stale_end = pd.Timestamp(now).floor("4h") - pd.Timedelta(minutes=90)
+    ltf = _mk(stale_end, 15, 120)
+    htf = _mk(pd.Timestamp(now).floor("4h") - pd.Timedelta(hours=4), 240, 120)
+    feats = ca.build_feats(ltf, htf, price=float(ltf["close"].iloc[-1]), symbol="BTC/USDT",
+                           timeframe="M15", htf_timeframe="H4", now=now, run_emotion=False)
+    assert feats["data_valid"] is False
+    assert feats["reason"].startswith("TF_FRESHNESS:")
+    assert "M15:STALE" in feats["reason"]
+    assert "H1:OK" in feats["reason"]
+    assert "H4:OK" in feats["reason"]
+
+
 def test_produit_un_contrat_exploitable_par_les_portes():
     now = datetime(2026, 7, 20, 12, 5, tzinfo=timezone.utc)   # lundi, marché ouvert
     ltf, htf = _frames(now)
@@ -85,3 +99,18 @@ def test_weekend_block_cfd_vendredi_soir():
                         timeframe="H1", htf_timeframe="H4", venue="crypto",
                         now=vend_soir, run_emotion=False)
     assert fc["cost"]["weekend_block"] is False
+
+
+def test_weekend_force_relaxe_toute_la_chaine_multi_tf(monkeypatch):
+    monkeypatch.setenv("DEMO_STALE_RELAX", "1")
+    monkeypatch.setenv("DEMO_STALE_RELAX_BARS", "1000")
+    now = datetime(2026, 7, 25, 14, 0, tzinfo=timezone.utc)
+    stale_end = pd.Timestamp(now).floor("4h") - pd.Timedelta(hours=6)
+    ltf = _mk(stale_end, 15, 120)
+    htf = _mk(pd.Timestamp(now).floor("4h") - pd.Timedelta(hours=12), 240, 120)
+    feats = ca.build_feats(ltf, htf, price=float(ltf["close"].iloc[-1]), symbol="BTCUSD",
+                           timeframe="M15", htf_timeframe="H4", venue="crypto",
+                           now=now, run_emotion=False)
+    assert feats["data_valid"] is True
+    assert feats["_trace"]["freshness"]["forced"] is True
+    assert feats["_trace"]["freshness"]["by_tf"] == {"M15": "OK", "H1": "OK", "H4": "OK"}

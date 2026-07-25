@@ -29,6 +29,8 @@ def test_relax_seulement_weekend_flag_on(monkeypatch):
     monkeypatch.setenv("DEMO_STALE_RELAX", "1")
     monkeypatch.delenv("DEMO_STALE_RELAX_BARS", raising=False)
     assert ca._ltf_max_stale_bars(SAT) == 1000.0   # marche forcée le week-end (accepte M15 figées)
+    assert ca._tf_max_stale_bars("H1", SAT) == 1000.0
+    assert ca._tf_max_stale_bars("H4", SAT) == 1000.0
     assert ca._ltf_max_stale_bars(MON) == 3.0      # AUTO-RESTAURÉ lundi (consigne)
 
 
@@ -41,3 +43,7 @@ def test_relax_bars_configurable(monkeypatch):
     monkeypatch.setenv("DEMO_STALE_RELAX", "1")
     monkeypatch.setenv("DEMO_STALE_RELAX_BARS", "40")
     assert ca._ltf_max_stale_bars(SAT) == 40.0
+
+
+def test_chaine_canonique_m15_h4():
+    assert ca.freshness_timeframes("M15", "H4") == ["M15", "H1", "H4"]

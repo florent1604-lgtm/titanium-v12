@@ -104,7 +104,8 @@ def _aggressive_eligible(decision, feats: dict, aggressive_min: int) -> Optional
 
 def decide(symbol: str, df_ltf: Optional[pd.DataFrame], df_htf: Optional[pd.DataFrame], *,
            ltf_tf: str, htf_tf: str, venue: str, now: Optional[datetime] = None,
-           run_emotion: bool = True):
+           run_emotion: bool = True,
+           freshness_frames: Optional[dict] = None):
     """Décision de confluence en mode EXPLORE (démo). PUR. Retourne (Decision, feats)."""
     now = now or datetime.now(timezone.utc)
     price = None
@@ -115,7 +116,8 @@ def decide(symbol: str, df_ltf: Optional[pd.DataFrame], df_htf: Optional[pd.Data
         price = None
     feats = ca.build_feats(df_ltf, df_htf, price=price if price is not None else 0.0,
                            symbol=symbol, timeframe=ltf_tf, htf_timeframe=htf_tf,
-                           venue=venue, now=now, run_emotion=run_emotion)
+                           venue=venue, now=now, run_emotion=run_emotion,
+                           freshness_frames=freshness_frames)
     decision = cg.evaluate(feats, require_edge=False)   # DÉMO/EXPLORE : on teste pour mesurer
     return decision, feats
 
@@ -126,6 +128,24 @@ def _summary(symbol: str, ltf_tf: str, htf_tf: str, venue: str,
              aggressive: Optional[dict] = None) -> dict:
     """Résumé sérialisable d'une décision (pour la route/dashboard)."""
     tr = feats.get("_trace") or {}
+    market_reason = str(feats.get("reason") or "")
+    freshness = (tr.get("freshness") or {}) if isinstance(tr, dict) else {}
+    freshness_codes = list((freshness.get("by_tf") or {}).values())
+    if not feats.get("data_valid", False):
+        if market_reason == "CLOSED_BARS_UNAVAILABLE":
+            market_state = "closed"
+        elif freshness_codes and all(code == "STALE" for code in freshness_codes):
+            market_state = "closed"
+        elif "STALE" in freshness_codes:
+            market_state = "thin"
+        else:
+            market_state = "unavailable"
+    elif decision.verdict == "ENTER":
+        market_state = "open"
+    elif decision.code == "WAIT_NO_SETUP":
+        market_state = "open"
+    else:
+        market_state = "open"
     return {
         "symbol": symbol, "ltf": ltf_tf, "htf": htf_tf, "venue": venue,
         "reference": reference,    # ajustement Binance (prix + divergence) pour le crypto
@@ -137,6 +157,13 @@ def _summary(symbol: str, ltf_tf: str, htf_tf: str, venue: str,
         "reasons": list(decision.reasons),
         "gates": [{"name": g.name, "passed": g.passed, "code": g.code} for g in decision.gates],
         "data_valid": bool(feats.get("data_valid")),
+        "market_status": {
+            "state": market_state,
+            "reason": market_reason or None,
+            "freshness": (freshness.get("by_tf") or None),
+            "forced": bool(freshness.get("forced")),
+            "open": market_state == "open",
+        },
         "levels": levels,          # point d'entrée + SL + ladder de TP
         "trace": tr,
         "placed": placed,
@@ -198,15 +225,24 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
         htf_tf = cfg.get("htf", "H4")
         venue = cfg.get("venue", "cfd")
         try:
-            df_ltf = await asyncio.to_thread(rates_fn, symbol, ltf_tf, _N_BARS)
-            df_htf = await asyncio.to_thread(rates_fn, symbol, htf_tf, _N_BARS)
+            freshness_tfs = ca.freshness_timeframes(ltf_tf, htf_tf)
+            tf_frames = {}
+            for tf in freshness_tfs:
+                try:
+                    tf_frames[tf] = await asyncio.to_thread(rates_fn, symbol, tf, _N_BARS)
+                except Exception:
+                    if tf in (ltf_tf, htf_tf):
+                        raise
+                    tf_frames[tf] = None
+            df_ltf = tf_frames.get(ltf_tf)
+            df_htf = tf_frames.get(htf_tf)
             # FLUIDITÉ : `decide` (build_feats = indicateurs/SMC/émotion, pandas) et `_atr`
             # sont du calcul LOURD. Les exécuter inline gelait la boucle asyncio pendant tout
             # le cycle (27 symboles) → cortex/dashboard/JARVIS/flux temps réel bloqués plusieurs
             # secondes. On les déporte comme le font déjà consensus (_scan_one) et lead/lag.
             decision, feats = await asyncio.to_thread(
                 decide, symbol, df_ltf, df_htf, ltf_tf=ltf_tf,
-                htf_tf=htf_tf, venue=venue, now=now)
+                htf_tf=htf_tf, venue=venue, now=now, freshness_frames=tf_frames)
 
             # Plan de trade (entrée/SL/TP ladder) dès qu'un sens est défini, même en BLOCK :
             # Florent voit le point d'entrée et les TP projetés avant que ça devienne un trade.
@@ -327,8 +363,32 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
 
 def status_snapshot() -> dict:
     """État courant pour la route/dashboard : dernière décision par symbole + récents."""
+    market_states = {"open": 0, "thin": 0, "closed": 0, "unavailable": 0}
+    for summary in LAST_DECISION.values():
+        state = ((summary or {}).get("market_status") or {}).get("state")
+        if state in market_states:
+            market_states[state] += 1
     return {
         "heartbeat": dict(HEARTBEAT),
         "symbols": LAST_DECISION,
         "recent": list(RECENT)[-50:],
+        "market_status": {
+            "state": (
+                "mixed" if sum(1 for v in market_states.values() if v > 0) > 1
+                else ("open" if market_states["open"] > 0
+                      else "thin" if market_states["thin"] > 0
+                      else "closed" if market_states["closed"] > 0
+                      else "unavailable" if market_states["unavailable"] > 0
+                      else "idle")
+            ),
+            "counts": market_states,
+            "open_symbols": [sym for sym, summary in LAST_DECISION.items()
+                              if ((summary or {}).get("market_status") or {}).get("state") == "open"],
+            "thin_symbols": [sym for sym, summary in LAST_DECISION.items()
+                              if ((summary or {}).get("market_status") or {}).get("state") == "thin"],
+            "closed_symbols": [sym for sym, summary in LAST_DECISION.items()
+                                if ((summary or {}).get("market_status") or {}).get("state") == "closed"],
+            "unavailable_symbols": [sym for sym, summary in LAST_DECISION.items()
+                                     if ((summary or {}).get("market_status") or {}).get("state") == "unavailable"],
+        },
     }
