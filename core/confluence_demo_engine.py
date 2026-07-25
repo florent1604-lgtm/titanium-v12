@@ -102,6 +102,24 @@ def _aggressive_eligible(decision, feats: dict, aggressive_min: int) -> Optional
     return {"ready": True, "n_pillars": n_pillars, "side": side, "placed": None}
 
 
+def _structure_size_factor(n_pillars: int, base_conviction: float) -> float:
+    """Taille du lot selon la QUALITÉ DE STRUCTURE du point d'entrée (Florent 25/07) :
+    plus le setup est structuré (piliers alignés), plus le lot est gros. Renvoie un
+    facteur ∈ [0.20, 1.0] = le MEILLEUR entre la structure et la conviction cerveau.
+    Le plafond de risque absolu reste DEMO_MIN_LOT_MAX_RISK_PCT (côté exécuteur)."""
+    ladder = {0: 0.20, 1: 0.25, 2: 0.35, 3: 0.55, 4: 0.80, 5: 1.0}
+    try:
+        n = int(n_pillars)
+    except (TypeError, ValueError):
+        n = 0
+    try:
+        conv = float(base_conviction or 0.0)
+    except (TypeError, ValueError):
+        conv = 0.0
+    struct = ladder.get(n, 1.0 if n >= 5 else 0.20)
+    return max(0.20, min(1.0, max(struct, conv)))
+
+
 def decide(symbol: str, df_ltf: Optional[pd.DataFrame], df_htf: Optional[pd.DataFrame], *,
            ltf_tf: str, htf_tf: str, venue: str, now: Optional[datetime] = None,
            run_emotion: bool = True,
@@ -282,9 +300,12 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
                     placed = {"sent": False, "reason": "BRAIN_GATE_BLOCK", "gate": gate_info}
                 else:
                     side = "long" if gate.side > 0 else "short"
+                    _npil = sum(1 for g in (getattr(decision, "gates", []) or [])
+                                if g.passed and g.name != "data_valid")
                     res = await place_fn(symbol, side, atr,
                                          sl_atr_mult=sl_atr_mult, tp_atr_mult=tp_atr_mult,
-                                         engine="confluence", size_factor=gate.conviction)
+                                         engine="confluence",
+                                         size_factor=_structure_size_factor(_npil, gate.conviction))
                     placed = res if isinstance(res, dict) else {"sent": False, "reason": "DEMO_DISARMED"}
                     if placed.get("sent"):
                         placed["gate"] = gate_info
@@ -304,7 +325,8 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
                     aside = "long" if gate.side > 0 else "short"
                     ares = await place_fn(symbol, aside, atr, sl_atr_mult=sl_atr_mult,
                                           tp_atr_mult=tp_atr_mult, engine="confluence-aggr",
-                                          size_factor=gate.conviction)
+                                          size_factor=_structure_size_factor(
+                                              aggressive.get("n_pillars", 0), gate.conviction))
                     aggressive["placed"] = ares if isinstance(ares, dict) else {"sent": False, "reason": "DEMO_DISARMED"}
                     if aggressive["placed"].get("sent"):
                         report["placed"].append({"symbol": symbol, "side": aside, "atr": atr,
