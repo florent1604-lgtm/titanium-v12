@@ -62,10 +62,12 @@ def _ltf_max_stale_bars(now: datetime) -> float:
     Restauration AUTOMATIQUE à l'ouverture lundi (la fenêtre week-end se termine) —
     aucune intervention manuelle. Hors week-end ou flag OFF → seuil normal inchangé."""
     if os.getenv("DEMO_STALE_RELAX", "0") == "1" and _is_weekend_window(now):
+        # Marche forcée week-end : défaut très large (~10 j) pour accepter les M15
+        # figées du week-end (marché Axi fermé). Ajustable via DEMO_STALE_RELAX_BARS.
         try:
-            return float(os.getenv("DEMO_STALE_RELAX_BARS", "20"))
+            return float(os.getenv("DEMO_STALE_RELAX_BARS", "1000"))
         except (TypeError, ValueError):
-            return 20.0
+            return 1000.0
     return 3.0
 
 
