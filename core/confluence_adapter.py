@@ -22,6 +22,7 @@ DÉMO/EXPLORE (require_edge=False) on prend le trade sur MT5 pour MESURER (consi
 """
 from __future__ import annotations
 
+import os
 from datetime import datetime, timezone
 from typing import Optional, Tuple
 
@@ -42,6 +43,30 @@ def _weekend_block(now: datetime, venue: str) -> bool:
     if wd in (5, 6):
         return True
     return wd == 4 and now.hour >= 20  # vendredi ≥ 20h UTC
+
+
+def _is_weekend_window(now: datetime) -> bool:
+    """Fenêtre week-end indépendante du venue (crypto compris) : vendredi ≥ 20h UTC
+    → dimanche. Se termine SEULE à l'ouverture (lundi 00h UTC)."""
+    wd = now.weekday()
+    if wd in (5, 6):
+        return True
+    return wd == 4 and now.hour >= 20
+
+
+def _ltf_max_stale_bars(now: datetime) -> float:
+    """Seuil de fraîcheur des bougies LTF (M15). Normal = 3.0 (≈ 60 min pour M15).
+    PHASE DE TEST (décision Florent 25/07) : si DEMO_STALE_RELAX=1 ET pendant la
+    fenêtre week-end UNIQUEMENT, on l'allonge (DEMO_STALE_RELAX_BARS, défaut 20 ≈ 5h)
+    pour tolérer les M15 clairsemées du week-end et tester la plomberie d'exécution.
+    Restauration AUTOMATIQUE à l'ouverture lundi (la fenêtre week-end se termine) —
+    aucune intervention manuelle. Hors week-end ou flag OFF → seuil normal inchangé."""
+    if os.getenv("DEMO_STALE_RELAX", "0") == "1" and _is_weekend_window(now):
+        try:
+            return float(os.getenv("DEMO_STALE_RELAX_BARS", "20"))
+        except (TypeError, ValueError):
+            return 20.0
+    return 3.0
 
 
 def _trend(df_htf: pd.DataFrame) -> int:
@@ -213,7 +238,8 @@ def build_feats(df_ltf: Optional[pd.DataFrame], df_htf: Optional[pd.DataFrame], 
     htf = closed_bars.closed_only(df_htf, htf_timeframe, now)
     if ltf is None or htf is None or len(ltf) < 20 or len(htf) < 20:
         return {"data_valid": False, "reason": "CLOSED_BARS_UNAVAILABLE"}
-    ok_l, code_l = closed_bars.validate_frame(ltf, timeframe, now=now, min_len=20)
+    ok_l, code_l = closed_bars.validate_frame(ltf, timeframe, now=now, min_len=20,
+                                              max_stale_bars=_ltf_max_stale_bars(now))
     ok_h, code_h = closed_bars.validate_frame(htf, htf_timeframe, now=now, min_len=20)
     if not ok_l or not ok_h:
         return {"data_valid": False, "reason": f"LTF:{code_l} HTF:{code_h}"}
