@@ -60,6 +60,11 @@ class DemoGuards:
     max_spread_pct: float = _cfg_float("DEMO_MAX_SPREAD_PCT", 0.5)
     min_free_margin_pct: float = _cfg_float("DEMO_MIN_FREE_MARGIN_PCT", 40.0)
     risk_tolerance: float = _cfg_float("DEMO_RISK_TOLERANCE", 1.15)   # marge de vérif sizing
+    # Phase de TEST (Florent 25/07) : adapter le budget de risque au LOT MINIMUM de chaque
+    # actif (sinon RISK_LOT_MIN_EXCEEDS bloque les actifs chers, ex. BTCUSD). Défaut OFF →
+    # sizing normal inchangé. Borné par min_lot_max_risk_pct (plafond de sécurité).
+    min_lot_test: bool = os.getenv("DEMO_MIN_LOT_TEST", "0") == "1"
+    min_lot_max_risk_pct: float = _cfg_float("DEMO_MIN_LOT_MAX_RISK_PCT", 5.0)
 
     @classmethod
     def from_env(cls) -> "DemoGuards":
@@ -72,6 +77,8 @@ class DemoGuards:
             max_spread_pct=_cfg_float("DEMO_MAX_SPREAD_PCT", 0.5),
             min_free_margin_pct=_cfg_float("DEMO_MIN_FREE_MARGIN_PCT", 40.0),
             risk_tolerance=_cfg_float("DEMO_RISK_TOLERANCE", 1.15),
+            min_lot_test=os.getenv("DEMO_MIN_LOT_TEST", "0") == "1",
+            min_lot_max_risk_pct=_cfg_float("DEMO_MIN_LOT_MAX_RISK_PCT", 5.0),
         )
 
 
@@ -175,6 +182,27 @@ def compute_lot(mt5: Any, symbol: str, entry: float, sl: float,
             f"RISK_LOT_MIN_EXCEEDS: lot min {vmin} dépasse le budget risque "
             f"({risk_money:.2f}) pour {symbol}.")
     return round(min(lot, vmax), 4)
+
+
+def _min_lot_risk(mt5: Any, symbol: str, entry: float, sl: float) -> Optional[float]:
+    """Risque monétaire du LOT MINIMUM de l'actif = money_per_lot × volume_min.
+    Sert à la phase de test pour adapter le budget au lot min. Fail-safe : None si
+    indéterminable → aucune adaptation, le refus normal est conservé."""
+    try:
+        si = mt5.symbol_info(symbol)
+        if si is None:
+            return None
+        tick_size = getattr(si, "trade_tick_size", 0) or getattr(si, "point", 0)
+        tick_value = getattr(si, "trade_tick_value", 0)
+        dist = abs(float(entry) - float(sl))
+        if not (tick_size and tick_value) or dist <= 0:
+            return None
+        money_per_lot = dist / tick_size * tick_value
+        vmin = getattr(si, "volume_min", 0.01) or 0.01
+        risk = money_per_lot * vmin
+        return risk if risk > 0 and math.isfinite(risk) else None
+    except Exception:  # noqa: BLE001
+        return None
 
 
 def _verify_risk(mt5: Any, symbol: str, is_long: bool, lot: float, entry: float,
@@ -282,6 +310,16 @@ def place_market_order(mt5: Any, symbol: str, side: str, atr: float,
     sl = price - sign * sl_atr_mult * atr
     tp = price + sign * tp_atr_mult * atr
     risk_money = equity * guards.risk_pct / 100.0 * size_factor   # conviction → taille
+    # PHASE DE TEST (DEMO_MIN_LOT_TEST) : si le budget ne couvre pas le LOT MINIMUM de
+    # l'actif, on l'adapte AUTOMATIQUEMENT (par actif) pour placer un lot min — MAIS borné
+    # par un plafond de sécurité (DEMO_MIN_LOT_MAX_RISK_PCT % de l'equity). Sinon le refus
+    # RISK_LOT_MIN_EXCEEDS reste conservé (fail-safe si _min_lot_risk indéterminable).
+    if guards.min_lot_test:
+        mlr = _min_lot_risk(mt5, symbol, price, sl)
+        if mlr is not None and mlr > risk_money:
+            ceiling = equity * guards.min_lot_max_risk_pct / 100.0
+            if mlr <= ceiling:
+                risk_money = mlr * guards.risk_tolerance
     try:
         lot = compute_lot(mt5, symbol, price, sl, risk_money)
     except DemoExecutionRefused as exc:
