@@ -255,6 +255,20 @@ async def scan_symbol(sym: str, session: aiohttp.ClientSession) -> None:
             # ── Emit signal ───────────────────────────────────────────────────
             signal = emit_signal(sym, effective_score, side, confs, ctx, levels)
 
+            # Lot C M2-1: additive shadow observer, never affects emission.
+            try:
+                from core.shadow_divergence import observe
+                await asyncio.to_thread(
+                    observe,
+                    sym,
+                    side,
+                    effective_score,
+                    emitted=bool(signal),
+                    score_min=get_score_min(sym),
+                )
+            except Exception:
+                pass
+
             # ── Recherche web autonome si score élevé (non-bloquant) ──────────
             try:
                 from assistant.config import BROWSER_AUTO_RESEARCH, BROWSER_AUTO_SCORE_MIN
