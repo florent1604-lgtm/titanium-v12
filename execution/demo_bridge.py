@@ -84,6 +84,12 @@ async def place_demo_async(symbol: str, side: str, atr: float,
     if res and res.get("sent"):
         logger.info("[DEMO] ordre DÉMO placé %s %s lot %s @ %s (risque %s)",
                     symbol, side, res.get("lot"), res.get("price"), res.get("risk_money"))
+        # Alerte SONORE à l'ouverture (Florent). Non bloquant, fail-safe.
+        try:
+            from execution.trade_alert import demo_trade_opened
+            demo_trade_opened(symbol, side)
+        except Exception:
+            pass
     elif res and res.get("reason"):
         logger.info("[DEMO] %s non placé — %s", symbol, res["reason"])
 
