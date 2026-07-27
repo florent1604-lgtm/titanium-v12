@@ -39,26 +39,26 @@ def _atr(df, n=14):
     return float(tr.tail(n).mean())
 
 
-def _simulate(m15, i, side, entry, atr):
-    """Résout SL/TP sur les barres suivantes. R = +TP_ATR/SL_ATR si TP, -1 si SL, sinon mark-to-market."""
+def _simulate(m15, i, side, entry, atr, tp_atr=TP_ATR):
+    """Résout SL/TP sur les barres suivantes. R = +tp_atr/SL_ATR si TP, -1 si SL, sinon mark-to-market."""
     sign = 1 if side > 0 else -1
     sl = entry - sign * SL_ATR * atr
-    tp = entry + sign * TP_ATR * atr
+    tp = entry + sign * tp_atr * atr
     fwd = m15.iloc[i + 1: i + 1 + HORIZON]
     for _, b in fwd.iterrows():
         hi, lo = float(b["high"]), float(b["low"])
         if side > 0:
             if lo <= sl: return -1.0
-            if hi >= tp: return TP_ATR / SL_ATR
+            if hi >= tp: return tp_atr / SL_ATR
         else:
             if hi >= sl: return -1.0
-            if lo <= tp: return TP_ATR / SL_ATR
+            if lo <= tp: return tp_atr / SL_ATR
     if len(fwd):
         return (float(fwd["close"].iloc[-1]) - entry) * sign / (SL_ATR * atr)
     return 0.0
 
 
-def run(bars: int = 300) -> dict:
+def run(bars: int = 300, tp_atr: float = TP_ATR) -> dict:
     import MetaTrader5 as mt5
     from ingestion.market.mt5_provider import get_ohlcv, ensure_init, mt5_lock
     from fusion.confluence_demo_engine import decide, _aggressive_eligible, _structure_size_factor, _counter_trend_block
@@ -105,7 +105,7 @@ def run(bars: int = 300) -> dict:
                 continue
             entry = float(sub15["close"].iloc[-1])
             npil = (aggr or {}).get("n_pillars") or sum(1 for g in dec.gates if g.passed and g.name != "data_valid")
-            R = _simulate(m15, i, side, entry, atr)
+            R = _simulate(m15, i, side, entry, atr, tp_atr)
             r_unit = SL_ATR * atr
             cost = sym_cost.get(sym, 0.0)
             cost_r = (cost / r_unit) if r_unit else 0.0    # coût exprimé en R
@@ -135,24 +135,36 @@ def run(bars: int = 300) -> dict:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(); ap.add_argument("--bars", type=int, default=300)
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--bars", type=int, default=300)
+    ap.add_argument("--tp", type=float, default=None, help="TP en ATR (défaut: balaye plusieurs largeurs)")
     args = ap.parse_args()
-    print("Backtest RiskGate (rejeu M15/H4) — patiente…\n")
-    res = run(args.bars)
-    b, a = res["B_baseline"], res["A_riskgate"]
-    print("=" * 74)
-    print(f"  BACKTEST RiskGate — {len(res['symbols'])} actifs, {res['bars']} barres/actif")
-    print("=" * 74)
-    print(f"  {'mode':14s} {'n':>5s} {'winrate':>8s} {'esp.R':>7s} {'esp.R×lot':>10s} {'somme':>8s} {'PF':>5s}")
-    for name, s in (("B baseline", b), ("A RiskGate", a)):
-        if s.get("n"):
-            print(f"  {name:14s} {s['n']:>5d} {s['winrate']:>7}% {s['esp_R']:>7} "
-                  f"{s['esp_R_ponderee_lot']:>10} {s['somme_R_lot']:>8} {str(s['PF']):>5}")
-    if b.get("n") and a.get("n"):
-        d = round((a["esp_R_ponderee_lot"] - b["esp_R_ponderee_lot"]), 3)
-        print(f"\n  → La correction RiskGate change l'espérance pondérée-lot de {d:+} R "
-              f"({'AMÉLIORE' if d > 0 else 'DÉGRADE' if d < 0 else 'neutre'}).")
-    print("\n  ✅ COÛTS RÉELS inclus (2×spread live par actif). ⚠️ résolution barre, slippage non modélisé.")
+
+    if args.tp is not None:
+        res = run(args.bars, args.tp); b, a = res["B_baseline"], res["A_riskgate"]
+        print(f"TP={args.tp} ATR (R:R {args.tp/SL_ATR:.1f}) — A: n={a.get('n')} PF={a.get('PF')} "
+              f"esp×lot={a.get('esp_R_ponderee_lot')} | B esp×lot={b.get('esp_R_ponderee_lot')}")
+        return 0
+
+    print("BALAYAGE de la largeur de cible (coûts réels inclus) — patiente…\n")
+    print("=" * 78)
+    print(f"  {'TP (ATR)':>9s} {'R:R':>5s} | {'n':>4s} {'winrate':>8s} {'esp.R×lot':>10s} {'PF':>5s}  (mode A, ton modèle)")
+    print("-" * 78)
+    best = None
+    for tp in (2.25, 3.0, 4.5, 6.0, 7.5, 9.0):
+        a = run(args.bars, tp)["A_riskgate"]
+        if not a.get("n"):
+            continue
+        val = a["esp_R_ponderee_lot"]
+        star = ""
+        if best is None or val > best[1]:
+            best = (tp, val); star = " ←"
+        print(f"  {tp:>9.2f} {tp/SL_ATR:>5.1f} | {a['n']:>4d} {a['winrate']:>7}% {val:>10} {str(a['PF']):>5}{star}")
+    print("-" * 78)
+    if best:
+        print(f"  → MEILLEURE cible : TP={best[0]} ATR (R:R {best[0]/SL_ATR:.1f}), espérance×lot={best[1]}")
+        print(f"    Déployer via .env : CONFLUENCE_DEMO_TP_ATR={best[0]}")
+    print("\n  ✅ COÛTS RÉELS inclus. ⚠️ résolution barre, slippage non modélisé, échantillon modeste.")
     return 0
 
 
