@@ -281,6 +281,25 @@ async def lifespan(app: FastAPI):
         from execution.demo_position_manager import manage_loop as _demo_manage_loop
         tasks.append(asyncio.create_task(_demo_manage_loop(), name="demo_manage"))
 
+        # DÉBRIEF AUTOMATIQUE par position (Florent 27/07) : relie en continu chaque position
+        # clôturée à son rationale d'entrée (piliers+flux) → résultat, mémorisé par Cloe pour
+        # affiner. Non bloquant, fail-safe.
+        async def _debrief_loop():
+            import os as _os
+            secs = int(_os.getenv("DEBRIEF_LOOP_SECONDS", "600"))
+            await asyncio.sleep(120)
+            while True:
+                try:
+                    from tools.position_debrief import debrief as _dbf
+                    rep = await asyncio.to_thread(_dbf, 12)
+                    if rep.get("n_debriefs"):
+                        logger.info("[DEBRIEF] %s position(s) débriefées (%s avec rationale)",
+                                    rep["n_debriefs"], rep.get("n_avec_rationale"))
+                except Exception as e:  # noqa: BLE001
+                    logger.debug("[DEBRIEF] boucle: %r", e)
+                await asyncio.sleep(secs)
+        tasks.append(asyncio.create_task(_debrief_loop(), name="debrief"))
+
         # Consensus inter-moteurs AUTONOME : détection read-only, aucune injection dans
         # la confluence/l'exécuteur. Même univers/cadence et rotation bornée pour ne pas
         # augmenter sans limite la pression sur MT5. Pré-M2 : observation uniquement.
