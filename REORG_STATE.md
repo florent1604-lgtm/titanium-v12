@@ -73,3 +73,9 @@ plus de trailing. À redémarrer sur décision de Florent une fois une étape st
 
 ## Journal des écarts / blocages
 - (rien pour l'instant)
+
+## Phase 2 (observabilite) + outils (27/07)
+- tools/journal_report.py : depouillement journal non censure + cout des refus (fantomes rejoues M5).
+- core/health.py + GET /health : sante pyramide live (socle/fusion/risk/execution/ressources).
+- core/obs.py : logger structure structlog + correlation_id (adoption progressive).
+- Bot en marche sur nouvelle structure ; RiskGate NON cable (revue reportee). Equity demo ~353 (a surveiller).
