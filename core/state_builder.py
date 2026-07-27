@@ -59,15 +59,22 @@ def build_system_state(*, symbol: str, venue: str, ltf: str, feats: Dict[str, An
     st.scoring.score = float(st.scoring.n_pillars)
 
     st.regime.trend = int(feats.get("trend") or 0)
+    # Pôle geometrix (Phase 5) : mapper les VRAIES clés de feats["geometric"]
+    # (branch/curvature/lyapunov/fisher/topology_alert), pas des clés inexistantes.
     geo = feats.get("geometric") if isinstance(feats.get("geometric"), dict) else {}
-    st.regime.coherence = geo.get("coherence")
-    st.regime.dominant_cycle_bars = geo.get("dominant_cycle") or geo.get("dominant_cycle_bars")
+    st.regime.geo_available = bool(geo.get("available"))
+    st.regime.regime = geo.get("branch")
+    st.regime.curvature = geo.get("curvature")
+    st.regime.lyapunov_horizon = geo.get("lyapunov")
+    st.regime.fisher_distance = geo.get("fisher")
+    st.regime.topology_alert = bool(geo.get("topology_alert"))
+    st.regime.dominant_cycle_bars = geo.get("lyapunov")          # horizon ≈ échelle dominante locale
 
     for k, v in _emotion_block(feats).items():
         setattr(st.emotion, k, v)
 
     st.pole_status = {
-        "smc": "online", "spectral": "online" if geo else "degraded",
+        "smc": "online", "spectral": "online" if geo.get("available") else "degraded",
         "emotion": "online" if st.emotion.available else "offline",
     }
     return st

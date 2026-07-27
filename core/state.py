@@ -59,12 +59,19 @@ class ScoringBlock(BaseModel):
 
 
 class RegimeBlock(BaseModel):
-    """Pôle géométrique/spectral (geometrix) : régime + structure d'échelles."""
+    """Pôle géométrique/spectral (geometrix) : régime + structure d'échelles.
+    Alimenté par poles/spectral/geometric_plane (branch/curvature/lyapunov/fisher) — Phase 5."""
     model_config = ConfigDict(extra="forbid")
-    regime: Optional[str] = None                 # ex. trending / ranging / incoherent
+    regime: Optional[str] = None                 # branche géométrique (CLASSIC/…)
     coherence: Optional[float] = None            # cohérence spectrale [0,1]
     dominant_cycle_bars: Optional[float] = None
     trend: int = 0                               # +1 / -1 / 0 (EMA200 HTF)
+    # ── détail geometrix (Phase 5) ──
+    geo_available: bool = False
+    curvature: Optional[float] = None            # courbure de la trajectoire (Clifford)
+    lyapunov_horizon: Optional[int] = None       # horizon de prévisibilité (barres)
+    fisher_distance: Optional[float] = None       # distance de Fisher (dérive du régime)
+    topology_alert: bool = False                 # alerte de rupture topologique
 
 
 class FundamentalsBlock(BaseModel):

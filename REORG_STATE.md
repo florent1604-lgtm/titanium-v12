@@ -79,3 +79,9 @@ plus de trailing. À redémarrer sur décision de Florent une fois une étape st
 - core/health.py + GET /health : sante pyramide live (socle/fusion/risk/execution/ressources).
 - core/obs.py : logger structure structlog + correlation_id (adoption progressive).
 - Bot en marche sur nouvelle structure ; RiskGate NON cable (revue reportee). Equity demo ~353 (a surveiller).
+
+## Phase 5 (geometrix pole N2 -> SystemState) (27/07)
+- RegimeBlock (core/state.py) etendu : branch/curvature/lyapunov_horizon/fisher_distance/topology_alert/geo_available.
+- state_builder corrige : mappe les VRAIES cles de feats["geometric"] (avant : cles inexistantes -> regime vide).
+- Verifie : le regime geometrix remonte dans SystemState (GRASSMANN, lyapunov=60...) + pole_status spectral=online.
+  -> disponible pour un futur sizing/gating par regime (RiskGate, quand cable apres revue).
