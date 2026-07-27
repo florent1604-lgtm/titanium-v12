@@ -7,7 +7,9 @@ from pathlib import Path
 
 
 def _load_provider():
-    path = Path("data/mt5_provider.py").resolve()
+    # Réorg Phase 1.5 : mt5_provider a été déplacé vers ingestion/market/ (data/mt5_provider.py
+    # n'est plus qu'un shim sans les attributs du module). On charge la vraie implémentation.
+    path = Path("ingestion/market/mt5_provider.py").resolve()
     spec = importlib.util.spec_from_file_location("mt5_provider_status_test", path)
     module = importlib.util.module_from_spec(spec)
     previous = sys.modules.get("pandas")
