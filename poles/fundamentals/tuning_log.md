@@ -191,3 +191,14 @@ Chaque reconfiguration automatique ou manuelle est enregistrée ici.
 - `2026-07-26T05:05:14.668188+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 33% > seuil 30%
 - `2026-07-26T05:38:43.188791+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
 - `2026-07-26T18:33:39.775346+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-27T06:36:09.436031+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:36:09.437039+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:36:09.439058+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:36:09.440054+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:36:09.442059+00:00` — AUTO-DISABLE: test
+- `2026-07-27T06:36:09.443060+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:36:09.445261+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:36:09.446315+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:36:09.448314+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:36:09.449315+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:36:09.451834+00:00` — RE-ENABLE: module réactivé manuellement
