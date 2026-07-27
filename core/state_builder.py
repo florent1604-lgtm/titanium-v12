@@ -83,6 +83,12 @@ def build_system_state(*, symbol: str, venue: str, ltf: str, feats: Dict[str, An
         st.fundamentals.level = f.get("level")
         st.fundamentals.would_block = bool(f.get("would_block"))
         st.fundamentals.would_reduce = bool(f.get("would_reduce"))
+        # Contexte MACRO / NEWS (feeds) associé à la position
+        mc = flux.market_context()
+        st.fundamentals.fear_greed = mc.get("fear_greed")
+        st.fundamentals.fear_greed_label = mc.get("fear_greed_label")
+        _news = flux.news_headlines(limit=3)
+        st.fundamentals.top_news = (_news[0].get("title") if _news else None)
         ex = flux.exposure()
         st.risk.gross_exposure_pct = ex.get("gross_pct")
         st.risk.net_exposure_pct = ex.get("net_pct")
@@ -143,6 +149,9 @@ def journal_cycle(*, symbol: str, venue: str, ltf: str, feats: Dict[str, Any], d
                 "trend_h4": st.regime.trend, "regime_geo": st.regime.regime,
                 "lyapunov": st.regime.lyapunov_horizon, "topo_alert": st.regime.topology_alert,
                 "fundamentals": {"score": st.fundamentals.risk_score, "level": st.fundamentals.level},
+                "macro": {"fear_greed": st.fundamentals.fear_greed,
+                          "fear_greed_label": st.fundamentals.fear_greed_label,
+                          "top_news": st.fundamentals.top_news},
                 "roundtrip_cost": st.notes.get("roundtrip_cost"),
                 "exposure_gross_pct": st.risk.gross_exposure_pct, "equity": st.risk.equity,
                 "emotion": {"label": st.emotion.label, "valence": st.emotion.valence,

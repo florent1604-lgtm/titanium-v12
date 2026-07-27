@@ -295,6 +295,9 @@ async def lifespan(app: FastAPI):
                     if rep.get("n_debriefs"):
                         logger.info("[DEBRIEF] %s position(s) débriefées (%s avec rationale)",
                                     rep["n_debriefs"], rep.get("n_avec_rationale"))
+                    # rafraîchit la base RAG de Cloe (mémoire + news/macro + findings) pour Open WebUI
+                    from tools.cloe_knowledge_export import export as _kexport
+                    await asyncio.to_thread(_kexport)
                 except Exception as e:  # noqa: BLE001
                     logger.debug("[DEBRIEF] boucle: %r", e)
                 await asyncio.sleep(secs)

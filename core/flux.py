@@ -110,6 +110,34 @@ def roundtrip_cost(symbol: str, price: Optional[float], ttl: float = 5.0) -> Opt
     return _cache.get(f"cost:{symbol}", ttl, _p, default=None)
 
 
+# ── Contexte MACRO / sentiment (fear&greed, marché global) ───────────────────
+def market_context(ttl: float = 120.0) -> Dict[str, Any]:
+    def _p():
+        from poles.fundamentals.external_feeds import get_external_snapshot
+        snap = get_external_snapshot() or {}
+        fg = (snap.get("fear_greed") or {})
+        return {"fear_greed": fg.get("value") or fg.get("score"),
+                "fear_greed_label": fg.get("label") or fg.get("classification"),
+                "global_market": snap.get("global_market")}
+    return _cache.get("market_context", ttl, _p, default={"fear_greed": None})
+
+
+# ── NEWS / journaux mondiaux (dernières manchettes) ──────────────────────────
+def news_headlines(limit: int = 8, ttl: float = 120.0) -> list:
+    """Dernières manchettes (RSS/NewsAPI/GDELT, cache de la boucle fundamentals). Pour le
+    contexte de prise de position ET la base RAG de Cloe. Fail-safe → []."""
+    def _p():
+        from poles.fundamentals.fetcher_loop import get_cached_articles
+        arts = get_cached_articles() or []
+        out = []
+        for a in arts[:limit]:
+            out.append({"title": a.get("title"), "source": a.get("source") or a.get("feed"),
+                        "published": a.get("published") or a.get("time")})
+        return out
+    return _cache.get("news", ttl, _p, default=[]) or []
+
+
 def snapshot() -> Dict[str, Any]:
     """Vue compacte de tous les flux (pour /health et debug)."""
-    return {"fundamentals": fundamentals(), "exposure": exposure(), "account": account()}
+    return {"fundamentals": fundamentals(), "exposure": exposure(), "account": account(),
+            "market_context": market_context(), "news_count": len(news_headlines())}

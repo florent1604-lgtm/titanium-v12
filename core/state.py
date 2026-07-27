@@ -81,6 +81,10 @@ class FundamentalsBlock(BaseModel):
     level: Optional[str] = None                  # low / medium / high
     would_block: bool = False
     would_reduce: bool = False
+    # ── contexte MACRO / NEWS (Phase feeds) ──
+    fear_greed: Optional[float] = None           # indice fear&greed
+    fear_greed_label: Optional[str] = None
+    top_news: Optional[str] = None               # manchette dominante à l'instant
 
 
 class EmotionBlock(BaseModel):
