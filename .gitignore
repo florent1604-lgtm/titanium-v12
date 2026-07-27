@@ -104,3 +104,6 @@ docs/mt5_opt_reports/
 
 # Journal SQLite runtime (patrimoine local, jamais en git ni en dossier synchronisé)
 data/journal/
+
+# Memoire persistante de Cloe (donnee locale, jamais en git)
+data/cloe/memory.json

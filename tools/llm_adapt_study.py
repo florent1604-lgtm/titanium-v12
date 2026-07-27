@@ -56,7 +56,14 @@ def build_prompt() -> str:
     refus = "\n".join(
         f"    {r['reason']}: n={r['n']} would_win={r.get('would_win_pct')}% ret_moy={r.get('avg_ret_pct')}%"
         for r in (jr.get("refus_counterfactual") or [])[:8]) or "    (aucun)"
-    return f"""Tu es analyste quantitatif. Voici les résultats RÉELS (compte démo) d'un bot de trading
+    try:
+        from core.cloe import get_cloe
+        _brief = get_cloe().brief()
+    except Exception:
+        _brief = ""
+    return f"""{_brief}
+
+Tu es Cloe (ci-dessus ta mémoire). Voici les résultats RÉELS (compte démo) d'un bot de trading
 qui utilise une méthode de CONFLUENCE à PILIERS (support/résistance, fair-value, liquidité,
 OTE/OB, bougie). Le lot est dimensionné selon le nombre de piliers (plus de piliers = plus gros lot).
 
@@ -100,7 +107,14 @@ def main() -> int:
     print(resp.strip())
     OUT.write_text(f"# Proposition LLM local ({args.model}) — {__import__('datetime').datetime.now()}\n\n"
                    + resp.strip() + "\n", encoding="utf-8")
-    print(f"\n→ proposition persistée : {OUT}")
+    # Cloe MÉMORISE son analyse (accumulation d'une session à l'autre).
+    try:
+        from core.cloe import get_cloe
+        _first = next((ln.strip() for ln in resp.splitlines() if ln.strip()), resp[:200])
+        get_cloe().log_analysis(f"[{args.model}] {_first[:200]}", meta={"file": str(OUT)})
+    except Exception:
+        pass
+    print(f"\n→ proposition persistée : {OUT} (+ mémorisée par Cloe)")
     return 0
 
 
