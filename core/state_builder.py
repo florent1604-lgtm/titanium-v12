@@ -73,9 +73,30 @@ def build_system_state(*, symbol: str, venue: str, ltf: str, feats: Dict[str, An
     for k, v in _emotion_block(feats).items():
         setattr(st.emotion, k, v)
 
+    # FLUX AFFÉRENTS CONTINUS (Florent 27/07) : alimente fondamentaux / exposition / equity /
+    # coût aller-retour → le RiskGate décide enfin sur des données VIVANTES. Cache TTL (core/flux)
+    # → pas de martelage. Fail-safe : jamais bloquant.
+    try:
+        from core import flux
+        f = flux.fundamentals()
+        st.fundamentals.risk_score = f.get("risk_score")
+        st.fundamentals.level = f.get("level")
+        st.fundamentals.would_block = bool(f.get("would_block"))
+        st.fundamentals.would_reduce = bool(f.get("would_reduce"))
+        ex = flux.exposure()
+        st.risk.gross_exposure_pct = ex.get("gross_pct")
+        st.risk.net_exposure_pct = ex.get("net_pct")
+        st.risk.equity = (flux.account() or {}).get("equity")
+        c = flux.roundtrip_cost(symbol, price)
+        if c is not None:
+            st.notes["roundtrip_cost"] = str(c)
+    except Exception:
+        pass
+
     st.pole_status = {
         "smc": "online", "spectral": "online" if geo.get("available") else "degraded",
         "emotion": "online" if st.emotion.available else "offline",
+        "fundamentals": "online" if st.fundamentals.risk_score is not None else "degraded",
     }
     return st
 
