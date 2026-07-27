@@ -295,6 +295,9 @@ async def lifespan(app: FastAPI):
                     if rep.get("n_debriefs"):
                         logger.info("[DEBRIEF] %s position(s) débriefées (%s avec rationale)",
                                     rep["n_debriefs"], rep.get("n_avec_rationale"))
+                    # rafraîchit la perf mesurée par contexte (→ indice de confiance Cloe du sizing)
+                    from tools.trade_analytics import analyse as _ta
+                    await asyncio.to_thread(_ta, 3)
                     # rafraîchit la base RAG de Cloe (mémoire + news/macro + findings) pour Open WebUI
                     from tools.cloe_knowledge_export import export as _kexport
                     await asyncio.to_thread(_kexport)

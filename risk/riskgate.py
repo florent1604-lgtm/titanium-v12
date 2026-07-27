@@ -155,21 +155,22 @@ class RiskGate:
         d.stop_distance = round(stop, 8)
         d._add("sizing", True, f"stop={stop:.6g} risk={allowed_risk:.2f} sf={size_factor:.3f}")
 
-        # 6) COÛT → SIZING (Florent 27/07 : le spread est propre au broker, on l'ACCEPTE et on
-        #    ADAPTE le lot ; on ne rejette JAMAIS un trade pour son coût). Plus le coût est gros
-        #    vs le stop, plus le lot baisse — mais la position PASSE (« si elle doit passer, elle passe »).
+        # 6) COÛT : INFORMATIF SEULEMENT (Florent 27/07). Le coût n'entre PAS dans la formule du
+        #    lot — le lot est proportionnel au RISQUE. Le coût est ACCEPTÉ ; son impact entre
+        #    indirectement via l'INDICE DE CONFIANCE de Cloe (basé sur la perf mesurée NETTE de coûts).
         cost = state.notes.get("roundtrip_cost")
-        cost_factor = 1.0
-        if cost:
-            try:
-                c = float(cost)
-                cost_factor = max(0.15, min(1.0, stop / (stop + 2.0 * c)))
-                d._add("cost_sizing", True, f"lot x{cost_factor:.2f} (spread absorbé, pas de rejet)")
-            except Exception:
-                d._add("cost_sizing", True, "coût illisible")
-        else:
-            d._add("cost_sizing", True, "coût inconnu")
-        d.pillar_size = round(d.pillar_size * cost_factor, 4)   # le coût entre dans l'adaptation du lot
+        d._add("cost_info", True, f"coût={cost} (accepté, hors formule lot)")
+
+        # SIZING PAR CONVICTION = INDICE DE CONFIANCE DE CLOE (analyses par contexte, conditions).
+        # Le lot proportionnel au risque est MODULÉ par la confiance mesurée du contexte : contexte
+        # gagnant → gros lot ; contexte perdant (ex. coût qui tue l'edge) → petit lot. Neutre = 0.5.
+        try:
+            from core.cloe.confidence import confidence_for
+            conf = confidence_for(symbol=state.market.symbol, side=side,
+                                  n_pillars=state.scoring.n_pillars, regime=state.regime.regime)
+        except Exception:
+            conf = 0.5
+        d.pillar_size = round(float(conf), 4)                  # confiance Cloe = modulateur de lot
 
         # 7) SL/TP + caps d'exposition.
         sign = 1 if side > 0 else -1

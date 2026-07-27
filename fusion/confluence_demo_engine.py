@@ -348,7 +348,7 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
             # coût / exposition en un seul verdict. Fail-OPEN sur erreur (un bug du RiskGate ne
             # casse jamais le trading : les gardes existants restent la sécurité). Master exempté.
             riskgate_deny = None
-            riskgate_size = 1.0                       # correction de lot par piliers (barème RiskGate)
+            riskgate_conf = None                      # INDICE DE CONFIANCE Cloe = modulateur de lot
             if riskgate_enabled and gate.allow and gate.source != "MASTER" and atr is not None and _eff_side != 0:
                 try:
                     from core.state_builder import build_system_state
@@ -357,7 +357,7 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
                                                    feats=feats, decision=decision, atr=atr, price=entry)
                     _rg_state.scoring.side = _eff_side
                     _rgd = RiskGate().evaluate(_rg_state)
-                    riskgate_size = float(getattr(_rgd, "pillar_size", 1.0) or 1.0)
+                    riskgate_conf = float(getattr(_rgd, "pillar_size", 0.5) or 0.5)
                     if _rgd.verdict == "DENY":
                         riskgate_deny = _rgd.reason
                 except Exception:  # noqa: BLE001 — fail-open : gardes existants inchangés
@@ -407,7 +407,8 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
                     res = await place_fn(symbol, side, atr,
                                          sl_atr_mult=_sl_mult, tp_atr_mult=tp_atr_mult,
                                          engine="confluence",
-                                         size_factor=_structure_size_factor(_npil, gate.conviction) * riskgate_size,
+                                         size_factor=(riskgate_conf if riskgate_conf is not None
+                                                      else _structure_size_factor(_npil, gate.conviction)),
                                          quality=_npil)
                     placed = res if isinstance(res, dict) else {"sent": False, "reason": "DEMO_DISARMED"}
                     if placed.get("sent"):
@@ -435,8 +436,9 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
                     aside = "long" if gate.side > 0 else "short"
                     ares = await place_fn(symbol, aside, atr, sl_atr_mult=_sl_mult,
                                           tp_atr_mult=tp_atr_mult, engine="confluence-aggr",
-                                          size_factor=_structure_size_factor(
-                                              aggressive.get("n_pillars", 0), gate.conviction) * riskgate_size,
+                                          size_factor=(riskgate_conf if riskgate_conf is not None
+                                                       else _structure_size_factor(
+                                                           aggressive.get("n_pillars", 0), gate.conviction)),
                                           quality=int(aggressive.get("n_pillars", 0)))
                     aggressive["placed"] = ares if isinstance(ares, dict) else {"sent": False, "reason": "DEMO_DISARMED"}
                     if refine_info:
