@@ -16,12 +16,13 @@
 |---|---|---|
 | 0 — cartographie (INDEX + AUDIT) | ✅ FAIT | 56b0c7f |
 | checkpoint git pré-réorg | ✅ FAIT | 56b0c7f |
-| 1.1 — `core/state.py` (SystemState) | ✅ FAIT (sanity-import OK) | (ce commit) |
-| 1.2 — `core/journal.py` (journal unifié + refus/contrefactuel) | ✅ FAIT (smoke test OK) | (ce commit) |
-| 1.3 — `core/config.py` (pydantic-settings) | 🔜 à faire | — |
-| 1.4 — refactor pôles → lisent/écrivent state+journal | ⬜ | — |
+| 1.1 — `core/state.py` (SystemState) | ✅ FAIT | 226cd16 |
+| 1.2 — `core/journal.py` (journal unifié + refus/contrefactuel) | ✅ FAIT | 2eed157 |
+| 1.3 — `core/config.py` (pydantic-settings) | ✅ FAIT | 2a96fb3 |
+| 1b — RiskGate `risk/riskgate.py` (**SHADOW, non câblé, smoke OK**) | ✅ CONSTRUIT | (ce commit) |
+| 1.4 — refactor pôles → lisent/écrivent state+journal | 🔜 à faire | — |
 | 1.5 — déplacement arbo N0→N5 (**bot arrêté**) | ⬜ | — |
-| 1b — RiskGate unique (**revue Florent + paper**) | ⬜ | — |
+| 1b-wiring — brancher RiskGate porte unique (**revue Florent + paper avant/après**) | ⬜ | — |
 | 1c — ExecutionPort (MT5/Sim/Binance) | ⬜ | — |
 | 2 — observabilité /health + structlog | ⬜ | — |
 | 3 — extraction JARVIS (**Tailscale/dépôt = Florent**) | ⬜ | — |
@@ -33,14 +34,19 @@
 | 9 — historique tick MT5 + backtest | ⬜ | — |
 
 ## Prochaine action concrète
-Créer `core/config.py` (pydantic-settings) : centraliser `.env` + la config éparse de
-`utils/config.py` en UN objet typé unique. NE PAS casser `utils/config.py` tout de suite
-(beaucoup de modules l'importent) — `core/config.py` peut d'abord ENVELOPPER/valider, puis
-migration progressive des imports (Phase 1.4). Vérifier via GitNexus/grep les importeurs de
-`utils.config` avant de bouger quoi que ce soit. Fichier NEUF au départ → zéro risque runtime.
+**Phase 1.4 — adoption du socle par les pôles/chemin de décision.** Faire écrire le
+`SystemState` + le journal unifié (`core/journal.get_journal()`) par le chemin de décision réel
+(confluence_demo_engine / demo_bridge) : à chaque cycle, remplir un SystemState (marché multi-TF,
+scoring/piliers, régime/trend, fondamentaux, émotion, positions, risque) et journaliser
+signal/decision/fill/ghost. Un pôle/chemin à la fois. **Bot ARRÊTÉ** actuellement → éditer
+librement, valider par import + un run de smoke, PUIS on décidera du redémarrage avec Florent.
 
-Après 1.3 : Phase 1.4 (refactor pôles → state+journal, un pôle à la fois, restart à chaque),
-puis 1.5 (déplacement arbo — **BOT ARRÊTÉ**, detect_impact à chaque déplacement).
+Ensuite : 1.5 déplacement arbo (detect_impact à chaque move, shims d'import pour ne rien casser),
+puis 1b-wiring (brancher le RiskGate en porte unique — **revue Florent + comparaison paper**).
+
+## Bot
+⚠️ **ARRÊTÉ** (coupé par Florent le 27/07 pour la bascule). Positions gardent SL/TP broker mais
+plus de trailing. À redémarrer sur décision de Florent une fois une étape stable atteinte.
 
 ## Journal des écarts / blocages
 - (rien pour l'instant)
