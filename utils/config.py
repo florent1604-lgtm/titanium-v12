@@ -328,6 +328,10 @@ CONFLUENCE_TREND_ALIGN_MIN_ATR = _float("CONFLUENCE_TREND_ALIGN_MIN_ATR", 0.25)
 # en VETO ADDITIF sur le chemin de placement démo (les gardes existants restent). DENY du
 # RiskGate → pas de placement (motif RISKGATE_DENY:...). Fail-open sur erreur. Réversible (flag).
 RISKGATE_ENABLED = _bool("RISKGATE_ENABLED", "0")
+# Barème de sizing PAR PILIERS appliqué par le RiskGate (Florent 27/07 : implémenter la
+# proposition). Données : plus de piliers ≠ plus gros lot (S/2p meilleur que L/4p). On APLATIT
+# donc le lot des setups à nombreux piliers (facteur ≤ 1). Format "n:facteur,...". Appris ensuite.
+RISKGATE_PILLAR_LADDER = _str("RISKGATE_PILLAR_LADDER", "1:1.0,2:1.0,3:0.8,4:0.55,5:0.55")
 
 # ── GESTION DYNAMIQUE des positions démo (Florent 26/07 : « ne pas rester figé ») ──
 # Post-mortem : 23% des pertes avaient atteint +0.8R avant de repartir au SL. Le SL est

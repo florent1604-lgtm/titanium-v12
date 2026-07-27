@@ -131,10 +131,38 @@ def journal_cycle(*, symbol: str, venue: str, ltf: str, feats: Dict[str, Any], d
 
         if accepted:
             fill = placed if placed_sent else aggr
-            j.record_fill(st.correlation_id, symbol=symbol, payload={
+            # RATIONALE EXACT (Florent 27/07) : POURQUOI cette position a été prise — TOUS les
+            # flux corrélés associés à la prise de position (piliers en place + tendance + régime
+            # geometrix + fondamentaux + coût + émotion). Journalisé + mémorisé (Cloe) pour affiner.
+            pillars_passed = [getattr(g, "name", "") for g in (getattr(decision, "gates", None) or [])
+                              if getattr(g, "passed", False) and getattr(g, "name", "") != "data_valid"]
+            rationale = {
+                "why": f"{'LONG' if st.scoring.side > 0 else 'SHORT'} sur {symbol} : "
+                       f"{len(pillars_passed)} piliers [{', '.join(pillars_passed)}]",
+                "pillars": pillars_passed, "n_pillars": st.scoring.n_pillars, "side": st.scoring.side,
+                "trend_h4": st.regime.trend, "regime_geo": st.regime.regime,
+                "lyapunov": st.regime.lyapunov_horizon, "topo_alert": st.regime.topology_alert,
+                "fundamentals": {"score": st.fundamentals.risk_score, "level": st.fundamentals.level},
+                "roundtrip_cost": st.notes.get("roundtrip_cost"),
+                "exposure_gross_pct": st.risk.gross_exposure_pct, "equity": st.risk.equity,
+                "emotion": {"label": st.emotion.label, "valence": st.emotion.valence,
+                            "would_fade": st.emotion.would_fade},
+                "engine": "aggressive" if (aggr_sent and not placed_sent) else "confluence",
                 "lot": fill.get("lot"), "price": fill.get("price"),
-                "sl": fill.get("sl"), "tp": fill.get("tp"),
-                "mode": "aggressive" if (aggr_sent and not placed_sent) else "confluence"})
+                "sl": fill.get("sl"), "tp": fill.get("tp"), "ticket": fill.get("ticket") or fill.get("order"),
+            }
+            j.record_fill(st.correlation_id, symbol=symbol, payload=rationale)
+            # Cloe MÉMORISE le rationale (accumulation → débrief après clôture, cf. tools/position_debrief).
+            try:
+                from core.cloe import get_cloe
+                get_cloe().log_analysis(
+                    f"ENTREE {rationale['why']} | trend={st.regime.trend} regime={st.regime.regime} "
+                    f"fond={st.fundamentals.level} cout={st.notes.get('roundtrip_cost')} "
+                    f"emotion={st.emotion.label} lot={fill.get('lot')}",
+                    meta={"kind": "entry_rationale", "symbol": symbol, "ticket": rationale["ticket"],
+                          "correlation_id": st.correlation_id})
+            except Exception:
+                pass
         else:
             # Trade FANTÔME : on garde la trace d'un signal directionnel REFUSÉ (dataset non censuré).
             if st.scoring.side != 0:

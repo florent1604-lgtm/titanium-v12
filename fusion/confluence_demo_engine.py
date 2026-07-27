@@ -335,6 +335,7 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
             # coût / exposition en un seul verdict. Fail-OPEN sur erreur (un bug du RiskGate ne
             # casse jamais le trading : les gardes existants restent la sécurité). Master exempté.
             riskgate_deny = None
+            riskgate_size = 1.0                       # correction de lot par piliers (barème RiskGate)
             if riskgate_enabled and gate.allow and gate.source != "MASTER" and atr is not None and _eff_side != 0:
                 try:
                     from core.state_builder import build_system_state
@@ -343,6 +344,7 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
                                                    feats=feats, decision=decision, atr=atr, price=entry)
                     _rg_state.scoring.side = _eff_side
                     _rgd = RiskGate().evaluate(_rg_state)
+                    riskgate_size = float(getattr(_rgd, "pillar_size", 1.0) or 1.0)
                     if _rgd.verdict == "DENY":
                         riskgate_deny = _rgd.reason
                 except Exception:  # noqa: BLE001 — fail-open : gardes existants inchangés
@@ -392,7 +394,7 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
                     res = await place_fn(symbol, side, atr,
                                          sl_atr_mult=_sl_mult, tp_atr_mult=tp_atr_mult,
                                          engine="confluence",
-                                         size_factor=_structure_size_factor(_npil, gate.conviction),
+                                         size_factor=_structure_size_factor(_npil, gate.conviction) * riskgate_size,
                                          quality=_npil)
                     placed = res if isinstance(res, dict) else {"sent": False, "reason": "DEMO_DISARMED"}
                     if placed.get("sent"):
@@ -421,7 +423,7 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
                     ares = await place_fn(symbol, aside, atr, sl_atr_mult=_sl_mult,
                                           tp_atr_mult=tp_atr_mult, engine="confluence-aggr",
                                           size_factor=_structure_size_factor(
-                                              aggressive.get("n_pillars", 0), gate.conviction),
+                                              aggressive.get("n_pillars", 0), gate.conviction) * riskgate_size,
                                           quality=int(aggressive.get("n_pillars", 0)))
                     aggressive["placed"] = ares if isinstance(ares, dict) else {"sent": False, "reason": "DEMO_DISARMED"}
                     if refine_info:

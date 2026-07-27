@@ -45,6 +45,7 @@ class Decision(BaseModel):
     side: int = 0
     allowed_risk_money: float = 0.0
     size_factor: float = 0.0                  # facteur appliqué (émotion×régime×conf_tf×shrink)
+    pillar_size: float = 1.0                  # correction de lot PAR PILIERS (barème RiskGate)
     sl: Optional[float] = None
     tp: Optional[float] = None
     stop_distance: Optional[float] = None
@@ -60,7 +61,7 @@ class RiskGate:
 
     def __init__(self, settings=None, coeffs: Optional[RiskCoeffs] = None,
                  *, cost_ratio_min: float = 2.0, sl_atr_k: float = 1.5,
-                 max_exposure_pct: float = 100.0):
+                 max_exposure_pct: float = 100.0, pillar_ladder: Optional[Dict[int, float]] = None):
         if settings is None:
             from core.config import get_settings
             settings = get_settings()
@@ -69,6 +70,32 @@ class RiskGate:
         self.cost_ratio_min = cost_ratio_min
         self.sl_atr_k = sl_atr_k
         self.max_exposure_pct = max_exposure_pct
+        self.pillar_ladder = pillar_ladder if pillar_ladder is not None else self._load_pillar_ladder()
+
+    @staticmethod
+    def _load_pillar_ladder() -> Dict[int, float]:
+        """Barème de sizing par piliers depuis la config ('n:facteur,...'). Fail-safe."""
+        try:
+            import os
+            raw = os.getenv("RISKGATE_PILLAR_LADDER", "1:1.0,2:1.0,3:0.8,4:0.55,5:0.55")
+            out: Dict[int, float] = {}
+            for part in raw.split(","):
+                n, f = part.split(":")
+                out[int(n.strip())] = float(f.strip())
+            return out or {}
+        except Exception:
+            return {1: 1.0, 2: 1.0, 3: 0.8, 4: 0.55, 5: 0.55}
+
+    def pillar_size(self, n_pillars) -> float:
+        """Facteur de lot selon le nb de piliers (aplati/plafonné pour les setups à nombreux
+        piliers, cf. données : plus de piliers ≠ meilleur). Défaut 1.0 hors barème."""
+        try:
+            n = int(n_pillars or 0)
+        except (TypeError, ValueError):
+            return 1.0
+        if n in self.pillar_ladder:
+            return float(self.pillar_ladder[n])
+        return float(self.pillar_ladder.get(max(self.pillar_ladder) if self.pillar_ladder else 0, 1.0)) if n > (max(self.pillar_ladder) if self.pillar_ladder else 0) else 1.0
 
     def evaluate(self, state: SystemState) -> Decision:
         d = Decision()
@@ -124,6 +151,7 @@ class RiskGate:
         risk_base = equity * (self.s.demo_risk_pct / 100.0)
         allowed_risk = max(0.0, risk_base * size_factor)
         d.size_factor = round(size_factor, 4)
+        d.pillar_size = round(self.pillar_size(state.scoring.n_pillars), 4)   # correction lot par piliers
         d.stop_distance = round(stop, 8)
         d._add("sizing", True, f"stop={stop:.6g} risk={allowed_risk:.2f} sf={size_factor:.3f}")
 
