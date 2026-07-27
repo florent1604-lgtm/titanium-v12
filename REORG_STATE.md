@@ -17,8 +17,8 @@
 | 0 — cartographie (INDEX + AUDIT) | ✅ FAIT | 56b0c7f |
 | checkpoint git pré-réorg | ✅ FAIT | 56b0c7f |
 | 1.1 — `core/state.py` (SystemState) | ✅ FAIT (sanity-import OK) | (ce commit) |
-| 1.2 — `core/journal.py` (journal unifié + refus/contrefactuel) | 🔜 EN COURS | — |
-| 1.3 — `core/config.py` (pydantic-settings) | ⬜ | — |
+| 1.2 — `core/journal.py` (journal unifié + refus/contrefactuel) | ✅ FAIT (smoke test OK) | (ce commit) |
+| 1.3 — `core/config.py` (pydantic-settings) | 🔜 à faire | — |
 | 1.4 — refactor pôles → lisent/écrivent state+journal | ⬜ | — |
 | 1.5 — déplacement arbo N0→N5 (**bot arrêté**) | ⬜ | — |
 | 1b — RiskGate unique (**revue Florent + paper**) | ⬜ | — |
@@ -33,11 +33,14 @@
 | 9 — historique tick MT5 + backtest | ⬜ | — |
 
 ## Prochaine action concrète
-Créer `core/journal.py` : journal append-only LOCAL (SQLite ou Parquet) où chaque niveau écrit
-avec le `correlation_id` — état complet au signal, décision RiskGate (ALLOW/REDUCE/DENY + motif +
-taille), résultat (fill, MAE/MFE, R, frais/slippage réels). **Point critique** : journaliser AUSSI
-les signaux REFUSÉS + suivre leur trajectoire post-refus (trade fantôme) = dataset non censuré.
-Fichier NEUF, importé par personne au départ → zéro risque pour le bot. Puis sanity-import.
+Créer `core/config.py` (pydantic-settings) : centraliser `.env` + la config éparse de
+`utils/config.py` en UN objet typé unique. NE PAS casser `utils/config.py` tout de suite
+(beaucoup de modules l'importent) — `core/config.py` peut d'abord ENVELOPPER/valider, puis
+migration progressive des imports (Phase 1.4). Vérifier via GitNexus/grep les importeurs de
+`utils.config` avant de bouger quoi que ce soit. Fichier NEUF au départ → zéro risque runtime.
+
+Après 1.3 : Phase 1.4 (refactor pôles → state+journal, un pôle à la fois, restart à chaque),
+puis 1.5 (déplacement arbo — **BOT ARRÊTÉ**, detect_impact à chaque déplacement).
 
 ## Journal des écarts / blocages
 - (rien pour l'instant)

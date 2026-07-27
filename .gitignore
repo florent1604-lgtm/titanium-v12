@@ -101,3 +101,6 @@ data/health_journal.jsonl
 data/health_status.json
 data/_relaunch_*.txt
 docs/mt5_opt_reports/
+
+# Journal SQLite runtime (patrimoine local, jamais en git ni en dossier synchronisé)
+data/journal/
