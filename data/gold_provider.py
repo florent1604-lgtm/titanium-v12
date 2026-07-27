@@ -1,6 +1,7 @@
 """data/gold_provider.py — XAU/USD via Twelve Data (primaire) + Yahoo Finance (fallback)."""
 from __future__ import annotations
 import asyncio
+import time
 from typing import Dict, Optional
 import pandas as pd
 import aiohttp
@@ -14,6 +15,32 @@ from utils.logger import get_logger
 logger = get_logger(__name__)
 _cache = TTLCache()
 gold_store: Dict[str, pd.DataFrame] = {}
+
+# Anti-spam TwelveData: en cas de quota épuisé/erreur répétée, on met le provider
+# primaire en pause temporaire puis on repart automatiquement.
+_TD_BACKOFF_UNTIL = 0.0
+_TD_BACKOFF_REASON = ""
+_TD_BACKOFF_LOGGED = False
+
+
+def _td_in_backoff() -> bool:
+    return time.monotonic() < _TD_BACKOFF_UNTIL
+
+
+def _td_enter_backoff(seconds: int, reason: str) -> None:
+    global _TD_BACKOFF_UNTIL, _TD_BACKOFF_REASON, _TD_BACKOFF_LOGGED
+    _TD_BACKOFF_UNTIL = max(_TD_BACKOFF_UNTIL, time.monotonic() + float(seconds))
+    _TD_BACKOFF_REASON = reason
+    _TD_BACKOFF_LOGGED = False
+
+
+def _td_log_backoff_once() -> None:
+    global _TD_BACKOFF_LOGGED
+    if _TD_BACKOFF_LOGGED:
+        return
+    left = max(0, int(_TD_BACKOFF_UNTIL - time.monotonic()))
+    logger.warning("[GOLD/TD] pause provider (%ss): %s", left, _TD_BACKOFF_REASON)
+    _TD_BACKOFF_LOGGED = True
 
 
 def _parse_twelvedata(data: dict) -> pd.DataFrame:
@@ -42,6 +69,9 @@ def _parse_twelvedata(data: dict) -> pd.DataFrame:
 async def _fetch_twelvedata(session: aiohttp.ClientSession, interval: str, outputsize: int = 500) -> pd.DataFrame:
     if not TWELVEDATA_API_KEY:
         return pd.DataFrame()
+    if _td_in_backoff():
+        _td_log_backoff_once()
+        return pd.DataFrame()
     td_interval = TD_TF_MAP.get(interval, interval)
     params = {
         "symbol": "XAU/USD", "interval": td_interval,
@@ -55,11 +85,21 @@ async def _fetch_twelvedata(session: aiohttp.ClientSession, interval: str, outpu
         ) as r:
             if r.status != 200:
                 body = await r.text()
+                if r.status == 429:
+                    _td_enter_backoff(1800, "quota TwelveData épuisé")
+                else:
+                    _td_enter_backoff(180, f"HTTP {r.status}")
                 logger.warning("[GOLD/TD] HTTP %s: %s", r.status, body[:80])
                 return pd.DataFrame()
             data = await r.json(content_type=None)
         if isinstance(data, dict) and data.get("code"):
-            logger.warning("[GOLD/TD] Erreur API %s: %s", data.get("code"), data.get("message", "")[:80])
+            code = str(data.get("code"))
+            msg = str(data.get("message", ""))
+            if code == "429" or "run out of api credits" in msg.lower():
+                _td_enter_backoff(1800, "quota TwelveData épuisé")
+            else:
+                _td_enter_backoff(180, f"API {code}")
+            logger.warning("[GOLD/TD] Erreur API %s: %s", code, msg[:80])
             return pd.DataFrame()
         df = _parse_twelvedata(data)
         if not df.empty:
@@ -131,7 +171,7 @@ async def _fetch_yahoo(session: aiohttp.ClientSession, interval: str, count: int
             except Exception as e_rs:
                 logger.warning("[GOLD/YF] resample %s→%s: %s", yf_interval, resample_tf, e_rs)
 
-        logger.info("[GOLD/YF] GC=F/%s → %d bougies", interval, len(df))
+        logger.debug("[GOLD/YF] GC=F/%s → %d bougies", interval, len(df))
         return df
     except Exception as e:
         logger.warning("[GOLD/YF] fetch error %s: %s", interval, e)
@@ -150,7 +190,7 @@ async def fetch_gold_candles(session: aiohttp.ClientSession, interval: str = "4h
 
     df = await _fetch_twelvedata(session, interval)
     if df.empty:
-        logger.info("[GOLD] Twelve Data vide — fallback Yahoo Finance")
+        logger.debug("[GOLD] Twelve Data vide — fallback Yahoo Finance")
         df = await _fetch_yahoo(session, interval)
 
     if not df.empty:

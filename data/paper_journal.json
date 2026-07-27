@@ -1,1 +1,33 @@
-[]
+[
+  {
+    "symbol": "PAXG/USDT",
+    "side": "SHORT",
+    "entry_price": 4090.584176,
+    "avg_exit_price": 4105.9621,
+    "size_usdt": 200.0,
+    "pnl_usdt": -0.8319,
+    "pnl_pct": -0.42,
+    "fee_total": 0.16,
+    "funding_paid": 0.0,
+    "entry_ts": "2026-07-27T01:29:24.072032+00:00",
+    "exit_ts": "2026-07-27T02:00:05.274515+00:00",
+    "duration_min": 30.7,
+    "score": 6,
+    "exit_reason": "sl",
+    "correlation_id": "ab0733b8773c",
+    "source": "internal",
+    "confs": [
+      "OB/FVG 30m (tested)",
+      "OB/FVG double conf 15m",
+      "EMA200-1D align\u00e9",
+      "Delta volume confirme",
+      "Liquidity sweep",
+      "RSI divergence bearish",
+      "Sweep + displacement",
+      "OB L2 imbalance 0.32",
+      "OB wall ask @ 4093"
+    ],
+    "regime": "VOLATILE",
+    "macro_risk": 0.0
+  }
+]

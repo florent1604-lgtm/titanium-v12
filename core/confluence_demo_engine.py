@@ -120,6 +120,33 @@ def _structure_size_factor(n_pillars: int, base_conviction: float) -> float:
     return max(0.20, min(1.0, max(struct, conv)))
 
 
+def _counter_trend_block(feats: dict, side_int: int, df_htf, atr,
+                         min_atr_dist: float) -> bool:
+    """True si le setup FADE une tendance H4 NETTE → à ne PAS exécuter (Florent 25/07).
+
+    La méthode est support→long / résistance→short (retour à la moyenne). Correct en RANGE,
+    mais contre une tendance nette elle se fait rouler dessus. On bloque donc UNIQUEMENT :
+      · tendance H4 non neutre (trend != 0) ET
+      · setup en sens OPPOSÉ à la tendance (side == -trend) ET
+      · prix nettement au-delà de l'EMA200 H4 (≥ min_atr_dist × ATR) = tendance VRAIMENT nette.
+    Range (trend=0) et continuation (side==trend) restent autorisés. Fail-safe → False."""
+    try:
+        trend = int(feats.get("trend") or 0)
+        side_int = int(side_int or 0)
+        if trend == 0 or side_int == 0 or side_int == trend:
+            return False
+        if df_htf is None or atr is None or float(atr) <= 0:
+            return False
+        from core import smc_engine as smc
+        ema = smc.compute_ema200(df_htf["close"])
+        if ema != ema:                       # NaN (< 200 barres) → tendance non fiable
+            return False
+        px = float(df_htf["close"].iloc[-1])
+        return abs(px - float(ema)) >= float(min_atr_dist) * float(atr)
+    except Exception:
+        return False
+
+
 def decide(symbol: str, df_ltf: Optional[pd.DataFrame], df_htf: Optional[pd.DataFrame], *,
            ltf_tf: str, htf_tf: str, venue: str, now: Optional[datetime] = None,
            run_emotion: bool = True,
@@ -203,7 +230,10 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
                    sl_atr_mult: float = 1.5, tp_atr_mult: float = 3.0,
                    tp_ladder=(1.5, 2.5, 4.0),
                    aggressive_min: int = 4, aggressive_exec: bool = False,
-                   entry_gate: Optional[Callable] = None) -> dict:
+                   entry_gate: Optional[Callable] = None,
+                   refine_enabled: bool = False, refine_ltf: str = "M5",
+                   refine_micro_tf: str = "M1", refine_sl_floor_frac: float = 0.6,
+                   trend_align: bool = False, trend_align_min_atr: float = 0.25) -> dict:
     """Un passage sur tous les symboles configurés.
     `symbols_cfg` : liste de dicts {symbol, ltf, htf, venue}.
     `rates_fn(symbol, tf, n) -> df|None` : défaut `mt5_provider.get_ohlcv` (données MT5).
@@ -293,46 +323,93 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
                          "conviction": round(gate.conviction, 3), "reason_codes": list(gate.reason_codes)}
 
             placed = None
+            # FILTRE DE TENDANCE (Florent 25/07) : ne pas EXÉCUTER un setup qui fade une tendance
+            # H4 nette (cause des 6 shorts crypto stoppés pendant le rally). Master exempté.
+            _eff_side = int(gate.side or decision.side or 0)
+            counter_trend = bool(
+                trend_align and gate.source != "MASTER"
+                and _counter_trend_block(feats, _eff_side, df_htf, atr, trend_align_min_atr))
+            # Éligibilité AGRESSIVE calculée TÔT (pure, légère) : sert à savoir si un placement
+            # est imminent, donc s'il vaut la peine de charger les TF inférieurs pour affiner.
+            aggressive = _aggressive_eligible(decision, feats, aggressive_min)
+
+            # RAFFINEMENT du point d'entrée par TF INFÉRIEURS (Florent 25/07). Chargé UNIQUEMENT
+            # si un placement va réellement avoir lieu (setup complet, ou structuré + exécution
+            # agressive armée) et cerveau OK. Affine le SL sur la micro-structure M5 → entrée plus
+            # précise + lot plus gros à risque égal. N'INVERSE JAMAIS le sens (fail-safe).
+            refine_info = None
+            _rside = int(gate.side or decision.side or 0)
+            _will_place = gate.allow and atr is not None and not counter_trend and (
+                decision.entered or bool(aggressive and aggressive_exec))
+            if refine_enabled and _will_place and _rside != 0:
+                try:
+                    _m5 = await asyncio.to_thread(rates_fn, symbol, refine_ltf, _N_BARS)
+                    _m1 = await asyncio.to_thread(rates_fn, symbol, refine_micro_tf, _N_BARS)
+                    from core import entry_refine
+                    refine_info = await asyncio.to_thread(
+                        entry_refine.refine, symbol, _rside, _m5, _m1,
+                        atr_ref=atr, ref_price=entry, base_sl_mult=sl_atr_mult,
+                        sl_floor_frac=refine_sl_floor_frac)
+                except Exception:  # noqa: BLE001 — raffinement non fatal : on garde le SL de base
+                    refine_info = None
+            _sl_mult = sl_atr_mult
+            if isinstance(refine_info, dict) and refine_info.get("sl_mult"):
+                _sl_mult = float(refine_info["sl_mult"])
+
             if decision.entered:
                 if atr is None:
                     placed = {"sent": False, "reason": "ATR_UNAVAILABLE"}
                 elif not gate.allow:
                     placed = {"sent": False, "reason": "BRAIN_GATE_BLOCK", "gate": gate_info}
+                elif counter_trend:
+                    placed = {"sent": False, "reason": "COUNTER_TREND_BLOCKED",
+                              "trend": int(feats.get("trend") or 0), "side": _eff_side}
                 else:
                     side = "long" if gate.side > 0 else "short"
                     _npil = sum(1 for g in (getattr(decision, "gates", []) or [])
                                 if g.passed and g.name != "data_valid")
                     res = await place_fn(symbol, side, atr,
-                                         sl_atr_mult=sl_atr_mult, tp_atr_mult=tp_atr_mult,
+                                         sl_atr_mult=_sl_mult, tp_atr_mult=tp_atr_mult,
                                          engine="confluence",
-                                         size_factor=_structure_size_factor(_npil, gate.conviction))
+                                         size_factor=_structure_size_factor(_npil, gate.conviction),
+                                         quality=_npil)
                     placed = res if isinstance(res, dict) else {"sent": False, "reason": "DEMO_DISARMED"}
                     if placed.get("sent"):
                         placed["gate"] = gate_info
+                        if refine_info:
+                            placed["refine"] = refine_info
                         report["placed"].append({"symbol": symbol, "side": side, "atr": atr,
                                                   "lot": placed.get("lot"), "price": placed.get("price"),
-                                                  "gate_source": gate.source})
+                                                  "sl_atr": _sl_mult, "gate_source": gate.source,
+                                                  "refine_score": (refine_info or {}).get("refine_score")})
 
             # AGRESSIF (phase de test) : setup structuré incomplet, hors veto émotion/coût.
             # Détecté TOUJOURS (data) ; exécuté seulement si `aggressive_exec` ET feu vert cerveau.
-            aggressive = _aggressive_eligible(decision, feats, aggressive_min)
             if aggressive:
                 aggressive["gate"] = gate_info
             if aggressive and aggressive_exec and atr is not None and (placed is None or not placed.get("sent")):
                 if not gate.allow:
                     aggressive["placed"] = {"sent": False, "reason": "BRAIN_GATE_BLOCK", "gate": gate_info}
+                elif counter_trend:
+                    aggressive["placed"] = {"sent": False, "reason": "COUNTER_TREND_BLOCKED",
+                                            "trend": int(feats.get("trend") or 0), "side": _eff_side}
                 else:
                     aside = "long" if gate.side > 0 else "short"
-                    ares = await place_fn(symbol, aside, atr, sl_atr_mult=sl_atr_mult,
+                    ares = await place_fn(symbol, aside, atr, sl_atr_mult=_sl_mult,
                                           tp_atr_mult=tp_atr_mult, engine="confluence-aggr",
                                           size_factor=_structure_size_factor(
-                                              aggressive.get("n_pillars", 0), gate.conviction))
+                                              aggressive.get("n_pillars", 0), gate.conviction),
+                                          quality=int(aggressive.get("n_pillars", 0)))
                     aggressive["placed"] = ares if isinstance(ares, dict) else {"sent": False, "reason": "DEMO_DISARMED"}
+                    if refine_info:
+                        aggressive["refine"] = refine_info
                     if aggressive["placed"].get("sent"):
                         report["placed"].append({"symbol": symbol, "side": aside, "atr": atr,
                                                   "lot": aggressive["placed"].get("lot"),
                                                   "price": aggressive["placed"].get("price"),
-                                                  "mode": "aggressive", "gate_source": gate.source})
+                                                  "sl_atr": _sl_mult, "mode": "aggressive",
+                                                  "gate_source": gate.source,
+                                                  "refine_score": (refine_info or {}).get("refine_score")})
 
             # Lot C2 (M2): observateur SHADOW additif sur chemin confluence_demo.
             # Zéro impact décision/exécution : best-effort, jamais bloquant.
@@ -359,6 +436,8 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
             summary = _summary(symbol, ltf_tf, htf_tf, venue, decision, feats, placed,
                                levels, reference, aggressive)
             summary["brain"] = gate_info
+            if refine_info:
+                summary["refine"] = refine_info      # raffinement M5/M1 du point d'entrée
         except Exception as exc:  # noqa: BLE001 — fail-safe : un symbole ne casse pas le tour
             n_errors += 1
             summary = {"symbol": symbol, "verdict": "ERROR", "error": repr(exc),

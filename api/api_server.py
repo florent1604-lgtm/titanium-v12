@@ -12,6 +12,7 @@ from fastapi import Request as FARequest
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from api.auth import require_admin
 from starlette.middleware.gzip import GZipMiddleware
+from starlette.websockets import WebSocketState
 from fastapi.middleware.cors import CORSMiddleware
 from utils.config import (
     UVICORN_HOST, UVICORN_PORT, UVICORN_LOG_LEVEL,
@@ -203,20 +204,43 @@ async def lifespan(app: FastAPI):
                               CONFLUENCE_DEMO_TP_ATR, CONFLUENCE_DEMO_TP_LADDER,
                               CONFLUENCE_CRYPTO_ENABLED, CONFLUENCE_CRYPTO_SYMBOLS,
                               CONFLUENCE_AGGRESSIVE_MIN, CONFLUENCE_AGGRESSIVE_EXEC,
-                              CONFLUENCE_ROTATE_BATCH)
+                              CONFLUENCE_ROTATE_BATCH, CONFLUENCE_DEMO_AUTO_UNIVERSE,
+                              ENTRY_REFINE_ENABLED, ENTRY_REFINE_LTF,
+                              ENTRY_REFINE_MICRO_TF, ENTRY_REFINE_SL_FLOOR_FRAC,
+                              CONFLUENCE_TREND_ALIGN, CONFLUENCE_TREND_ALIGN_MIN_ATR)
+
+    def _discover_cfd_universe(fallback):
+        """Univers CFD COMPLET auto-découvert depuis MT5 (tout le tradable liquide hors
+        actions), moins les symboles déjà couverts par la boucle crypto. Fail-safe :
+        repli sur la liste `.env` si MT5/list_universe indisponible."""
+        try:
+            from tools.asset_optimizer import list_universe
+            crypto_set = set(CONFLUENCE_CRYPTO_SYMBOLS) if CONFLUENCE_CRYPTO_ENABLED else set()
+            syms = [u["symbol"] for u in list_universe() if u.get("symbol") not in crypto_set]
+            if syms:
+                logger.info("[CONFLUENCE-DEMO] univers AUTO-découvert: %d actifs MT5 (hors crypto)", len(syms))
+                return syms
+        except Exception as e:
+            logger.warning("[CONFLUENCE-DEMO] auto-univers indisponible (%s) — repli liste .env", e)
+        return fallback
     if CONFLUENCE_DEMO_ENABLED or CONFLUENCE_CRYPTO_ENABLED:
         async def _confluence_demo_loop():
             from core.confluence_demo_engine import run_once
             from data.binance_ohlcv import reference_close
-            cfd = ([{"symbol": s, "ltf": CONFLUENCE_DEMO_LTF, "htf": CONFLUENCE_DEMO_HTF,
-                     "venue": "cfd"} for s in CONFLUENCE_DEMO_SYMBOLS]
-                   if CONFLUENCE_DEMO_ENABLED else [])
             crypto = ([{"symbol": s, "ltf": CONFLUENCE_DEMO_LTF, "htf": CONFLUENCE_DEMO_HTF,
                         "venue": "crypto"} for s in CONFLUENCE_CRYPTO_SYMBOLS]
                       if CONFLUENCE_CRYPTO_ENABLED else [])
             batch = CONFLUENCE_ROTATE_BATCH
             idx = 0
             await asyncio.sleep(30)          # laisser le démarrage se stabiliser
+            # Univers CFD : liste .env, ou univers MT5 COMPLET auto-découvert (après que MT5
+            # soit prêt) si CONFLUENCE_DEMO_AUTO_UNIVERSE=1 → couvre les ~149 actifs.
+            cfd_syms = CONFLUENCE_DEMO_SYMBOLS
+            if CONFLUENCE_DEMO_ENABLED and CONFLUENCE_DEMO_AUTO_UNIVERSE:
+                cfd_syms = await asyncio.to_thread(_discover_cfd_universe, CONFLUENCE_DEMO_SYMBOLS)
+            cfd = ([{"symbol": s, "ltf": CONFLUENCE_DEMO_LTF, "htf": CONFLUENCE_DEMO_HTF,
+                     "venue": "cfd"} for s in cfd_syms]
+                   if CONFLUENCE_DEMO_ENABLED else [])
             while True:
                 try:
                     # ROTATION : crypto (ouvert 24/7) scanné à CHAQUE cycle ; CFD (univers large)
@@ -233,7 +257,13 @@ async def lifespan(app: FastAPI):
                                    tp_atr_mult=CONFLUENCE_DEMO_TP_ATR,
                                    tp_ladder=CONFLUENCE_DEMO_TP_LADDER,
                                    aggressive_min=CONFLUENCE_AGGRESSIVE_MIN,
-                                   aggressive_exec=CONFLUENCE_AGGRESSIVE_EXEC)
+                                   aggressive_exec=CONFLUENCE_AGGRESSIVE_EXEC,
+                                   refine_enabled=ENTRY_REFINE_ENABLED,
+                                   refine_ltf=ENTRY_REFINE_LTF,
+                                   refine_micro_tf=ENTRY_REFINE_MICRO_TF,
+                                   refine_sl_floor_frac=ENTRY_REFINE_SL_FLOOR_FRAC,
+                                   trend_align=CONFLUENCE_TREND_ALIGN,
+                                   trend_align_min_atr=CONFLUENCE_TREND_ALIGN_MIN_ATR)
                 except Exception as e:
                     logger.warning("[CONFLUENCE-DEMO] boucle: %s", e)
                 await asyncio.sleep(CONFLUENCE_DEMO_SECONDS)
@@ -243,6 +273,11 @@ async def lifespan(app: FastAPI):
                     CONFLUENCE_DEMO_SYMBOLS if CONFLUENCE_DEMO_ENABLED else [],
                     CONFLUENCE_CRYPTO_SYMBOLS if CONFLUENCE_CRYPTO_ENABLED else [],
                     CONFLUENCE_DEMO_LTF, CONFLUENCE_DEMO_HTF, CONFLUENCE_DEMO_SECONDS)
+
+        # GESTION DYNAMIQUE des positions démo (breakeven + trailing, Florent 26/07). La boucle
+        # se désarme elle-même si DEMO_EXEC_ENABLED/DEMO_MANAGE_ENABLED != 1.
+        from execution.demo_position_manager import manage_loop as _demo_manage_loop
+        tasks.append(asyncio.create_task(_demo_manage_loop(), name="demo_manage"))
 
         # Consensus inter-moteurs AUTONOME : détection read-only, aucune injection dans
         # la confluence/l'exécuteur. Même univers/cadence et rotation bornée pour ne pas
@@ -414,8 +449,10 @@ _DASHBOARD_ORBE_ROOT = Path(__file__).resolve().parent.parent / "titanium_orbe.h
 
 @app.get("/", response_class=HTMLResponse)
 async def dashboard():
-    """Interface LIVRÉE (07/2026) : cockpit ORBE JARVIS/Hermes. L'ancien dashboard
-    reste disponible et réversible sur /classic. HTML relu par requête."""
+    """Interface 4D HYPER-COCKPIT (07/2026) : cockpit 4D unifié. L'interface Orbe
+    reste disponible sur /orbe et le classic sur /classic. HTML relu par requête."""
+    if _DASHBOARD_4D.exists():
+        return HTMLResponse(_DASHBOARD_4D.read_text(encoding="utf-8"))
     if _DASHBOARD_ORBE_ROOT.exists():
         return HTMLResponse(_DASHBOARD_ORBE_ROOT.read_text(encoding="utf-8"))
     if _DASHBOARD_HTML.exists():
@@ -434,6 +471,20 @@ async def dashboard_classic():
 _DASHBOARD_V13 = Path(__file__).resolve().parent.parent / "titanium_v13_dashboard.html"
 _APP_START_TS = datetime.now(timezone.utc)
 
+
+
+_DASHBOARD_4D = Path(__file__).resolve().parent.parent / "titanium_4d_cockpit.html"
+
+
+@app.get("/4d", response_class=HTMLResponse)
+@app.get("/4d_cockpit", response_class=HTMLResponse)
+async def dashboard_4d():
+    """Interface 4D HYPER-COCKPIT (07/2026) : environnement WebGL 3D/4D unifié,
+    graphe neuronal 3D avec surbrillance des nœuds bloquants du Cortex, carnet L2 3D,
+    replay temporel 4D et télémétrie de l'Agent de Santé."""
+    if _DASHBOARD_4D.exists():
+        return HTMLResponse(_DASHBOARD_4D.read_text(encoding="utf-8"))
+    return HTMLResponse("<h1>Titanium 4D Cockpit</h1><p>titanium_4d_cockpit.html non trouvé.</p>", status_code=404)
 
 
 @app.get("/v13", response_class=HTMLResponse)
@@ -892,12 +943,19 @@ async def websocket_realtime(ws: WebSocket):
         raw = ws.query_params.get("book", "BTC/USDT").upper().replace("USDT", "/USDT")
         book_sym = raw if raw in SYMBOLS else "BTC/USDT"
         while True:
+            if (ws.client_state == WebSocketState.DISCONNECTED
+                    or ws.application_state == WebSocketState.DISCONNECTED):
+                break
             ticks = await _rt_ticks()
-            await ws.send_json({
-                "t": int(datetime.now(timezone.utc).timestamp() * 1000),
-                "ticks": ticks,
-                "book": _book_snapshot(book_sym),
-            })
+            try:
+                await ws.send_json({
+                    "t": int(datetime.now(timezone.utc).timestamp() * 1000),
+                    "ticks": ticks,
+                    "book": _book_snapshot(book_sym),
+                })
+            except (WebSocketDisconnect, ConnectionError, OSError, RuntimeError):
+                # Déconnexion attendue côté client : on sort proprement.
+                break
             await asyncio.sleep(0.2)
     except WebSocketDisconnect:
         pass

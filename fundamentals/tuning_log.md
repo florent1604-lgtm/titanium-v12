@@ -169,3 +169,25 @@ Chaque reconfiguration automatique ou manuelle est enregistrée ici.
 - `2026-07-23T05:43:50.673429+00:00` — RE-ENABLE: module réactivé manuellement
 - `2026-07-23T05:43:50.674439+00:00` — RE-ENABLE: module réactivé manuellement
 - `2026-07-23T06:29:49.614240+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 54% > seuil 30%
+- `2026-07-23T19:33:39.479156+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-24T05:50:45.997562+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-24T06:18:41.552082+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-24T06:57:40.544905+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 35% > seuil 30%
+- `2026-07-24T11:56:40.984083+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 38% > seuil 30%
+- `2026-07-25T06:26:14.916755+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 34% > seuil 30%
+- `2026-07-25T06:54:25.380214+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-25T07:37:51.872366+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-25T08:51:24.344484+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-25T11:04:28.457287+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 38% > seuil 30%
+- `2026-07-25T12:21:35.816311+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 32% > seuil 30%
+- `2026-07-25T12:40:37.844396+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-25T13:00:35.342358+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-25T13:30:15.016411+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-25T13:53:40.313464+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 50% > seuil 30%
+- `2026-07-25T15:41:16.302684+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 38% > seuil 30%
+- `2026-07-25T16:10:54.064991+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 33% > seuil 30%
+- `2026-07-25T16:32:14.032859+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-25T17:25:16.875022+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 33% > seuil 30%
+- `2026-07-26T05:05:14.668188+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 33% > seuil 30%
+- `2026-07-26T05:38:43.188791+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-26T18:33:39.775346+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%

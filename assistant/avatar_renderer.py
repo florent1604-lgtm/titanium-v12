@@ -189,7 +189,11 @@ class AvatarWindow:
             logger.warning("[AVATAR] PyWebView non installé : pip install pywebview")
             self._started.set()
         except Exception as e:
-            logger.error("[AVATAR] Erreur WebView: %s", e)
+            msg = str(e)
+            if "must be run on a main thread" in msg:
+                logger.warning("[AVATAR] WebView désactivée (contrainte thread principal): %s", msg)
+            else:
+                logger.error("[AVATAR] Erreur WebView: %s", msg)
             self._started.set()
 
     def show(self) -> None:

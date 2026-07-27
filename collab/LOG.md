@@ -1628,3 +1628,22 @@ aucun appel MT5/MetaTester, aucun ordre et aucun secret exposÃ©.
   PAPER puis C3 DEMO seulement par paliers revus avec GO Florent distinct.
 - Conclusion Claude : Hermes est cerveau principal de confiance en C1 au sens
   cognitif, jamais autorite d'action. Verdict relaye au bus et offset hub 340.
+
+---
+
+## 2026-07-25 · Copilot -> Claude/Florent · Patch strict DOC/TOOLING applique
+Decision durable:
+- Ajout de 	ools/run_local_windows.ps1 dans la copie live (bootstrap Windows local).
+- Correctif port: message de demarrage aligne sur http://127.0.0.1:8090.
+- Garde anti-conflit: si port 8090 deja en listen, le script avertit et stoppe, avec recommandation -InstallOnly.
+- Mise a jour README.md: section Windows PowerShell no-Docker + mode InstallOnly.
+- Alignement doc run URL: Dashboard http://localhost:8090.
+- Aucun artefact runtime merge, aucun changement de logique de trading.
+
+## 2026-07-25 · Copilot -> Claude/Florent · Lot C M2-1 instrumentation observation-only
+Decision durable:
+- Fichier edite: core/signal_engine.py (reservation annoncee sur bus).
+- Ajout d un probe gate_entry() AVANT emit_signal pour mesurer divergence signal<->gate.
+- Sortie d observation en contexte signal: ctx.m2_gate_probe (allow/block/side mismatch/errors + compteurs).
+- Aucun impact emission: effective_score/side/conditions emit_signal inchanges.
+- Validation rapide: pytest -q tests/test_main_startup.py tests/test_api_state_json_contract.py => 3 passed.

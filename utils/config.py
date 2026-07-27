@@ -266,6 +266,12 @@ CONFLUENCE_DEMO_ENABLED = _bool("CONFLUENCE_DEMO_ENABLED", "0")
 # Défaut OFF → production strictement inchangée. Réversible (flag .env + restart).
 BRAIN_GATE_PERMISSIVE = _bool("BRAIN_GATE_PERMISSIVE", "0")
 CONFLUENCE_DEMO_SYMBOLS = _list("CONFLUENCE_DEMO_SYMBOLS", "XAUUSD,EURUSD,US500.fs")
+# UNIVERS COMPLET (Florent 25/07 : « il manque beaucoup d'actifs sur les 149 »).
+# ON → l'univers CFD est AUTO-DÉCOUVERT depuis MT5 (tools.asset_optimizer.list_universe :
+# tout le tradable liquide hors actions, ~140 actifs) au lieu de la liste ci-dessus. La
+# rotation (CONFLUENCE_ROTATE_BATCH) couvre alors tout le marché sur quelques cycles. Repli
+# automatique sur CONFLUENCE_DEMO_SYMBOLS si MT5 indisponible. Réversible (flag + restart).
+CONFLUENCE_DEMO_AUTO_UNIVERSE = _bool("CONFLUENCE_DEMO_AUTO_UNIVERSE", "0")
 CONFLUENCE_DEMO_LTF     = _str("CONFLUENCE_DEMO_LTF", "M15")
 CONFLUENCE_DEMO_HTF     = _str("CONFLUENCE_DEMO_HTF", "H4")
 CONFLUENCE_DEMO_SECONDS = _int("CONFLUENCE_DEMO_SECONDS", 300)
@@ -298,6 +304,35 @@ CONFLUENCE_CRYPTO_SYMBOLS = _list("CONFLUENCE_CRYPTO_SYMBOLS",
 # comparer strict vs agressif). Détection/alerte toujours actives ; exécution armée à part.
 CONFLUENCE_AGGRESSIVE_MIN  = _int("CONFLUENCE_AGGRESSIVE_MIN", 4)
 CONFLUENCE_AGGRESSIVE_EXEC = _bool("CONFLUENCE_AGGRESSIVE_EXEC", "0")
+
+# ── RAFFINEMENT du point d'entrée par TF INFÉRIEURS (Florent 25/07) ──
+# Un setup validé M15/H4 est affiné en M5/M1 : SL ancré sur la micro-structure (stop plus
+# serré = entrée plus précise + lot plus gros à risque égal), timing micro (BOS/rejet/momentum).
+# NE change JAMAIS le sens. Défaut OFF → production inchangée. Réversible (flag + restart).
+ENTRY_REFINE_ENABLED       = _bool("ENTRY_REFINE_ENABLED", "0")
+ENTRY_REFINE_LTF           = _str("ENTRY_REFINE_LTF", "M5")
+ENTRY_REFINE_MICRO_TF      = _str("ENTRY_REFINE_MICRO_TF", "M1")
+# Plancher de resserrement : le SL affiné ne descend jamais sous cette FRACTION du SL de base.
+ENTRY_REFINE_SL_FLOOR_FRAC = _float("ENTRY_REFINE_SL_FLOOR_FRAC", 0.6)
+
+# ── FILTRE DE TENDANCE (Florent 25/07 : « positions prises à l'inverse ») ──
+# La méthode est support→long / résistance→short (retour à la moyenne par niveaux). En RANGE
+# c'est correct ; contre une tendance H4 NETTE, ça FADE le mouvement et se fait rouler dessus
+# (6 shorts crypto stoppés pendant un rally). ON → on n'EXÉCUTE pas un setup contre-tendance
+# nette (prix ≥ MIN_ATR × ATR au-delà de l'EMA200 H4). Détection/observation continuent ;
+# range (tendance neutre) et continuation (avec la tendance) restent autorisés. Master exempté.
+CONFLUENCE_TREND_ALIGN         = _bool("CONFLUENCE_TREND_ALIGN", "0")
+CONFLUENCE_TREND_ALIGN_MIN_ATR = _float("CONFLUENCE_TREND_ALIGN_MIN_ATR", 0.25)
+
+# ── GESTION DYNAMIQUE des positions démo (Florent 26/07 : « ne pas rester figé ») ──
+# Post-mortem : 23% des pertes avaient atteint +0.8R avant de repartir au SL. Le SL est
+# réajusté en cours de route : breakeven à +DEMO_BREAKEVEN_R, puis trailing dès +DEMO_TRAIL_START_R
+# à DEMO_TRAIL_DIST_R derrière le plus-haut favorable. Défaut OFF → réversible (flag + restart).
+DEMO_MANAGE_ENABLED   = _bool("DEMO_MANAGE_ENABLED", "0")
+DEMO_MANAGE_SECONDS   = _int("DEMO_MANAGE_SECONDS", 15)
+DEMO_BREAKEVEN_R      = _float("DEMO_BREAKEVEN_R", 0.8)
+DEMO_TRAIL_START_R    = _float("DEMO_TRAIL_START_R", 1.2)
+DEMO_TRAIL_DIST_R     = _float("DEMO_TRAIL_DIST_R", 0.8)
 
 # ── Concordance inter-actifs (lead/lag) — recherche EXPLORATOIRE (pré-M2, ne décide rien) ──
 # Boucle qui cherche quel actif ANTICIPE quel autre + accumule la persistance ; débrief

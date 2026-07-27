@@ -1,0 +1,183 @@
+{
+  "generated_at": "2026-07-25T15:27:31.198521+00:00",
+  "total_journalise": 67,
+  "places": 8,
+  "refuses": 59,
+  "par_structure": {
+    "XL (~5 piliers/pleine structure)": {
+      "count": 2,
+      "risk_total": 132.5
+    },
+    "M (~3 piliers)": {
+      "count": 5,
+      "risk_total": 73.26
+    },
+    "S (~2 piliers)": {
+      "count": 1,
+      "risk_total": 6.96
+    }
+  },
+  "contexts": [
+    {
+      "engine": "confluence-aggr",
+      "symbol": "XRPUSD",
+      "side": "long",
+      "structure": "M (~3 piliers)",
+      "count": 3,
+      "avg_lot": 3.3667,
+      "avg_risk": 15.94,
+      "emotions_top": [
+        [
+          "delta_volume",
+          3
+        ],
+        [
+          "macro_fear",
+          3
+        ],
+        [
+          "volatility",
+          3
+        ]
+      ]
+    },
+    {
+      "engine": "confluence-aggr",
+      "symbol": "BTCUSD",
+      "side": "short",
+      "structure": "XL (~5 piliers/pleine structure)",
+      "count": 1,
+      "avg_lot": 0.6,
+      "avg_risk": 66.58,
+      "emotions_top": [
+        [
+          "delta_volume",
+          1
+        ],
+        [
+          "macro_fear",
+          1
+        ],
+        [
+          "volatility",
+          1
+        ]
+      ]
+    },
+    {
+      "engine": "confluence-aggr",
+      "symbol": "BCHUSD",
+      "side": "long",
+      "structure": "XL (~5 piliers/pleine structure)",
+      "count": 1,
+      "avg_lot": 61.7,
+      "avg_risk": 65.92,
+      "emotions_top": [
+        [
+          "delta_volume",
+          1
+        ],
+        [
+          "macro_fear",
+          1
+        ],
+        [
+          "volatility",
+          1
+        ]
+      ]
+    },
+    {
+      "engine": "confluence-aggr",
+      "symbol": "US30",
+      "side": "short",
+      "structure": "M (~3 piliers)",
+      "count": 1,
+      "avg_lot": 0.2,
+      "avg_risk": 15.68,
+      "emotions_top": [
+        [
+          "delta_volume",
+          1
+        ],
+        [
+          "macro_fear",
+          1
+        ],
+        [
+          "volatility",
+          1
+        ]
+      ]
+    },
+    {
+      "engine": "confluence-aggr",
+      "symbol": "EURUSD",
+      "side": "short",
+      "structure": "S (~2 piliers)",
+      "count": 1,
+      "avg_lot": 0.1,
+      "avg_risk": 6.96,
+      "emotions_top": [
+        [
+          "delta_volume",
+          1
+        ],
+        [
+          "macro_fear",
+          1
+        ],
+        [
+          "volatility",
+          1
+        ]
+      ]
+    },
+    {
+      "engine": "confluence-aggr",
+      "symbol": "BTCUSD",
+      "side": "short",
+      "structure": "M (~3 piliers)",
+      "count": 1,
+      "avg_lot": 0.1,
+      "avg_risk": 9.76,
+      "emotions_top": [
+        [
+          "delta_volume",
+          1
+        ],
+        [
+          "macro_fear",
+          1
+        ],
+        [
+          "volatility",
+          1
+        ]
+      ]
+    }
+  ],
+  "refus_top": [
+    [
+      "POSITIONS_UNAVAILABLE",
+      24
+    ],
+    [
+      "ALREADY_OPEN",
+      15
+    ],
+    [
+      "RISK_SPREAD",
+      11
+    ],
+    [
+      "RISK_LOT_MIN_EXCEEDS",
+      6
+    ],
+    [
+      "ORDER_CHECK_REJECTED",
+      3
+    ]
+  ],
+  "note_outcomes": "Winrate/esperance par contexte -> ajoutes quand les trades se cloturent (join PnL par ticket)."
+}

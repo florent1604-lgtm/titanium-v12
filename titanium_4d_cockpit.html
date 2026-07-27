@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>J.A.R.V.I.S · TITANIUM 3D CONSTELLATION</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cyan: #00e5ff;
+  --cyan-dim: rgba(0, 229, 255, 0.4);
+  --cyan-soft: rgba(0, 229, 255, 0.12);
+  --green: #00ff88;
+  --green-soft: rgba(0, 255, 136, 0.12);
+  --red: #ff2d55;
+  --red-soft: rgba(255, 45, 85, 0.15);
+  --amber: #ffd700;
+  --amber-soft: rgba(255, 215, 0, 0.15);
+  --purple: #a78bfa;
+  --bg: #02050c;
+  --panel-bg: rgba(6, 14, 28, 0.82);
+  --panel-border: rgba(0, 229, 255, 0.25);
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-ui: 'Rajdhani', sans-serif;
+  --blur: blur(12px);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; width: 100%; overflow: hidden; background: var(--bg); color: #e2f1ff; font-family: var(--font-mono); font-size: 11px; }
+
+/* ── 3D Canvas & Scanlines ── */
+#webgl-canvas { position: fixed; inset: 0; z-index: 1; outline: none; }
+#scanlines { position: fixed; inset: 0; z-index: 2; pointer-events: none; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 229, 255, 0.015) 2px, rgba(0, 229, 255, 0.015) 4px); }
+
+/* ── Corner Brackets HUD ── */
+.corner { position: fixed; width: 24px; height: 24px; z-index: 5; pointer-events: none; opacity: 0.6; }
+.tl { top: 10px; left: 10px; border-top: 2px solid var(--cyan); border-left: 2px solid var(--cyan); }
+.tr { top: 10px; right: 10px; border-top: 2px solid var(--cyan); border-right: 2px solid var(--cyan); }
+.bl { bottom: 10px; left: 10px; border-bottom: 2px solid var(--cyan); border-left: 2px solid var(--cyan); }
+.br { bottom: 10px; right: 10px; border-bottom: 2px solid var(--cyan); border-right: 2px solid var(--cyan); }
+
+/* ── Header Top Bar ── */
+#header {
+  position: fixed; top: 12px; left: 20px; right: 20px; z-index: 20;
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--panel-bg); backdrop-filter: var(--blur);
+  border: 1px solid var(--panel-border); border-radius: 6px;
+  padding: 10px 20px; box-shadow: 0 0 30px rgba(0,229,255,0.1);
+}
+.brand-box { display: flex; align-items: center; gap: 10px; }
+.brand-title { font-family: var(--font-ui); font-size: 18px; font-weight: 700; letter-spacing: 4px; color: var(--cyan); text-shadow: 0 0 12px var(--cyan-dim); }
+.brand-sub { font-size: 9px; letter-spacing: 2px; color: #8ba8c7; border-left: 1px solid var(--panel-border); padding-left: 10px; }
+
+.station-nav { display: flex; gap: 6px; }
+.st-btn {
+  background: var(--cyan-soft); border: 1px solid var(--panel-border); color: #b0d4f1;
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px; padding: 6px 14px;
+  border-radius: 4px; cursor: pointer; transition: all 0.25s ease; display: flex; align-items: center; gap: 6px;
+}
+.st-btn:hover, .st-btn.active { background: rgba(0, 229, 255, 0.3); color: #fff; border-color: var(--cyan); box-shadow: 0 0 16px rgba(0,229,255,0.4); }
+
+.header-pills { display: flex; gap: 8px; align-items: center; }
+.pill {
+  display: flex; align-items: center; gap: 6px; background: rgba(2, 8, 18, 0.7);
+  border: 1px solid var(--panel-border); border-radius: 14px; padding: 4px 12px; font-size: 9.5px;
+}
+.pill .dot { width: 6px; height: 6px; border-radius: 50%; background: #4a627a; }
+.pill.ok .dot { background: var(--green); box-shadow: 0 0 8px var(--green); }
+.pill.warn .dot { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+.pill.err .dot { background: var(--red); box-shadow: 0 0 8px var(--red); }
+
+/* ── Floating 3D Station HUD Panels ── */
+#main-layout {
+  position: fixed; top: 72px; bottom: 90px; left: 20px; right: 20px; z-index: 10;
+  display: grid; grid-template-columns: 400px 1fr 420px; gap: 16px; pointer-events: none;
+}
+.hud-col { display: flex; flex-direction: column; gap: 14px; overflow-y: auto; pointer-events: auto; }
+.hud-col::-webkit-scrollbar { width: 4px; }
+.hud-col::-webkit-scrollbar-thumb { background: var(--panel-border); border-radius: 2px; }
+
+.panel-widget {
+  background: var(--panel-bg); backdrop-filter: var(--blur);
+  border: 1px solid var(--panel-border); border-radius: 8px; padding: 14px 16px;
+  box-shadow: 0 0 35px rgba(0,0,0,0.6); position: relative;
+}
+.pw-title {
+  font-family: var(--font-ui); font-size: 12px; font-weight: 700; letter-spacing: 2px;
+  color: var(--cyan); text-transform: uppercase; border-bottom: 1px solid var(--panel-border);
+  padding-bottom: 6px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;
+}
+.pw-title .badge { font-size: 9px; padding: 2px 7px; border-radius: 3px; background: var(--cyan-soft); color: var(--cyan); border: 1px solid var(--panel-border); }
+
+/* Cards & Tables */
+.kv-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 8px; }
+.kv-card { background: rgba(0, 229, 255, 0.04); border: 1px solid rgba(0, 229, 255, 0.14); border-radius: 4px; padding: 6px 10px; }
+.kv-card .k { font-size: 8.5px; letter-spacing: 1px; color: #7093b5; text-transform: uppercase; }
+.kv-card .v { font-size: 13px; font-weight: 700; color: #e2f1ff; margin-top: 3px; font-variant-numeric: tabular-nums; }
+.kv-card .v.green { color: var(--green); }
+.kv-card .v.red { color: var(--red); }
+.kv-card .v.amber { color: var(--amber); }
+
+.data-table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 10px; }
+.data-table th { color: #6989a8; text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--panel-border); font-size: 9px; text-transform: uppercase; }
+.data-table td { padding: 5px 8px; border-bottom: 1px solid rgba(0, 229, 255, 0.08); font-variant-numeric: tabular-nums; }
+.data-table td.green { color: var(--green); }
+.data-table td.red { color: var(--red); }
+.data-table td.amber { color: var(--amber); }
+
+.crit-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; margin-top: 6px; }
+.crit-item { background: rgba(0,0,0,0.35); border: 1px solid rgba(0,229,255,0.12); border-radius: 4px; padding: 5px 8px; display: flex; align-items: center; justify-content: space-between; }
+.crit-item.on { border-color: rgba(0,255,136,0.35); background: var(--green-soft); }
+.crit-item.on .c-name { color: var(--green); }
+.crit-item .c-name { font-size: 9px; }
+
+/* ── Subtitle & Voice AI Bar (JARVIS Companion) ── */
+#ai-subtitle-hud {
+  position: fixed; bottom: 44px; left: 50%; transform: translateX(-50%); z-index: 20;
+  width: 75%; max-width: 800px; text-align: center; pointer-events: none;
+}
+#subtitle-box {
+  background: var(--panel-bg); backdrop-filter: var(--blur);
+  border: 1px solid var(--panel-border); border-radius: 6px; padding: 10px 20px;
+  box-shadow: 0 0 30px rgba(0,229,255,0.15); position: relative;
+}
+#subtitle-text { font-size: 13px; font-weight: 700; letter-spacing: 1px; color: #fff; text-shadow: 0 0 10px var(--cyan); text-transform: uppercase; }
+#subtitle-cursor { display: inline-block; width: 8px; height: 14px; background: var(--cyan); vertical-align: middle; margin-left: 4px; animation: blink 0.8s infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+#subtitle-meta { display: flex; justify-content: space-between; margin-top: 4px; font-size: 8.5px; letter-spacing: 2px; color: #7093b5; text-transform: uppercase; }
+
+/* Quick AI Dialogue Input */
+#ai-quick-input-bar {
+  position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 25;
+  display: flex; gap: 8px; width: 60%; max-width: 600px;
+}
+#ai-input {
+  flex: 1; background: var(--panel-bg); backdrop-filter: var(--blur);
+  border: 1px solid var(--panel-border); color: #fff; padding: 6px 14px;
+  border-radius: 4px; font-family: var(--font-mono); font-size: 11px; outline: none;
+}
+#ai-input:focus { border-color: var(--cyan); box-shadow: 0 0 12px var(--cyan-dim); }
+
+/* 3D Hover Tooltip */
+#node-tooltip {
+  position: fixed; z-index: 40; background: rgba(3, 10, 20, 0.95); backdrop-filter: blur(12px);
+  border: 1px solid var(--cyan); border-radius: 6px; padding: 12px; width: 280px;
+  pointer-events: none; display: none; box-shadow: 0 0 25px rgba(0,229,255,0.25);
+}
+#node-tooltip.blocking { border-color: var(--red); box-shadow: 0 0 25px rgba(255,45,85,0.4); }
+</style>
+</head>
+
+<body>
+
+<!-- WebGL 3D Canvas -->
+<canvas id="webgl-canvas"></canvas>
+<div id="scanlines"></div>
+
+<!-- Corner Brackets -->
+<div class="corner tl"></div><div class="corner tr"></div>
+<div class="corner bl"></div><div class="corner br"></div>
+
+<!-- Header Bar -->
+<header id="header">
+  <div class="brand-box">
+    <span class="brand-title">J.A.R.V.I.S</span>
+    <span class="brand-sub">TITANIUM 3D CONSTELLATION</span>
+  </div>
+
+  <div class="station-nav">
+    <button class="st-btn active" id="btn-st-cortex" onclick="focusStation('cortex')">🧠 CERVEAU & CORTEX</button>
+    <button class="st-btn" id="btn-st-health" onclick="focusStation('health')">🛡️ SANTÉ & RISQUE R3</button>
+    <button class="st-btn" id="btn-st-l2" onclick="focusStation('l2')">📊 MARCHÉ & L2 3D</button>
+    <button class="st-btn" id="btn-st-smc" onclick="focusStation('smc')">◈ CONFLUENCE SMC</button>
+    <button class="st-btn" id="btn-st-paper" onclick="focusStation('paper')">💼 POSITIONS & TRADES</button>
+  </div>
+
+  <div class="header-pills">
+    <div class="pill ok" id="pill-ws"><div class="dot"></div><span>WS LIVE</span></div>
+    <div class="pill ok" id="pill-health"><div class="dot"></div><span id="txt-health-pill">SANTÉ OK</span></div>
+    <div class="pill" id="pill-mode"><div class="dot"></div><span id="txt-mode-pill">PAPER</span></div>
+    <button class="st-btn" onclick="location.href='/orbe'" style="font-size:9px;">VUE ORBE</button>
+    <button class="st-btn" onclick="location.href='/classic'" style="font-size:9px;">CLASSIC</button>
+  </div>
+</header>
+
+<!-- Main Grid Layout -->
+<div id="main-layout">
+  <div class="hud-col" id="col-left"></div>
+  <div style="pointer-events:none;"></div>
+  <div class="hud-col" id="col-right"></div>
+</div>
+
+<!-- AI Subtitle Companion Bar -->
+<div id="ai-subtitle-hud">
+  <div id="subtitle-box">
+    <span id="subtitle-text">INITIALISATION DES PROTOCOLES TITANIUM V12...</span><span id="subtitle-cursor"></span>
+    <div id="subtitle-meta"><span>COMPAGNON IA JARVIS</span><span id="sub-meta-r">EN LIGNE · PRÊT</span></div>
+  </div>
+</div>
+
+<!-- AI Dialogue Quick Input -->
+<div id="ai-quick-input-bar">
+  <input type="text" id="ai-input" placeholder="Parler à JARVIS (ex: statut du risque, ferme BTC...)" onkeydown="if(event.key==='Enter')titanQuickSend()">
+  <button class="st-btn" onclick="titanQuickSend()">ENVOYER</button>
+</div>
+
+<!-- Hover Tooltip for 3D Nodes -->
+<div id="node-tooltip">
+  <div id="nt-title" style="font-weight:700; color:var(--cyan); margin-bottom:4px; font-size:12px;">—</div>
+  <div id="nt-group" style="font-size:9px; color:#8ba8c7; margin-bottom:6px;">—</div>
+  <div id="nt-status" style="font-size:10px; margin-bottom:6px;">—</div>
+  <div id="nt-reasons" style="font-size:9.5px; color:var(--red); line-height:1.4;">—</div>
+</div>
+
+<!-- 3D Canvas Standalone Renderer (Constellation & Nodes) -->
+<script>
+"use strict";
+
+const S = {
+  activeStation: 'cortex',
+  cortex: null,
+  health: null,
+  state: null,
+  confluence: null,
+  nodes: [],
+  blockingNodes: new Set(),
+  camTargetX: 0, camTargetY: 0, camTargetZoom: 1,
+  camX: 0, camY: 0, camZoom: 1,
+};
+
+// ── WebGL / 2D Canvas Engine ──────────────────────────────────────────────────
+const canvas = document.getElementById('webgl-canvas');
+const ctx = canvas.getContext('2d');
+let W = canvas.width = window.innerWidth;
+let H = canvas.height = window.innerHeight;
+let CX = W / 2, CY = H / 2;
+
+window.addEventListener('resize', () => {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  CX = W / 2; CY = H / 2;
+});
+
+// Generate 94 Neural Nodes
+function generateNodes() {
+  S.nodes = [];
+  const groups = ['DONNÉES', 'CERVEAU', 'EXÉCUTION', 'INTERFACE', 'SOCLE'];
+  for (let i = 0; i < 94; i++) {
+    const grp = groups[i % groups.length];
+    const r = 160 + (i % 6) * 40;
+    const angle = (i / 94) * Math.PI * 2;
+    const phi = ((i % 8) / 8) * Math.PI - Math.PI / 2;
+
+    S.nodes.push({
+      id: `module_${i}`,
+      name: `mod_${grp.toLowerCase()}_${i}`,
+      group: grp,
+      x: r * Math.cos(angle) * Math.cos(phi),
+      y: r * Math.sin(phi),
+      z: r * Math.sin(angle) * Math.cos(phi),
+      r: 4 + (i % 3) * 2,
+    });
+  }
+}
+generateNodes();
+
+let rotY = 0, rotX = 0;
+
+function draw3D() {
+  requestAnimationFrame(draw3D);
+  rotY += 0.002;
+  rotX += 0.001;
+
+  // LERP Camera interpolation for 3D station zoom transitions
+  S.camX += (S.camTargetX - S.camX) * 0.08;
+  S.camY += (S.camTargetY - S.camY) * 0.08;
+  S.camZoom += (S.camTargetZoom - S.camZoom) * 0.08;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Background Gradient
+  const bgGrad = ctx.createRadialGradient(CX, CY, 50, CX, CY, W * 0.7);
+  bgGrad.addColorStop(0, '#040e1f');
+  bgGrad.addColorStop(1, '#02050c');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  const cosY = Math.cos(rotY), sinY = Math.sin(rotY);
+  const cosX = Math.cos(rotX), sinX = Math.sin(rotX);
+  const F = 320 * S.camZoom;
+
+  // Project Nodes
+  const projected = S.nodes.map((n, idx) => {
+    let x = (n.x + S.camX) * cosY - n.z * sinY;
+    let z = (n.x + S.camX) * sinY + n.z * cosY;
+    let y = (n.y + S.camY) * cosX - z * sinX;
+    z = (n.y + S.camY) * sinX + z * cosX;
+
+    const scale = F / (F + z + 380);
+    const px = CX + x * scale;
+    const py = CY + y * scale;
+
+    const isBlocking = S.blockingNodes.has(n.id) || (idx % 7 === 0 && S.cortex?.overall_health !== 'ok');
+
+    return { node: n, px, py, scale, z, isBlocking };
+  });
+
+  projected.sort((a, b) => b.z - a.z);
+
+  // Draw 3D Edges
+  ctx.lineWidth = 0.5;
+  ctx.strokeStyle = 'rgba(0, 229, 255, 0.09)';
+  for (let i = 0; i < projected.length; i += 3) {
+    const a = projected[i];
+    const b = projected[(i + 4) % projected.length];
+    ctx.beginPath();
+    ctx.moveTo(a.px, a.py);
+    ctx.lineTo(b.px, b.py);
+    ctx.stroke();
+  }
+
+  // Draw Nodes with Glowing Blocking Rings
+  projected.forEach(p => {
+    const r = Math.max(2.5, p.node.r * p.scale);
+    ctx.beginPath();
+    ctx.arc(p.px, p.py, r, 0, Math.PI * 2);
+
+    if (p.isBlocking) {
+      ctx.fillStyle = '#ff2d55';
+      ctx.fill();
+
+      // Outer Red Pulsating Halo Ring
+      ctx.beginPath();
+      ctx.arc(p.px, p.py, r + 4 + Math.sin(Date.now() * 0.008) * 3, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255, 45, 85, 0.7)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    } else {
+      ctx.fillStyle = p.node.group === 'CERVEAU' ? '#00e5ff' : '#4ca8e8';
+      ctx.fill();
+    }
+  });
+
+  // Draw Central JARVIS Core Orb
+  const orbR = 26 * S.camZoom;
+  const orbGrad = ctx.createRadialGradient(CX, CY, 0, CX, CY, orbR * 2.2);
+  orbGrad.addColorStop(0, 'rgba(0, 229, 255, 0.8)');
+  orbGrad.addColorStop(0.5, 'rgba(0, 229, 255, 0.2)');
+  orbGrad.addColorStop(1, 'rgba(0, 229, 255, 0)');
+  ctx.fillStyle = orbGrad;
+  ctx.beginPath(); ctx.arc(CX, CY, orbR * 2.2, 0, Math.PI * 2); ctx.fill();
+
+  ctx.beginPath(); ctx.arc(CX, CY, orbR, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(0, 229, 255, 0.9)'; ctx.lineWidth = 2; ctx.stroke();
+}
+draw3D();
+
+// ── Data Polling & Station UI Renderers ──────────────────────────────────────
+async function pullData() {
+  try {
+    const [rCortex, rHealth, rState, rConf] = await Promise.all([
+      fetch('/cortex/snapshot').then(r => r.json()).catch(() => null),
+      fetch('/health/system').then(r => r.json()).catch(() => null),
+      fetch('/api/state').then(r => r.json()).catch(() => null),
+      fetch('/confluence/demo/status').then(r => r.json()).catch(() => null),
+    ]);
+
+    S.cortex = rCortex;
+    S.health = rHealth;
+    S.state = rState;
+    S.confluence = rConf;
+
+    renderUI();
+  } catch (err) {
+    console.warn('[3D] Polling err:', err);
+  }
+}
+
+function renderUI() {
+  const colLeft = document.getElementById('col-left');
+  const colRight = document.getElementById('col-right');
+
+  const c = S.cortex || {};
+  const h = S.health || {};
+  const st = S.state || {};
+  const cf = S.confluence || {};
+
+  // STATION 1: CERVEAU & CORTEX
+  if (S.activeStation === 'cortex') {
+    const engines = c.engines || {};
+    let blockingCount = 0;
+    S.blockingNodes.clear();
+
+    const engineRows = Object.entries(engines).map(([name, eng], idx) => {
+      const isBlock = eng.health !== 'ok' || eng.allow === false;
+      if (isBlock) {
+        blockingCount++;
+        S.blockingNodes.add(`module_${idx * 6}`);
+      }
+      return `
+        <tr>
+          <td>${name}</td>
+          <td class="${eng.health === 'ok' ? 'green' : 'red'}">${eng.health.toUpperCase()} ${isBlock ? '⚠️ BLOQUÉ' : ''}</td>
+          <td style="text-align:right; font-size:8.5px; color:#7093b5;">${eng.note || eng.last_cycle_at ? 'ACTIF' : 'OBSERVATEUR'}</td>
+        </tr>
+      `;
+    }).join('');
+
+    colLeft.innerHTML = `
+      <div class="panel-widget">
+        <div class="pw-title">
+          <span>🧠 CERVEAU & CORTEX (TOPOLOGIE)</span>
+          <span class="badge" style="color:${c.overall_health==='ok'?'var(--green)':'var(--red)'};">${c.overall_health || 'OK'}</span>
+        </div>
+        <div class="kv-grid">
+          <div class="kv-card"><div class="k">SANTÉ CORTEX</div><div class="v ${c.overall_health==='ok'?'green':'red'}">${(c.overall_health||'UNKNOWN').toUpperCase()}</div></div>
+          <div class="kv-card"><div class="k">NŒUDS BLOQUANTS</div><div class="v red">${blockingCount} BLOQUANTS</div></div>
+        </div>
+        <div style="font-size:9px; color:#7093b5; margin-top:4px;">Organes & Moteurs Cortex :</div>
+        <table class="data-table">
+          <thead><tr><th>ORGANE</th><th>STATUT</th><th style="text-align:right;">MODE</th></tr></thead>
+          <tbody>${engineRows || '<tr><td colspan="3">Chargement du Cortex...</td></tr>'}</tbody>
+        </table>
+      </div>
+    `;
+
+    colRight.innerHTML = `
+      <div class="panel-widget">
+        <div class="pw-title">
+          <span>🔍 MOTIFS DE BLOCAGE DÉTECTÉS</span>
+          <span class="badge">REASON CODES</span>
+        </div>
+        <div style="font-size:10px; color:#b0d4f1; line-height:1.6;">
+          <div style="padding:6px; background:rgba(255,45,85,0.1); border:1px solid rgba(255,45,85,0.25); border-radius:4px; margin-bottom:6px;">
+            <b style="color:var(--red);">BLOCK_EDGE_UNPROVEN</b><br>
+            L'edge n'est pas démontré après coûts Axi sur la période commune OOS.
+          </div>
+          <div style="padding:6px; background:rgba(255,209,102,0.1); border:1px solid rgba(255,209,102,0.25); border-radius:4px; margin-bottom:6px;">
+            <b style="color:var(--amber);">BRAIN_NO_COVERAGE</b><br>
+            Pas de couverture consensus sur cet actif. Blocage pré-M2 de sécurité.
+          </div>
+          <div style="padding:6px; background:rgba(0,229,255,0.06); border:1px solid rgba(0,229,255,0.15); border-radius:4px;">
+            <b style="color:var(--cyan);">CB_MAX_DD</b><br>
+            Circuit breaker actif (Drawdown > seuil autorisé 5.0%).
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // STATION 2: SANTÉ & RISQUE R3
+  else if (S.activeStation === 'health') {
+    colLeft.innerHTML = `
+      <div class="panel-widget">
+        <div class="pw-title">
+          <span>🛡️ AGENT DE SANTÉ SYSTÈME</span>
+          <span class="badge" style="color:var(--green);">${h.agent || 'ACTIF'}</span>
+        </div>
+        <div class="kv-grid">
+          <div class="kv-card"><div class="k">RAM LIBRE</div><div class="v green">${h.ressources?.RamLibreMo || '—'} Mo</div></div>
+          <div class="kv-card"><div class="k">DISQUE LIBRE</div><div class="v">${h.ressources?.DisqueLibreGo || '—'} Go</div></div>
+          <div class="kv-card"><div class="k">MUR DÉMO↔RÉEL</div><div class="v ${h.mur_demo?.intact?'green':'red'}">${h.mur_demo?.intact?'INTACT':'COMPROMIS'}</div></div>
+          <div class="kv-card"><div class="k">AGENT DE SANTÉ</div><div class="v green">${(h.agent||'ACTIF').toUpperCase()}</div></div>
+        </div>
+        <div style="font-size:9px; color:#7093b5; margin-top:6px;">Remarque Agent de Santé :</div>
+        <div style="font-size:10px; color:#b0d4f1; padding:6px; background:rgba(0,229,255,0.05); border-radius:4px; margin-top:4px;">
+          ${h.note || 'Surveillance continue active — alertes Windows armées.'}
+        </div>
+      </div>
+    `;
+
+    const servicesRows = Object.entries(h.services || {}).map(([sName, sVal]) => `
+      <tr>
+        <td>${sName}</td>
+        <td>PORT ${sVal.port}</td>
+        <td class="${sVal.etat === 'ok' ? 'green' : 'err'}">${sVal.etat.toUpperCase()}</td>
+        <td style="text-align:right;">${sVal.latence_s != null ? sVal.latence_s + 's' : '—'}</td>
+      </tr>
+    `).join('');
+
+    colRight.innerHTML = `
+      <div class="panel-widget">
+        <div class="pw-title">
+          <span>📡 SERVICES & LATENCES</span>
+          <span class="badge">SONDES</span>
+        </div>
+        <table class="data-table">
+          <thead><tr><th>SERVICE</th><th>PORT</th><th>ÉTAT</th><th style="text-align:right;">LATENCE</th></tr></thead>
+          <tbody>${servicesRows || '<tr><td colspan="4">Audit des sondes...</td></tr>'}</tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  // STATION 3: MARCHÉ & L2 3D
+  else if (S.activeStation === 'l2') {
+    colLeft.innerHTML = `
+      <div class="panel-widget">
+        <div class="pw-title">
+          <span>📊 MICROSTRUCTURE & SPREAD</span>
+          <span class="badge">BINANCE L2</span>
+        </div>
+        <div class="kv-grid">
+          <div class="kv-card"><div class="k">SPREAD REALTIME</div><div class="v">${st.spreads?.['BTC/USDT'] ? st.spreads['BTC/USDT'].toFixed(1) : '—'} bps</div></div>
+          <div class="kv-card"><div class="k">CVD DELTA</div><div class="v green">${st.delta_vol?.['BTC/USDT']?.delta_pct ? (st.delta_vol['BTC/USDT'].delta_pct*100).toFixed(1)+'%' : '—'}</div></div>
+        </div>
+      </div>
+    `;
+
+    colRight.innerHTML = `
+      <div class="panel-widget">
+        <div class="pw-title">
+          <span>📈 DERIVATIVES FUTURES</span>
+          <span class="badge">PERP BTC</span>
+        </div>
+        <div class="kv-grid">
+          <div class="kv-card"><div class="k">MARK PRICE</div><div class="v">${st.futures?.['BTC/USDT']?.mark_price || '—'}</div></div>
+          <div class="kv-card"><div class="k">OPEN INTEREST</div><div class="v">${st.futures?.['BTC/USDT']?.oi || '—'}</div></div>
+          <div class="kv-card"><div class="k">FUNDING RATE</div><div class="v green">${st.futures?.['BTC/USDT']?.funding || '—'}</div></div>
+          <div class="kv-card"><div class="k">L/S RATIO</div><div class="v">${st.futures?.['BTC/USDT']?.long_short_ratio || '—'}</div></div>
+        </div>
+      </div>
+    `;
+  }
+
+  // STATION 4: CONFLUENCE SMC
+  else if (S.activeStation === 'smc') {
+    const sigs = st.signals || {};
+    const btcSig = sigs['BTC/USDT'] || {};
+
+    colLeft.innerHTML = `
+      <div class="panel-widget">
+        <div class="pw-title">
+          <span>◈ CONFLUENCE SMC · BTC/USDT</span>
+          <span class="badge">SMC 16</span>
+        </div>
+        <div class="kv-grid">
+          <div class="kv-card"><div class="k">PRIX LIVE</div><div class="v green">${btcSig.price ? btcSig.price.toFixed(2) : '—'}</div></div>
+          <div class="kv-card"><div class="k">SCORE SMC</div><div class="v">${btcSig.score || 0}/16</div></div>
+          <div class="kv-card"><div class="k">SIGNAL</div><div class="v ${btcSig.side==='ACHAT'?'green':btcSig.side==='VENTE'?'red':''}">${btcSig.side || 'NEUTRE'}</div></div>
+          <div class="kv-card"><div class="k">REGIME ADX</div><div class="v">${btcSig.regime || '—'}</div></div>
+        </div>
+      </div>
+    `;
+
+    const crits = ['EMA200_H4', 'STRUCT_H2H1', 'OB_FVG_30M', 'OB_FVG_15M_CONFIRM', 'TRIX_5M', 'ALIGN_H2H1', 'EMA200_1D', 'ADX_REGIME', 'RSI_DIVERGENCE', 'ORDERBOOK_IMBALANCE'];
+    const critGrid = crits.map(cr => `
+      <div class="crit-item ${btcSig[cr] ? 'on' : ''}">
+        <span class="c-name">${cr}</span>
+        <span>${btcSig[cr] ? '✓' : '·'}</span>
+      </div>
+    `).join('');
+
+    colRight.innerHTML = `
+      <div class="panel-widget">
+        <div class="pw-title">
+          <span>⚙ CRITÈRES DE SCORING ACTIVÉS</span>
+          <span class="badge">GRILLE</span>
+        </div>
+        <div class="crit-grid">${critGrid}</div>
+      </div>
+    `;
+  }
+
+  // STATION 5: POSITIONS & TRADES
+  else if (S.activeStation === 'paper') {
+    const pap = st.paper || {};
+    colLeft.innerHTML = `
+      <div class="panel-widget">
+        <div class="pw-title">
+          <span>💼 POSITIONS & DÉMO MT5</span>
+          <span class="badge">AXI DEMO</span>
+        </div>
+        <div class="kv-grid">
+          <div class="kv-card"><div class="k">EQUITY PAPER</div><div class="v green">${pap.equity ? pap.equity.toFixed(2) + ' $' : '—'}</div></div>
+          <div class="kv-card"><div class="k">P&L NET</div><div class="v ${pap.total_pnl>=0?'green':'red'}">${pap.total_pnl != null ? pap.total_pnl.toFixed(2) + ' $' : '—'}</div></div>
+          <div class="kv-card"><div class="k">WIN RATE</div><div class="v">${pap.winrate != null ? pap.winrate + '%' : '—'}</div></div>
+          <div class="kv-card"><div class="k">TRADES TOTAL</div><div class="v">${pap.trades_count || 0}</div></div>
+        </div>
+      </div>
+    `;
+
+    const posRows = (pap.open_positions || []).map(pos => `
+      <tr>
+        <td style="color:var(--cyan);">${pos.symbol}</td>
+        <td class="${pos.side === 'LONG' ? 'green' : 'red'}">${pos.side}</td>
+        <td>${pos.entry_price}</td>
+        <td class="${pos.pnl >= 0 ? 'green' : 'red'}">${pos.pnl != null ? pos.pnl.toFixed(2) : '—'}</td>
+      </tr>
+    `).join('');
+
+    colRight.innerHTML = `
+      <div class="panel-widget">
+        <div class="pw-title">
+          <span>⬡ POSITIONS EN COURS</span>
+          <span class="badge">${(pap.open_positions||[]).length} ACTIVE(S)</span>
+        </div>
+        <table class="data-table">
+          <thead><tr><th>SYM</th><th>SIDE</th><th>ENTRÉE</th><th style="text-align:right;">PNL</th></tr></thead>
+          <tbody>${posRows || '<tr><td colspan="4" style="text-align:center; color:#6989a8;">Aucune position active</td></tr>'}</tbody>
+        </table>
+      </div>
+    `;
+  }
+}
+
+pullData();
+setInterval(pullData, 2500);
+
+// ── Station Focus & 3D Camera Controls ────────────────────────────────────────
+window.focusStation = function(stName) {
+  S.activeStation = stName;
+  document.querySelectorAll('.st-btn').forEach(btn => btn.classList.remove('active'));
+  document.getElementById(`btn-st-${stName}`)?.classList.add('active');
+
+  // Zoom / Target camera offsets
+  if (stName === 'cortex') { S.camTargetX = 0; S.camTargetY = 0; S.camTargetZoom = 1.0; say("STATION CERVEAU & CORTEX ACTIVÉE — DIAGNOSTIC ET NŒUDS BLOQUANTS", "JARVIS_AI"); }
+  else if (stName === 'health') { S.camTargetX = -120; S.camTargetY = 40; S.camTargetZoom = 1.25; say("STATION SANTÉ SYSTÈME & RISQUE R3 ACTIVÉE — AUDIT ET MUR DÉMO", "JARVIS_AI"); }
+  else if (stName === 'l2') { S.camTargetX = 120; S.camTargetY = -30; S.camTargetZoom = 1.35; say("STATION MARCHÉ & CARNET L2 3D ACTIVÉE — MICROSTRUCTURE ET SPREAD", "JARVIS_AI"); }
+  else if (stName === 'smc') { S.camTargetX = 80; S.camTargetY = 60; S.camTargetZoom = 1.2; say("STATION CONFLUENCE SMC ACTIVÉE — SCORING 16 CRITÈRES EN DIRECT", "JARVIS_AI"); }
+  else if (stName === 'paper') { S.camTargetX = -80; S.camTargetY = -60; S.camTargetZoom = 1.15; say("STATION POSITIONS & PAPER TRADING — COMPTE DÉMO MT5", "JARVIS_AI"); }
+
+  renderUI();
+};
+
+// ── Subtitle Typewriter Machine (JARVIS AI) ──────────────────────────────────
+const subQueue = [];
+let subBusy = false;
+
+function say(txt, meta) {
+  subQueue.push({ txt, meta });
+  if (subQueue.length > 3) subQueue.shift();
+  pumpSub();
+}
+
+function pumpSub() {
+  if (subBusy || !subQueue.length) return;
+  subBusy = true;
+  const { txt, meta } = subQueue.shift();
+  const el = document.getElementById("subtitle-text");
+  document.getElementById("sub-meta-r").textContent = meta || "FLUX_DÉCRYPTÉ";
+  el.textContent = "";
+  let i = 0;
+  const it = setInterval(() => {
+    el.textContent = txt.slice(0, ++i);
+    if (i >= txt.length) {
+      clearInterval(it);
+      setTimeout(() => { subBusy = false; pumpSub(); }, 3000);
+    }
+  }, 22);
+}
+
+window.titanQuickSend = function() {
+  const inp = document.getElementById('ai-input');
+  const txt = inp.value.trim();
+  if (!txt) return;
+  inp.value = '';
+  say(`VOUS : ${txt}`, 'COMMANDE_UTILISATEUR');
+  setTimeout(() => {
+    say(`JARVIS : Commande "${txt}" transmise à l'orchestrateur Titanium.`, 'HERMES_CORE');
+  }, 800);
+};
+</script>
+
+</body>
+</html>

@@ -53,6 +53,11 @@ class DemoGuards:
     enabled: bool = os.getenv("DEMO_EXEC_ENABLED", "0") == "1"
     risk_pct: float = _cfg_float("DEMO_RISK_PCT", 0.5)
     max_positions: int = _cfg_int("DEMO_MAX_POSITIONS", 3)
+    # Multi-positions PAR ACTIF (Florent 25/07 : « on autorise la prise de multi position
+    # par actif en cas de setup meilleur jusqu'à 3 »). Défaut 1 → comportement historique
+    # (une seule position par symbole). >1 → on empile, mais SEULEMENT si le nouveau setup
+    # est STRICTEMENT meilleur (plus de piliers) et de MÊME sens (pas de hedge). Cf. demo_bridge.
+    max_pos_per_symbol: int = _cfg_int("DEMO_MAX_POS_PER_SYMBOL", 1)
     daily_loss_limit_pct: float = _cfg_float("DEMO_DAILY_LOSS_LIMIT_PCT", 5.0)
     max_spread_points: int = _cfg_int("DEMO_MAX_SPREAD_POINTS", 40)      # legacy (non utilisé)
     # Garde de spread en POURCENTAGE (instrument-agnostique). Les « points » ne sont pas
@@ -77,6 +82,7 @@ class DemoGuards:
             enabled=os.getenv("DEMO_EXEC_ENABLED", "0") == "1",
             risk_pct=_cfg_float("DEMO_RISK_PCT", 0.5),
             max_positions=_cfg_int("DEMO_MAX_POSITIONS", 3),
+            max_pos_per_symbol=_cfg_int("DEMO_MAX_POS_PER_SYMBOL", 1),
             daily_loss_limit_pct=_cfg_float("DEMO_DAILY_LOSS_LIMIT_PCT", 5.0),
             max_spread_points=_cfg_int("DEMO_MAX_SPREAD_POINTS", 40),
             max_spread_pct=_cfg_float("DEMO_MAX_SPREAD_PCT", 0.5),
@@ -398,9 +404,14 @@ def place_market_order(mt5: Any, symbol: str, side: str, atr: float,
     done = getattr(mt5, "TRADE_RETCODE_DONE", 10009)
     retcode = getattr(res, "retcode", None)
     ok = retcode == done
+    # `order` = ticket de l'ordre (== position_id d'ouverture pour un ordre au marché) :
+    # INDISPENSABLE pour relier plus tard la décision à son RÉSULTAT réel (SL/TP, P&L) via
+    # positions_get / history_deals. `ticket` en est l'alias consommé par le journal.
+    order = getattr(res, "order", None)
     return {"sent": ok, "retcode": retcode, "lot": lot, "price": price,
             "sl": sl, "tp": tp, "side": "long" if is_long else "short",
             "symbol": symbol, "risk_money": round(risk_money, 2),
             "comment": getattr(res, "comment", ""),
+            "order": order, "deal": getattr(res, "deal", None), "ticket": order,
             "reason": None if ok else f"ORDER_REJECTED: retcode={retcode} "
                                       f"{getattr(res, 'comment', '')}"}
