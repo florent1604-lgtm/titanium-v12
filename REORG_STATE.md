@@ -21,13 +21,14 @@
 | 1.3 — `core/config.py` (pydantic-settings) | ✅ FAIT | 2a96fb3 |
 | 1b — RiskGate `risk/riskgate.py` (**SHADOW, non câblé, smoke OK**) | ✅ CONSTRUIT | (ce commit) |
 | 1.4 — refactor pôles → lisent/écrivent state+journal | ✅ FAIT | 280541b |
-| 1.5 — déplacement arbo N0→N5 (**bot arrêté, EN COURS**) | 🔜 2/≈5 lots | 7d77189, ad003af |
+| 1.5 — déplacement arbo N0→N5 (**bot arrêté**) | ✅ FAIT (0 régression) | 7d77189…(fix mt5) |
 | &nbsp;&nbsp;• engine → feedback (N6) | ✅ | 7d77189 |
 | &nbsp;&nbsp;• vision/emotion/fundamentals → poles (N2 feuilles) | ✅ | ad003af |
-| &nbsp;&nbsp;• core/{scoring,smc,signal} → poles/smc | ⬜ à faire | — |
-| &nbsp;&nbsp;• core/{geometric_plane,spectral_bridge}+indicators/spectral → poles/spectral | ⬜ | — |
-| &nbsp;&nbsp;• core/{confluence*,consensus,cortex,lead_lag,brain_gate} → fusion | ⬜ | — |
-| &nbsp;&nbsp;• data/ → ingestion (⚠️ mt5_provider haut fan-out) | ⬜ | — |
+| &nbsp;&nbsp;• core/{scoring,smc,signal} → poles/smc | ✅ | (commit smc) |
+| &nbsp;&nbsp;• core/{geometric_plane,spectral_bridge}+indicators/spectral → poles/spectral | ✅ | (commit spectral) |
+| &nbsp;&nbsp;• core/{confluence*,consensus,cortex,lead_lag} → fusion (brain_gate reste core/) | ✅ | (commit fusion) |
+| &nbsp;&nbsp;• data feeds → ingestion/market (mt5_lock partagé vérifié) | ✅ | (commit ingestion) |
+| &nbsp;&nbsp;• fix test mt5_account_snapshot (chemin post-move) | ✅ | (fix mt5) |
 | 1b-wiring — brancher RiskGate porte unique (**revue Florent + paper avant/après**) | ⬜ | — |
 | 1c — ExecutionPort (MT5/Sim/Binance) | ⬜ | — |
 | 2 — observabilité /health + structlog | ⬜ | — |
@@ -52,13 +53,19 @@
    (param_registry.json, scoring_weights.json, etc.) — grep `__file__` dans chaque module avant.
 
 ## Prochaine action concrète
-**Phase 1.5 — lot suivant : `core/{scoring_engine,smc_engine,signal_engine}` → `poles/smc/`.**
-Appliquer le patron ci-dessus. ⚠️ `grep __file__` + chemins root-relatifs dans ces modules AVANT
-(scoring_weights.json, param_registry.json probables). signal_engine importe déjà state_builder/
-shadow_divergence/engine — vérifier les imports croisés core→core après move. Valider (import app
-+ tests scoring/signal). Puis poles/spectral, fusion, ingestion (data/, le plus risqué).
+**Phase 1 TERMINÉE** (socle N0 + RiskGate shadow + adoption + déplacement pyramide, 0 régression).
+Structure obtenue : `ingestion/market` (N1), `poles/{smc,spectral,fundamentals,emotion,vision}` (N2),
+`fusion/` (N3), `risk/riskgate` (N4 shadow), `feedback/` (N6). Anciens chemins préservés par shims.
 
-Après 1.5 : 1b-wiring (brancher RiskGate porte unique — **revue Florent + comparaison paper**).
+**Prochaine étape = 1b-wiring** : brancher le RiskGate comme porte unique d'exécution — **STOP
+pour revue Florent + comparaison paper avant/après (règle 4)**. Alternative recommandée : redémarrer
+le bot d'abord (le journal non censuré capture du RÉEL via les shims), observer, PUIS câbler.
+Ensuite : 1c ExecutionPort, phases 2-9. Nettoyage des shims = tout à la fin, quand les imports
+auront migré vers les nouveaux chemins.
+
+⚠️ Échecs de suite complète = TOUS pré-existants (vérif worktree 56b0c7f) : paper_trading (5,
+flaky/isolation OK), decision_kernel (3), gitnexus (1-2), brain_gate (3 = flag BRAIN_GATE_PERMISSIVE=1,
+pas les moves). Aucune régression due au déplacement.
 
 ## Bot
 ⚠️ **ARRÊTÉ** (coupé par Florent le 27/07 pour la bascule). Positions gardent SL/TP broker mais
