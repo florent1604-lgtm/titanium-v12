@@ -574,6 +574,16 @@ async def confluence_demo_status():
     }
 
 
+@app.get("/health")
+async def health_pyramid():
+    """Santé de la PYRAMIDE (réorg Phase 2, `core/health.py`) : socle/journal non censuré,
+    fusion N3 (heartbeat + pôles), risque N4, exécution N5 (equity/positions démo), ressources.
+    Lecture seule, non bloquant. Complémentaire de /health/system (agent indépendant)."""
+    import asyncio as _aio
+    from core.health import health_snapshot
+    return await _aio.to_thread(health_snapshot)
+
+
 @app.get("/health/system")
 async def health_system():
     """État produit par l'AGENT DE SANTÉ (`tools/health_agent.py`), lu depuis son fichier.

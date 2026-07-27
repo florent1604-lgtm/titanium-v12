@@ -35,3 +35,4 @@ lxml>=5.0.0                    # browser_agent.py — parser rapide
 
 # Monitoring & hotkeys
 pynput>=1.7.6                  # hotkey_manager.py — Ctrl+Alt
+structlog>=24.0.0
