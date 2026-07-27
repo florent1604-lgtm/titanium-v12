@@ -124,16 +124,29 @@ def _counter_trend_block(feats: dict, side_int: int, df_htf, atr,
                          min_atr_dist: float) -> bool:
     """True si le setup FADE une tendance H4 NETTE → à ne PAS exécuter (Florent 25/07).
 
-    La méthode est support→long / résistance→short (retour à la moyenne). Correct en RANGE,
-    mais contre une tendance nette elle se fait rouler dessus. On bloque donc UNIQUEMENT :
-      · tendance H4 non neutre (trend != 0) ET
-      · setup en sens OPPOSÉ à la tendance (side == -trend) ET
+    La tendance est l'ORIENTATION immédiate du marché ; sur une tendance, le bot doit
+    ANTICIPER les retournements (calcul geometrix), pas fader bêtement (Florent 27/07). Donc on
+    ne bloque une contre-tendance QUE si :
+      · tendance H4 non neutre (trend != 0) ET side == -trend (contre le sens) ET
+      · AUCUN retournement prédit par geometrix (rupture topologique / dérive de Fisher / horizon
+        de Lyapunov court = régime qui change) — sinon c'est un RETOURNEMENT ANTICIPÉ, on le PREND ET
       · prix nettement au-delà de l'EMA200 H4 (≥ min_atr_dist × ATR) = tendance VRAIMENT nette.
-    Range (trend=0) et continuation (side==trend) restent autorisés. Fail-safe → False."""
+    Range (trend=0), continuation (side==trend) et retournement prédit restent autorisés. Fail-safe → False."""
     try:
         trend = int(feats.get("trend") or 0)
         side_int = int(side_int or 0)
         if trend == 0 or side_int == 0 or side_int == trend:
+            return False
+        # RETOURNEMENT PRÉDIT (geometrix) : une contre-tendance adossée à une rupture de régime
+        # n'est PAS un fade — c'est un retournement anticipé → on ne bloque pas.
+        geo = feats.get("geometric") if isinstance(feats.get("geometric"), dict) else {}
+        import os as _os
+        _fish_th = float(_os.getenv("REVERSAL_FISHER_TH", "1.0"))
+        _lyap_th = int(_os.getenv("REVERSAL_LYAPUNOV_TH", "20"))
+        _lyap = int(geo.get("lyapunov") or 999)
+        if (bool(geo.get("topology_alert"))
+                or float(geo.get("fisher") or 0.0) >= _fish_th
+                or (0 < _lyap <= _lyap_th)):
             return False
         if df_htf is None or atr is None or float(atr) <= 0:
             return False

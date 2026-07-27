@@ -155,20 +155,21 @@ class RiskGate:
         d.stop_distance = round(stop, 8)
         d._add("sizing", True, f"stop={stop:.6g} risk={allowed_risk:.2f} sf={size_factor:.3f}")
 
-        # 6) Filtre de COÛT (gate dur) : mouvement attendu doit couvrir 2×frais+spread+slippage.
-        #    Inputs de coût réels = journal MT5 démo (Phase 1c). Absents → check "inconnu", non
-        #    bloquant en shadow (à durcir une fois les coûts mesurés câblés dans l'état).
+        # 6) COÛT → SIZING (Florent 27/07 : le spread est propre au broker, on l'ACCEPTE et on
+        #    ADAPTE le lot ; on ne rejette JAMAIS un trade pour son coût). Plus le coût est gros
+        #    vs le stop, plus le lot baisse — mais la position PASSE (« si elle doit passer, elle passe »).
         cost = state.notes.get("roundtrip_cost")
+        cost_factor = 1.0
         if cost:
             try:
-                if (stop / float(cost)) < self.cost_ratio_min:
-                    d.verdict = "DENY"; d.reason = "COUT_TROP_ELEVE"
-                    d._add("cost_filter", False, f"ratio={stop/float(cost):.2f}<{self.cost_ratio_min}"); return d
-                d._add("cost_filter", True)
+                c = float(cost)
+                cost_factor = max(0.15, min(1.0, stop / (stop + 2.0 * c)))
+                d._add("cost_sizing", True, f"lot x{cost_factor:.2f} (spread absorbé, pas de rejet)")
             except Exception:
-                d._add("cost_filter", True, "coût illisible — ignoré")
+                d._add("cost_sizing", True, "coût illisible")
         else:
-            d._add("cost_filter", True, "coût inconnu (à mesurer Phase 1c)")
+            d._add("cost_sizing", True, "coût inconnu")
+        d.pillar_size = round(d.pillar_size * cost_factor, 4)   # le coût entre dans l'adaptation du lot
 
         # 7) SL/TP + caps d'exposition.
         sign = 1 if side > 0 else -1
