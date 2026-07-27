@@ -59,14 +59,25 @@ def _simulate(m15, i, side, entry, atr):
 
 
 def run(bars: int = 300) -> dict:
-    from ingestion.market.mt5_provider import get_ohlcv, ensure_init
+    import MetaTrader5 as mt5
+    from ingestion.market.mt5_provider import get_ohlcv, ensure_init, mt5_lock
     from fusion.confluence_demo_engine import decide, _aggressive_eligible, _structure_size_factor, _counter_trend_block
     from risk.riskgate import RiskGate
     if not ensure_init():
         raise RuntimeError("MT5 non initialisé.")
     gate = RiskGate()
-    modes = {"B_baseline": [], "A_riskgate": []}   # listes de (R, size, R_weighted)
+    modes = {"B_baseline": [], "A_riskgate": []}   # listes de (R_net, size, R_net_weighted)
     now = datetime.now(timezone.utc)
+
+    # COÛT aller-retour par actif (2×spread live, en unités de prix) — le vrai tueur en live.
+    sym_cost = {}
+    with mt5_lock:
+        for sym in SYMBOLS:
+            try:
+                si = mt5.symbol_info(sym)
+                sym_cost[sym] = float((si.spread or 0) * (si.point or 0)) * 2.0 if si else 0.0
+            except Exception:
+                sym_cost[sym] = 0.0
 
     for sym in SYMBOLS:
         m15 = get_ohlcv(sym, "M15", bars + HORIZON + 60)
@@ -95,14 +106,19 @@ def run(bars: int = 300) -> dict:
             entry = float(sub15["close"].iloc[-1])
             npil = (aggr or {}).get("n_pillars") or sum(1 for g in dec.gates if g.passed and g.name != "data_valid")
             R = _simulate(m15, i, side, entry, atr)
-            # B : sizing structure (plus de piliers = plus gros)
+            r_unit = SL_ATR * atr
+            cost = sym_cost.get(sym, 0.0)
+            cost_r = (cost / r_unit) if r_unit else 0.0    # coût exprimé en R
+            R_net = R - cost_r                             # les DEUX modes paient le coût
+            # B : sizing structure, LOT PLEIN (paie le coût plein)
             szB = _structure_size_factor(npil, 0.0)
-            modes["B_baseline"].append((R, szB, R * szB))
-            # A : filtre tendance + barème piliers RiskGate
+            modes["B_baseline"].append((R_net, szB, R_net * szB))
+            # A (modèle Florent) : tendance consciente des retournements + LOT ADAPTÉ AU COÛT
             if _counter_trend_block(feats, side, sub4, atr, 0.25):
-                continue                                   # RiskGate DENY contre-tendance → pas de trade
-            szA = szB * gate.pillar_size(npil)
-            modes["A_riskgate"].append((R, szA, R * szA))
+                continue                                   # contre-tendance sans retournement prédit
+            cost_factor = r_unit / (r_unit + 2.0 * cost) if r_unit else 1.0   # coût gros → lot plus petit
+            szA = szB * gate.pillar_size(npil) * cost_factor
+            modes["A_riskgate"].append((R_net, szA, R_net * szA))
 
     def _stats(rows):
         if not rows:
@@ -136,7 +152,7 @@ def main() -> int:
         d = round((a["esp_R_ponderee_lot"] - b["esp_R_ponderee_lot"]), 3)
         print(f"\n  → La correction RiskGate change l'espérance pondérée-lot de {d:+} R "
               f"({'AMÉLIORE' if d > 0 else 'DÉGRADE' if d < 0 else 'neutre'}).")
-    print("\n  ⚠️ résolution barre, sans frais détaillés, filtre coût non rejoué (valide sizing+tendance).")
+    print("\n  ✅ COÛTS RÉELS inclus (2×spread live par actif). ⚠️ résolution barre, slippage non modélisé.")
     return 0
 
 
