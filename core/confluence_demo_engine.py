@@ -438,6 +438,18 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
             summary["brain"] = gate_info
             if refine_info:
                 summary["refine"] = refine_info      # raffinement M5/M1 du point d'entrée
+
+            # ADOPTION DU SOCLE N0 (réorg Phase 1.4) : le chemin de décision RÉEL écrit dans le
+            # SystemState + le journal unifié (signal accepté/refusé, décision, fill, fantôme).
+            # Additif et FAIL-SAFE : n'altère jamais la décision/exécution ci-dessus.
+            try:
+                from core.state_builder import journal_cycle
+                journal_cycle(symbol=symbol, venue=venue, ltf=ltf_tf, feats=feats,
+                              decision=decision, gate_allow=bool(gate.allow),
+                              gate_reason=(gate_info.get("reason_codes") or [""])[0] if gate_info else "",
+                              placed=placed, aggressive=aggressive, atr=atr, price=entry)
+            except Exception:  # noqa: BLE001 — journaliser ne casse jamais un cycle
+                pass
         except Exception as exc:  # noqa: BLE001 — fail-safe : un symbole ne casse pas le tour
             n_errors += 1
             summary = {"symbol": symbol, "verdict": "ERROR", "error": repr(exc),
