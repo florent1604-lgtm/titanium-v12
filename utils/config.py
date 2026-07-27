@@ -324,6 +324,11 @@ ENTRY_REFINE_SL_FLOOR_FRAC = _float("ENTRY_REFINE_SL_FLOOR_FRAC", 0.6)
 CONFLUENCE_TREND_ALIGN         = _bool("CONFLUENCE_TREND_ALIGN", "0")
 CONFLUENCE_TREND_ALIGN_MIN_ATR = _float("CONFLUENCE_TREND_ALIGN_MIN_ATR", 0.25)
 
+# ── RiskGate câblé (réorg, Florent 27/07) : la porte unique N4 (risk/riskgate.py) est branchée
+# en VETO ADDITIF sur le chemin de placement démo (les gardes existants restent). DENY du
+# RiskGate → pas de placement (motif RISKGATE_DENY:...). Fail-open sur erreur. Réversible (flag).
+RISKGATE_ENABLED = _bool("RISKGATE_ENABLED", "0")
+
 # ── GESTION DYNAMIQUE des positions démo (Florent 26/07 : « ne pas rester figé ») ──
 # Post-mortem : 23% des pertes avaient atteint +0.8R avant de repartir au SL. Le SL est
 # réajusté en cours de route : breakeven à +DEMO_BREAKEVEN_R, puis trailing dès +DEMO_TRAIL_START_R

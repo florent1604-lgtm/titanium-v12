@@ -207,7 +207,8 @@ async def lifespan(app: FastAPI):
                               CONFLUENCE_ROTATE_BATCH, CONFLUENCE_DEMO_AUTO_UNIVERSE,
                               ENTRY_REFINE_ENABLED, ENTRY_REFINE_LTF,
                               ENTRY_REFINE_MICRO_TF, ENTRY_REFINE_SL_FLOOR_FRAC,
-                              CONFLUENCE_TREND_ALIGN, CONFLUENCE_TREND_ALIGN_MIN_ATR)
+                              CONFLUENCE_TREND_ALIGN, CONFLUENCE_TREND_ALIGN_MIN_ATR,
+                              RISKGATE_ENABLED)
 
     def _discover_cfd_universe(fallback):
         """Univers CFD COMPLET auto-découvert depuis MT5 (tout le tradable liquide hors
@@ -263,7 +264,8 @@ async def lifespan(app: FastAPI):
                                    refine_micro_tf=ENTRY_REFINE_MICRO_TF,
                                    refine_sl_floor_frac=ENTRY_REFINE_SL_FLOOR_FRAC,
                                    trend_align=CONFLUENCE_TREND_ALIGN,
-                                   trend_align_min_atr=CONFLUENCE_TREND_ALIGN_MIN_ATR)
+                                   trend_align_min_atr=CONFLUENCE_TREND_ALIGN_MIN_ATR,
+                                   riskgate_enabled=RISKGATE_ENABLED)
                 except Exception as e:
                     logger.warning("[CONFLUENCE-DEMO] boucle: %s", e)
                 await asyncio.sleep(CONFLUENCE_DEMO_SECONDS)

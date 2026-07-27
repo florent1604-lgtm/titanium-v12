@@ -233,7 +233,8 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
                    entry_gate: Optional[Callable] = None,
                    refine_enabled: bool = False, refine_ltf: str = "M5",
                    refine_micro_tf: str = "M1", refine_sl_floor_frac: float = 0.6,
-                   trend_align: bool = False, trend_align_min_atr: float = 0.25) -> dict:
+                   trend_align: bool = False, trend_align_min_atr: float = 0.25,
+                   riskgate_enabled: bool = False) -> dict:
     """Un passage sur tous les symboles configurés.
     `symbols_cfg` : liste de dicts {symbol, ltf, htf, venue}.
     `rates_fn(symbol, tf, n) -> df|None` : défaut `mt5_provider.get_ohlcv` (données MT5).
@@ -329,6 +330,24 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
             counter_trend = bool(
                 trend_align and gate.source != "MASTER"
                 and _counter_trend_block(feats, _eff_side, df_htf, atr, trend_align_min_atr))
+            # RISKGATE (N4, réorg) — PORTE UNIQUE consolidée, câblée en VETO ADDITIF (réversible
+            # via flag). Elle reconsolide HALT / veto fondamentaux / circuit breaker / tendance /
+            # coût / exposition en un seul verdict. Fail-OPEN sur erreur (un bug du RiskGate ne
+            # casse jamais le trading : les gardes existants restent la sécurité). Master exempté.
+            riskgate_deny = None
+            if riskgate_enabled and gate.allow and gate.source != "MASTER" and atr is not None and _eff_side != 0:
+                try:
+                    from core.state_builder import build_system_state
+                    from risk.riskgate import RiskGate
+                    _rg_state = build_system_state(symbol=symbol, venue=venue, ltf=ltf_tf,
+                                                   feats=feats, decision=decision, atr=atr, price=entry)
+                    _rg_state.scoring.side = _eff_side
+                    _rgd = RiskGate().evaluate(_rg_state)
+                    if _rgd.verdict == "DENY":
+                        riskgate_deny = _rgd.reason
+                except Exception:  # noqa: BLE001 — fail-open : gardes existants inchangés
+                    riskgate_deny = None
+
             # Éligibilité AGRESSIVE calculée TÔT (pure, légère) : sert à savoir si un placement
             # est imminent, donc s'il vaut la peine de charger les TF inférieurs pour affiner.
             aggressive = _aggressive_eligible(decision, feats, aggressive_min)
@@ -339,7 +358,7 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
             # précise + lot plus gros à risque égal. N'INVERSE JAMAIS le sens (fail-safe).
             refine_info = None
             _rside = int(gate.side or decision.side or 0)
-            _will_place = gate.allow and atr is not None and not counter_trend and (
+            _will_place = gate.allow and atr is not None and not counter_trend and not riskgate_deny and (
                 decision.entered or bool(aggressive and aggressive_exec))
             if refine_enabled and _will_place and _rside != 0:
                 try:
@@ -364,6 +383,8 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
                 elif counter_trend:
                     placed = {"sent": False, "reason": "COUNTER_TREND_BLOCKED",
                               "trend": int(feats.get("trend") or 0), "side": _eff_side}
+                elif riskgate_deny:
+                    placed = {"sent": False, "reason": f"RISKGATE_DENY:{riskgate_deny}"}
                 else:
                     side = "long" if gate.side > 0 else "short"
                     _npil = sum(1 for g in (getattr(decision, "gates", []) or [])
@@ -393,6 +414,8 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
                 elif counter_trend:
                     aggressive["placed"] = {"sent": False, "reason": "COUNTER_TREND_BLOCKED",
                                             "trend": int(feats.get("trend") or 0), "side": _eff_side}
+                elif riskgate_deny:
+                    aggressive["placed"] = {"sent": False, "reason": f"RISKGATE_DENY:{riskgate_deny}"}
                 else:
                     aside = "long" if gate.side > 0 else "short"
                     ares = await place_fn(symbol, aside, atr, sl_atr_mult=_sl_mult,
