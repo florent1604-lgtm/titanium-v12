@@ -115,6 +115,9 @@ def manage_once(mt5: Any, *, breakeven_r: float, trail_start_r: float,
             if st.get("side") is None or st.get("symbol") is None:
                 st["side"] = side
                 st["symbol"] = pos.symbol
+                # VRAIE heure d'ouverture (broker), pas l'instant où le tracker a vu la
+                # position : sinon les extrêmes M1 rateraient le début de vie du trade.
+                st["ts_open"] = float(getattr(pos, "time", 0) or 0) or None
                 if st.get("tp_initial_R") is None and pos.tp:
                     st["tp_initial_R"] = round((float(pos.tp) - entry) / r * side, 4)
 

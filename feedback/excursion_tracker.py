@@ -226,7 +226,9 @@ def record_closed(mt5: Any, ticket: str, st: Dict[str, Any],
             return None
 
         ex = _exit_from_history(mt5, tk)
-        ts_entry = float(st.get("ts_entry_obs") or 0.0)
+        # VRAIE ouverture broker en priorité ; l'instant de 1re observation n'est qu'un
+        # repli (il raterait le début de vie d'une position ouverte avant la greffe).
+        ts_entry = float(st.get("ts_open") or st.get("ts_entry_obs") or 0.0)
         ts_exit = float(ex.get("ts_exit") or _now())
 
         # extrêmes EXACTS si possible, sinon repli sur le suivi 15 s (honnête sur la source)
