@@ -33,7 +33,14 @@ def _perception(st) -> Dict[str, Any]:
         "regime_geo": st.regime.regime,
         "lyapunov": st.regime.lyapunov_horizon,
         "topo_alert": st.regime.topology_alert,
-        "coherence": st.regime.coherence,
+        # Le pôle géométrix calcule 7 indicateurs ; seuls lyapunov + topology arrivaient
+        # jusqu'ici. `fisher` (dérive de régime) et `curvature` sont pourtant DÉJÀ dans
+        # l'état — ne pas les transmettre, c'était amputer la perception du régime.
+        # (`coherence` a été retiré : AUCUN organe ne le produit — un champ toujours nul
+        # ne fait qu'entretenir une illusion de couverture.)
+        "fisher": st.regime.fisher_distance,
+        "curvature": st.regime.curvature,
+        "geo_available": st.regime.geo_available,
         "fundamentals": {"score": st.fundamentals.risk_score, "level": st.fundamentals.level},
         "macro": {"fear_greed": st.fundamentals.fear_greed,
                   "fear_greed_label": st.fundamentals.fear_greed_label,
