@@ -109,9 +109,26 @@ def manage_once(mt5: Any, *, breakeven_r: float, trail_start_r: float,
             if r <= 0:
                 continue
 
+            # Identité de la position — nécessaire à l'enregistreur d'excursions (les YEUX
+            # de Cloe) à la clôture, quand MT5 ne la voit plus. Écrit à CHAQUE passage tant
+            # qu'il manque : rétro-comble les positions déjà suivies avant la greffe.
+            if st.get("side") is None or st.get("symbol") is None:
+                st["side"] = side
+                st["symbol"] = pos.symbol
+                if st.get("tp_initial_R") is None and pos.tp:
+                    st["tp_initial_R"] = round((float(pos.tp) - entry) / r * side, 4)
+
             fav_r = (cur - entry) / r * side               # excursion favorable en R
             st["peak_fav_r"] = max(float(st.get("peak_fav_r", 0.0)), fav_r)
             peak = float(st["peak_fav_r"])
+
+            # ── YEUX DE CLOE : MAE/MFE/giveback, gratuit (on est déjà dans la boucle,
+            # aucun appel MT5 en plus). Fail-safe : n'interrompt jamais la gestion.
+            try:
+                from feedback.excursion_tracker import observe as _observe_excursion
+                _observe_excursion(st, side=side, entry=entry, cur=cur, r=r)
+            except Exception:  # noqa: BLE001
+                pass
 
             # Distance de stop minimale du broker (mêmes bornes que l'exécuteur).
             si = mt5.symbol_info(pos.symbol)
@@ -168,8 +185,16 @@ def manage_once(mt5: Any, *, breakeven_r: float, trail_start_r: float,
             continue
 
     # Purge des tickets fermés (évite un état qui gonfle indéfiniment).
+    # ⚠️ Un ticket qui disparaît = une position qui vient de SE FERMER : c'est le SEUL
+    # instant où l'on connaît encore son contexte d'entrée ET son résultat. On enregistre
+    # la CONSÉQUENCE ici (yeux de Cloe) AVANT d'oublier. Fail-safe intégral.
     for tk in list(state.keys()):
         if tk not in live_tickets:
+            try:
+                from feedback.excursion_tracker import record_closed
+                record_closed(mt5, tk, state[tk])
+            except Exception:  # noqa: BLE001 — l'enregistrement ne casse jamais la purge
+                pass
             state.pop(tk, None)
     _save_state(state)
     return {"managed": managed, "moved": moved}
