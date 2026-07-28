@@ -191,8 +191,8 @@ def compute_lot(mt5: Any, symbol: str, entry: float, sl: float,
     lot = round(lot, 4)
     if lot < vmin - 1e-9:
         raise DemoExecutionRefused(
-            f"RISK_LOT_MIN_EXCEEDS: lot min {vmin} dépasse le budget risque "
-            f"({risk_money:.2f}) pour {symbol}.")
+            f"RISK_LOT_MIN_EXCEEDS: lot min {vmin} (risque {money_per_lot * vmin:.2f}) "
+            f"dépasse le budget risque ({risk_money:.2f}) pour {symbol}.")
     return round(min(lot, vmax), 4)
 
 
@@ -215,6 +215,29 @@ def _min_lot_risk(mt5: Any, symbol: str, entry: float, sl: float) -> Optional[fl
         return risk if risk > 0 and math.isfinite(risk) else None
     except Exception:  # noqa: BLE001
         return None
+
+
+def _filling_candidates(mt5: Any, si: Any) -> list:
+    """Modes de remplissage à essayer, dans l'ordre, pour ce symbole. Certains actifs
+    (futures `.fs` : CAC40.fs, EUSTX50.fs, SPI200.fs, HSI.fs) REJETTENT IOC → retcode
+    10030 « Unsupported filling mode ». On lit le bitmask `symbol_info.filling_mode`
+    (SYMBOL_FILLING_FOK/IOC) et on présente d'abord les modes SUPPORTÉS, avec IOC/FOK/RETURN
+    en repli (couvre aussi filling_mode indisponible=0). L'appelant ne retente que sur 10030."""
+    fm = int(getattr(si, "filling_mode", 0) or 0)
+    sym_ioc = getattr(mt5, "SYMBOL_FILLING_IOC", 2)
+    sym_fok = getattr(mt5, "SYMBOL_FILLING_FOK", 1)
+    o_ioc = getattr(mt5, "ORDER_FILLING_IOC", 1)
+    o_fok = getattr(mt5, "ORDER_FILLING_FOK", 0)
+    o_ret = getattr(mt5, "ORDER_FILLING_RETURN", 2)
+    ordered: list = []
+    if fm & sym_ioc:
+        ordered.append(o_ioc)
+    if fm & sym_fok:
+        ordered.append(o_fok)
+    for x in (o_ioc, o_fok, o_ret):     # replis (préserve IOC-d'abord si bitmask=0/indispo)
+        if x not in ordered:
+            ordered.append(x)
+    return ordered
 
 
 def _verify_risk(mt5: Any, symbol: str, is_long: bool, lot: float, entry: float,
@@ -373,22 +396,33 @@ def place_market_order(mt5: Any, symbol: str, side: str, atr: float,
         "price": price, "sl": round(sl, digits), "tp": round(tp, digits),
         "deviation": 20, "magic": magic, "comment": comment,
         "type_time": getattr(mt5, "ORDER_TIME_GTC", 0),
-        "type_filling": getattr(mt5, "ORDER_FILLING_IOC", 1),
+        "type_filling": _filling_candidates(mt5, si)[0],
     }
 
-    # order_check broker OBLIGATOIRE (rev.3, revue Codex) — fail-closed :
-    # absent/lève/None → REFUS (on n'envoie jamais sans validation broker).
+    # order_check broker OBLIGATOIRE (rev.3, revue Codex) — fail-closed : absent/lève/None
+    # → REFUS. On essaie les modes de remplissage SUPPORTÉS par le symbole ; on ne retente
+    # QUE sur 10030 (« Unsupported filling mode ») — toute autre erreur = refus immédiat.
+    # Le `req` retenu (avec le bon type_filling) est ensuite envoyé tel quel à order_send.
     checker = getattr(mt5, "order_check", None)
     if checker is None:
         return {"sent": False, "reason": "ORDER_CHECK_UNAVAILABLE"}
-    try:
-        chk = checker(req)
-    except Exception as exc:  # noqa: BLE001
-        return {"sent": False, "reason": f"ORDER_CHECK_ERROR: {exc!r}"}
-    if chk is None:
-        return {"sent": False, "reason": "ORDER_CHECK_NONE"}
-    chk_rc = getattr(chk, "retcode", None)
-    if chk_rc not in (0, getattr(mt5, "TRADE_RETCODE_DONE", 10009)):
+    done_rc = getattr(mt5, "TRADE_RETCODE_DONE", 10009)
+    chk = None
+    chk_rc = None
+    for tf in _filling_candidates(mt5, si):
+        req["type_filling"] = tf
+        try:
+            chk = checker(req)
+        except Exception as exc:  # noqa: BLE001
+            return {"sent": False, "reason": f"ORDER_CHECK_ERROR: {exc!r}"}
+        if chk is None:
+            return {"sent": False, "reason": "ORDER_CHECK_NONE"}
+        chk_rc = getattr(chk, "retcode", None)
+        if chk_rc in (0, done_rc):
+            break
+        if chk_rc != 10030:          # pas un problème de filling → refus immédiat
+            break
+    if chk_rc not in (0, done_rc):
         return {"sent": False, "reason": f"ORDER_CHECK_REJECTED: retcode={chk_rc} "
                                          f"{getattr(chk, 'comment', '')}"}
 

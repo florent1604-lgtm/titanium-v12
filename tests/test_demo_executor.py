@@ -301,6 +301,29 @@ def test_order_check_rejection_blocks_send():
     assert mt5.sent_request is None
 
 
+def test_filling_mode_retry_on_10030():
+    """Régression bug nuit 28/07 : les futures `.fs` rejettent IOC (retcode 10030
+    « Unsupported filling mode »). L'exécuteur doit basculer sur un mode SUPPORTÉ
+    (FOK) et envoyer l'ordre — au lieu de perdre l'entrée."""
+    class _FS(_TradeMT5):
+        ORDER_FILLING_FOK = 0
+        ORDER_FILLING_IOC = 1
+        ORDER_FILLING_RETURN = 2
+
+        def order_check(self, req):
+            rc = 10030 if req.get("type_filling") == self.ORDER_FILLING_IOC else 0
+            class _C:
+                retcode = rc
+                comment = "Unsupported filling mode" if rc == 10030 else ""
+            return _C()
+    info = _Info(login=dx.EXPECTED_DEMO_LOGIN, trade_mode=0, equity=1000.0)
+    mt5 = _FS(info, sym=_SymInfo(tick_size=1.0, tick_value=1.0), tick=_Tick(100.0, 100.1))
+    r = dx.place_market_order(mt5, "SPI200.fs", "long", atr=5.0,
+                              guards=_guards(risk_pct=5.0), day_start_equity=1000.0)
+    assert r["sent"]                                       # l'ordre part malgré le 10030
+    assert mt5.sent_request["type_filling"] == _FS.ORDER_FILLING_FOK   # mode supporté retenu
+
+
 def test_day_ref_rollover_and_corruption(tmp_path):
     p = tmp_path / "day_ref.json"
     # 1er appel : initialise
