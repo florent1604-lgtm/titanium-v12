@@ -18,6 +18,59 @@ Segments récents (07/2026) non détaillés plus bas mais actifs :
 
 ---
 
+## Pyramid Architecture (N0→N6) — CURRENT canonical structure (reorg, 07/2026)
+
+> **Read this before trusting file paths elsewhere in this doc.** A structural "pyramid"
+> reorg (branch **`reorg/phase1`**, `master` frozen at `aefded3`) physically moved most
+> engines into level-named packages. **The old paths still import** because each old
+> location is now a 4-line **`sys.modules` shim** that re-exports the real module — so
+> `core/signal_engine.py`, `core/confluence_demo_engine.py`, `data/mt5_provider.py` etc.
+> **still work**, but the code lives elsewhere now. Resume file: **`REORG_STATE.md`**
+> (always read first); cartography: `TITANIUM_V12_INDEX.md` + `REORG_AUDIT.md`.
+
+**Control flows UP the pyramid; data flows both ways through the N0 socle** (a shared
+`SystemState` + append-only journal that every level reads/writes).
+
+| Level | Package (real code) | What lives there | Old shim path |
+|---|---|---|---|
+| **N0 socle** | `core/state.py`, `core/journal.py`, `core/config.py`, `core/flux.py`, `core/state_builder.py`, `core/health.py`, `core/cloe/` | `SystemState` (Pydantic v2 blocks), SQLite append-only journal (signal/decision/fill/ghost), pydantic-settings, continuous afferent flux store, state builder + rich rationale, `/health`, Cloe memory+confidence | — (new) |
+| **N1 ingestion** | `ingestion/market/` | `binance_ws`, `mt5_provider` (⚠️ `mt5_lock`), `orderbook_ws`, `futures_data`, `gold_provider`, `spread_tracker` | `data/*` |
+| **N2 pôles** | `poles/smc/`, `poles/spectral/`, `poles/fundamentals/`, `poles/emotion/`, `poles/vision/` | scoring/smc/signal engines; geometric_plane+spectral; risk_scorer+modulator; emotion; vision | `core/*`, `indicators/spectral`, `fundamentals/*`, `emotion/*`, `vision/*` |
+| **N3 fusion** | `fusion/` | `confluence_demo_engine` (`run_once`/`decide`), `confluence_adapter`, `consensus_engine`, `cortex`, `lead_lag_engine` | `core/*` |
+| **N4 porte** | `risk/riskgate.py` | **single decision gate** `RiskGate.evaluate(SystemState)→Decision(ALLOW/REDUCE/DENY)` | — (new; consolidates guards/risk_manager/portfolio_risk/brain_gate/circuit-breaker/trend filter) |
+| **N5 exécution** | `execution/` | `executor` (paper), `paper_trading` (sim), `demo_mt5_executor`+`demo_bridge` (MT5 démo), `demo_position_manager` | (unchanged) |
+| **N6 feedback** | `feedback/` | `optimizer`, `learning_engine`, `strict_engine` (+ `tools/trade_analytics`, `trade_postmortem`) | `engine/*` |
+
+`brain_gate.py` intentionally stays in `core/` (not moved). **Shim cleanup is deferred to
+the very end** — do not delete shims while old import paths remain in the tree.
+
+### N4 RiskGate — WIRED as an additive, reversible veto (`RISKGATE_ENABLED=1`)
+`fusion/confluence_demo_engine.py::run_once` calls `RiskGate().evaluate(state)` on demo
+placements. Order inside the gate: HALT → fundamentals veto → circuit breaker → pre-entry
+→ trend filter (reversal-aware) → **cost is INFORMATIVE only** → **sizing = Cloe confidence**.
+It is **fail-OPEN** (a RiskGate bug never blocks a trade) and only acts when the heart already
+allows and `source != MASTER`. `RISKGATE_PILLAR_LADDER` is flat (`1:1.0…5:1.0`): the old
+"more pillars = bigger lot" factor was replaced by the confidence index.
+
+### Sizing model — lot ∝ RISK × Cloe confidence (Florent's rule; cost is NOT in the formula)
+`core/cloe/confidence.py::confidence_for(symbol, side, n_pillars, regime) → [0.2, 1.0]` reads
+**measured net-of-cost expectancy per context** from `data/trade_analytics.json` (category /
+side / structure / symbol), shrinks toward 0.5 on thin samples, and threads into placement as
+`size_factor` (`riskgate_conf`). Cost enters **indirectly** (a context where cost kills the
+edge shows negative measured perf → low confidence → small lot). Neutral 0.5 when no data.
+**Current reality:** all contexts measure < 0.5 (strategy net-negative) → small lots everywhere,
+which is the intended prudent behaviour while the learning loop accumulates data.
+
+### Cost-aware findings baked into the code (don't re-litigate without new backtests)
+`tools/backtest_riskgate.py` (real Axi spreads, per-symbol) replays the same decision path.
+Conclusions: **cost is the dominant killer** (baseline PF ≈ 0.20 matches live); adapting lot
+to context helps but the raw edge is marginal; **wider targets do NOT rescue it** (TP sweep →
+`CONFLUENCE_DEMO_TP_ATR=2.25` / R:R 1.5 is the measured optimum, wider degrades). The remaining
+real lever is **selectivity** (trade only proven-profitable contexts) — deferred until the
+confidence loop has enough data. Run: `venv\Scripts\python.exe -m tools.backtest_riskgate`.
+
+---
+
 ## Environment (this machine)
 
 - **Canonical folder: `C:\Users\flore\Desktop\v12`** — the only live copy. A former
@@ -115,15 +168,22 @@ python -c "from utils.config import SYMBOLS, SCAN_INTERVAL; print(f'Symbols: {SY
 ### Key Files (don't miss)
 | File | Purpose |
 |------|---------|
+| `REORG_STATE.md` | **Read first** — pyramid reorg resume point, branch, what's wired/pending |
 | `.env` | All config variables (Binance keys, FUNDAMENTALS settings, port 8090, etc.) |
 | `main.py` | Entry point — spawns 9+ async loops |
-| `utils/config.py` | Single source of truth for all env vars (never call `os.getenv()` directly) |
-| `core/signal_engine.py` | 5s scan loop — orchestrates scoring, modulation, signal emission |
+| `utils/config.py` | Legacy single source of truth for env vars (94 importers). `core/config.py` (pydantic-settings) is the additive N0 successor — never call `os.getenv()` directly |
+| `core/state.py` / `core/journal.py` | N0 socle: `SystemState` + append-only decision journal (uncensored: signal/decision/fill/ghost) — the shared spine every level reads/writes |
+| `poles/smc/signal_engine.py` | 5s scan loop — scoring, modulation, signal emission (shim at `core/signal_engine.py`) |
+| `fusion/confluence_demo_engine.py` | N3 demo engine `run_once` — refinement, trend filter, RiskGate veto, confidence sizing (shim at `core/confluence_demo_engine.py`) |
 | `docs/ARCHITECTURE.md` | Full data flow diagram + module breakdown |
 
 ---
 
 ## Architecture at a Glance
+
+> ⚠️ The module paths below are the **pre-reorg** names. They still resolve (via shims),
+> but the real code now lives in the pyramid packages — see the N0→N6 table above for the
+> canonical location of each module before editing it.
 
 ### Data Flow (per-symbol)
 ```
