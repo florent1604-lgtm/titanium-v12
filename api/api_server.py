@@ -301,6 +301,13 @@ async def lifespan(app: FastAPI):
                     # rafraîchit la base RAG de Cloe (mémoire + news/macro + findings) pour Open WebUI
                     from tools.cloe_knowledge_export import export as _kexport
                     await asyncio.to_thread(_kexport)
+                    # SENTINELLE : un organe qui devient aveugle ne lève aucune erreur —
+                    # il passe à null et Cloe croit voir. On le détecte, en continu.
+                    from tools.perception_sentinel import check as _sentinelle
+                    _rap = await asyncio.to_thread(_sentinelle, 30)
+                    if not _rap.get("ok"):
+                        logger.warning("[SENTINELLE] vision de Cloe DÉGRADÉE : %s",
+                                       " | ".join(_rap.get("alertes", [])[:4]))
                 except Exception as e:  # noqa: BLE001
                     logger.debug("[DEBRIEF] boucle: %r", e)
                 await asyncio.sleep(secs)
