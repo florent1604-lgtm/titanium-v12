@@ -71,6 +71,95 @@ confidence loop has enough data. Run: `venv\Scripts\python.exe -m tools.backtest
 
 ---
 
+## Cloe — the local AI layer (07/2026). Read before touching anything LLM-related.
+
+Florent's framing (28/07, and it corrects the natural instinct to treat Cloe as a bolt-on
+risk): **Cloe is not an add-on, she is the logical continuation of the engines.** The bot's
+structured perceptions must *nourish* her so she reaches the deterministic core's level and
+then exceeds it. His goal is explicitly **not** immediate trading profit — it is to grow the
+system. Priority is therefore **nourishment first, gating second**.
+
+### Hardware reality — this dictates every design choice
+CPU-only (Ryzen 7 7730U, **no GPU usable by Ollama**), **15.4 GB RAM / ~7.5 GB free**.
+A 7B model ≈ 4 tok/s; `phi3:medium` (8 GB) alone would swap the machine and starve the bot.
+
+### Two-speed Cloe (the architecture)
+| | 🔵 **Réflexe** (in/near the loop) | 🟣 **Exploratrice** (background) |
+|---|---|---|
+| Model | small, **resident** (`qwen2.5:3b`) | big models, on demand |
+| Tools | ❌ **none** — no browser, no MCP, no network | ✅ browser, MCP, advisor models |
+| Latency | **1.3 s warm** (measured), hard timeout, **fail-open** | unbounded, irrelevant |
+| Role | **reads** memory (µs) | **writes** memory |
+
+**The mechanism that makes it work:** the Réflexe never "thinks" at decision time — it reads
+what the Exploratrice already concluded. Intelligence grows in the background; decisions stay
+instant. This pattern is already proven in the codebase (`confidence_for()` reads
+`trade_analytics.json` instantly while analytics compute in background) — Cloe extends it.
+
+**Escalation (validated, not yet built):** a deterministic **doubt score** (confidence in the
+0.45–0.55 grey zone, `BRAIN_SIDE_CONFLICT`, `topology_alert`, unseen context n<5, macro↔technical
+contradiction) triggers escalation. Never an LLM deciding whether to call an LLM. Key efficiency
+rule: **confront context *classes*, not instances** — one verdict on "crypto/short/2 pillars/
+GRASSMANN" covers the hundreds of decisions sharing that signature.
+
+### Ollama is bridled — do NOT unset these (user-scope env vars, need an Ollama restart)
+```
+OLLAMA_KEEP_ALIVE=-1        # Cloe stays resident → no cold start ("consciente")
+OLLAMA_MAX_LOADED_MODELS=1  # protects RAM: only one model in memory at a time
+OLLAMA_NUM_PARALLEL=1       # protects CPU: never two inferences competing with the bot
+OLLAMA_MAX_QUEUE=8
+```
+Call the reflex with `options={"num_thread": 5}` (of 16) so the trading engine keeps its cores.
+Before this bridling a fusion query **timed out past 9 minutes**; after, it answers in **1.3 s**.
+
+### Open WebUI (`http://localhost:3000`, separate venv `C:\Users\flore\open-webui`)
+- **Embeddings**: `nomic-embed-text` via Ollama (`RAG_EMBEDDING_ENGINE=ollama`). Without an
+  embedding model, knowledge ingestion fails silently with "content is empty".
+- **Model family**: `cloe` (qwen2.5:7b), `cloe-vision` (qwen2.5vl:7b), `cloe-deep` (phi3:medium),
+  `cloe-fast` (phi3:mini), plus **`cloe_super`** — a pipe function that queries several brains in
+  parallel and synthesises one answer (**slow: 3 inferences; analysis only, never in the loop**).
+- **Known API quirks of this version**: `POST /api/v1/models/model/update` **500s on anything**
+  (even a no-op) and model deletion by query-param fails → to change a model, delete it in the UI
+  and recreate via `/api/v1/models/create` (which *does* accept `meta.knowledge`). File upload is
+  **asynchronous**: poll `data.content` until non-empty before `/knowledge/{id}/file/add`, else it
+  400s "content is empty". Files are deduped by hash — a failed empty upload poisons later retries.
+- Tools: `tools/openwebui_ingest_cloe.py` (RAG ingest, idempotent), `tools/openwebui_cloe_super.py`.
+
+### Cloe's memory
+`core/cloe/memory.py` (hierarchical, `data/cloe/memory.json`) + `core/cloe/confidence.py`
+(the sizing index) + `data/cloe/knowledge/*.md` (regenerated every 10 min, ingested into RAG).
+
+---
+
+## The eyes of Cloe — excursion tracker (MAE/MFE), 28/07
+
+**Why it exists:** Cloe received *sensation* (11k journaled decisions) and *statistics*
+(aggregates) but never **consequence** — she knew "I decided X", never "and by how much I was
+wrong". Without consequence there is no learning. This is the prerequisite to any adaptive
+SL/TP work, and L2/price history is **not recoverable retroactively** — every night without
+recording is lost forever.
+
+`feedback/excursion_tracker.py` writes one immutable line per **closed** position:
+- `mae_R` / `mfe_R` — how far it hurt / how far it could have gone (R fixed at entry, never recomputed)
+- `giveback_R` — what was **returned after the peak** (only counted if there *was* a gain, else it
+  double-counts MAE — a real defect caught by a test)
+- `time_to_mfe_sec/bars`, `pnl_R`, `exit_reason`
+- **`censored`** — SL/timeout/manual exit ⇒ MFE is **truncated**. Without this flag every future
+  MFE estimate is biased low, permanently. Expect a high censoring rate (winrate ≈ 19 %) → a
+  survival model will be required, not a naive quantile.
+- `context` — the **entry perception of every organ** joined from the journal by ticket (pillars,
+  `regime_geo`, `lyapunov`, **emotion**, fundamentals, macro, `roundtrip_cost`).
+
+**Wiring (zero added latency):** grafted onto `execution/demo_position_manager.manage_once()`,
+which already polls every 15 s. Its **ticket purge is the closure instant** — the only moment
+where entry context *and* outcome are both still known. Exact extremes are re-read from **M1 bars**
+at closure (15 s polling misses wicks); honest fallback to polling recorded in `excursion_source`.
+Anchored on the broker's real open time (`ts_open`), not first observation.
+Fail-safe throughout: MT5 down ⇒ degraded line, **never an exception toward trading**.
+Output: `data/excursions/excursions-YYYY-MM.ndjson` (append-only, monthly rotation).
+
+---
+
 ## Environment (this machine)
 
 - **Canonical folder: `C:\Users\flore\Desktop\v12`** — the only live copy. A former
@@ -160,9 +249,27 @@ venv\Scripts\python.exe -m pytest tests/test_modulator.py -v     # Fundamentals 
 venv\Scripts\python.exe -c "from api.api_server import app; print('OK')"  # Sanity check
 ```
 
-### Verify Configuration
+### Restart the running bot (⚠️ venv-shim: there are TWO `main.py` processes, ONE bot)
+`venv\Scripts\python.exe` is a **relay launcher**: it spawns the real interpreter
+(`…\Python312\python.exe main.py`) which owns port 8090. Killing only the listener leaves a
+zombie parent. Always kill the **parent tree**, then relaunch through the venv (PowerShell):
+```powershell
+$c = Get-NetTCPConnection -LocalPort 8090 -State Listen | Select-Object -First 1
+$p = Get-CimInstance Win32_Process -Filter ("ProcessId=" + $c.OwningProcess)
+taskkill /PID $p.ParentProcessId /T /F          # parent = venv launcher
+Start-Process -FilePath "C:\Users\flore\Desktop\v12\venv\Scripts\python.exe" `
+  -ArgumentList "main.py" -WorkingDirectory "C:\Users\flore\Desktop\v12" -WindowStyle Hidden
+```
+`reload=False`, so **any API/engine edit needs this restart**. After restart `/health` shows
+`degraded` + `symbols_tracked: 0` for ~1 min — that is the first confluence cycle warming up,
+not a failure. Open positions keep their broker SL/TP while the bot is down (no trailing).
+
+### Verify Configuration & health
 ```bash
 python -c "from utils.config import SYMBOLS, SCAN_INTERVAL; print(f'Symbols: {SYMBOLS}, Interval: {SCAN_INTERVAL}s')"
+curl -s http://localhost:8090/health            # pyramid health: socle/fusion/risk/execution
+curl -s http://localhost:8090/confluence/demo/status   # watchlist, crypto_enabled, heartbeat
+curl -s http://localhost:11434/api/ps           # which model is RESIDENT (Cloe must stay loaded)
 ```
 
 ### Key Files (don't miss)
@@ -175,6 +282,8 @@ python -c "from utils.config import SYMBOLS, SCAN_INTERVAL; print(f'Symbols: {SY
 | `core/state.py` / `core/journal.py` | N0 socle: `SystemState` + append-only decision journal (uncensored: signal/decision/fill/ghost) — the shared spine every level reads/writes |
 | `poles/smc/signal_engine.py` | 5s scan loop — scoring, modulation, signal emission (shim at `core/signal_engine.py`) |
 | `fusion/confluence_demo_engine.py` | N3 demo engine `run_once` — refinement, trend filter, RiskGate veto, confidence sizing (shim at `core/confluence_demo_engine.py`) |
+| `feedback/excursion_tracker.py` | The eyes: MAE/MFE/giveback/`censored` per closed trade + entry perception |
+| `core/cloe/confidence.py` | Sizing index — lot ∝ risk × measured net-of-cost confidence |
 | `docs/ARCHITECTURE.md` | Full data flow diagram + module breakdown |
 
 ---
