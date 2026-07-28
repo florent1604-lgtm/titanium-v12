@@ -245,16 +245,35 @@ def _geometric(df: pd.DataFrame, symbol: str) -> dict:
 
 
 def _emotion_feats(symbol: str) -> dict:
+    """Ressenti de marché COMPLET + clés de gating.
+
+    ⚠️ FAILLE CORRIGÉE (28/07) : seules les clés de GATING (filter_block/stale/confidence/
+    wait) étaient renvoyées — le RESSENTI calculé par le pôle (label, valence, arousal,
+    momentum) était JETÉ. Résultat : le journal, et donc Cloe, ne voyaient que des `null`
+    alors que l'organe fonctionnait parfaitement. On transmet désormais la perception
+    elle-même. Échelles ramenées au contrat d'`EmotionBlock` (valence ∈ [-1,1],
+    arousal ∈ [0,1]) — le pôle raisonne en −100..+100 / 0..100.
+    Les clés de gating sont INCHANGÉES : aucun effet sur les décisions."""
+    vide = {"filter_block": None, "stale": True, "confidence": 0.0, "wait": True,
+            "available": False, "label": None, "valence": None, "arousal": None}
     try:
         from emotion.market_context import emotion_for
         st = emotion_for(symbol)
         if not st.available:
-            return {"filter_block": None, "stale": True, "confidence": 0.0, "wait": True}
+            # on dit explicitement « indisponible » plutôt que de laisser un null muet
+            return {**vide, "label": getattr(st, "label", None)}
         fb = {"long": 1, "short": -1}.get(st.filter_block)
         return {"filter_block": fb, "stale": st.stale,
-                "confidence": st.confidence, "wait": bool(st.stale)}
+                "confidence": st.confidence, "wait": bool(st.stale),
+                "available": True,
+                "label": st.label,
+                "valence": round(float(st.valence) / 100.0, 4),   # −1..+1 (peur↔avidité)
+                "arousal": round(float(st.arousal) / 100.0, 4),   # 0..1 (énergie)
+                "intensity": round(float(st.arousal), 1),         # 0..100
+                "momentum": st.momentum,
+                "contrarian_bias": st.contrarian_bias}
     except Exception:
-        return {"filter_block": None, "stale": True, "confidence": 0.0, "wait": True}
+        return vide
 
 
 def _last_close_time(df: pd.DataFrame, timeframe: str) -> Optional[pd.Timestamp]:

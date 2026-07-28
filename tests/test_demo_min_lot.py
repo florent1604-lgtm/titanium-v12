@@ -60,7 +60,11 @@ def test_min_lot_risk_failsafe_none():
 
 
 def test_flags_defaut_OFF(monkeypatch):
+    # ⚠️ Ce test valide les DÉFAUTS DU CODE : il doit effacer AUSSI le plafond, sinon il
+    # lit le `.env` de la machine (qui peut légitimement le régler, ex. 10.0 pour laisser
+    # passer le lot min crypto) et échoue sans qu'aucun code n'ait bougé.
     monkeypatch.delenv("DEMO_MIN_LOT_TEST", raising=False)
+    monkeypatch.delenv("DEMO_MIN_LOT_MAX_RISK_PCT", raising=False)
     g = DemoGuards.from_env()
     assert g.min_lot_test is False
     assert g.min_lot_max_risk_pct == 5.0

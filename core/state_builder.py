@@ -21,6 +21,34 @@ def _passed_pillars(decision) -> int:
                and getattr(g, "name", "") != "data_valid")
 
 
+def _perception(st) -> Dict[str, Any]:
+    """CE QUE TOUS LES ORGANES PERÇOIVENT à cet instant — source UNIQUE, partagée par un
+    trade PRIS et par un trade REFUSÉ.
+
+    Raison d'être : ces deux chemins avaient divergé (l'entrée gardait 15 champs, le refus
+    4), rendant 96 % des observations inexploitables pour l'apprentissage. Un seul endroit
+    désormais : ajouter un organe ici le rend visible partout à la fois."""
+    return {
+        "trend_h4": st.regime.trend,
+        "regime_geo": st.regime.regime,
+        "lyapunov": st.regime.lyapunov_horizon,
+        "topo_alert": st.regime.topology_alert,
+        "coherence": st.regime.coherence,
+        "fundamentals": {"score": st.fundamentals.risk_score, "level": st.fundamentals.level},
+        "macro": {"fear_greed": st.fundamentals.fear_greed,
+                  "fear_greed_label": st.fundamentals.fear_greed_label,
+                  "top_news": st.fundamentals.top_news},
+        "roundtrip_cost": st.notes.get("roundtrip_cost"),
+        "exposure_gross_pct": st.risk.gross_exposure_pct,
+        "equity": st.risk.equity,
+        # arousal + available ajoutés : sans l'axe d'ÉNERGIE, le circumplex est amputé de
+        # moitié (panique ACTIVE et capitulation ÉPUISÉE deviennent indiscernables).
+        "emotion": {"label": st.emotion.label, "valence": st.emotion.valence,
+                    "arousal": st.emotion.arousal, "available": st.emotion.available,
+                    "would_fade": st.emotion.would_fade, "would_block": st.emotion.would_block},
+    }
+
+
 def _emotion_block(feats: Dict[str, Any]):
     emo = feats.get("emotion") if isinstance(feats, dict) else None
     if not isinstance(emo, dict):
@@ -135,6 +163,8 @@ def journal_cycle(*, symbol: str, venue: str, ltf: str, feats: Dict[str, Any], d
         j.record_decision(st.correlation_id, verdict, reason=reason, symbol=symbol,
                           extra={"side": st.scoring.side, "n_pillars": st.scoring.n_pillars})
 
+        perception = _perception(st)
+
         if accepted:
             fill = placed if placed_sent else aggr
             # RATIONALE EXACT (Florent 27/07) : POURQUOI cette position a été prise — TOUS les
@@ -143,19 +173,10 @@ def journal_cycle(*, symbol: str, venue: str, ltf: str, feats: Dict[str, Any], d
             pillars_passed = [getattr(g, "name", "") for g in (getattr(decision, "gates", None) or [])
                               if getattr(g, "passed", False) and getattr(g, "name", "") != "data_valid"]
             rationale = {
+                **perception,
                 "why": f"{'LONG' if st.scoring.side > 0 else 'SHORT'} sur {symbol} : "
                        f"{len(pillars_passed)} piliers [{', '.join(pillars_passed)}]",
                 "pillars": pillars_passed, "n_pillars": st.scoring.n_pillars, "side": st.scoring.side,
-                "trend_h4": st.regime.trend, "regime_geo": st.regime.regime,
-                "lyapunov": st.regime.lyapunov_horizon, "topo_alert": st.regime.topology_alert,
-                "fundamentals": {"score": st.fundamentals.risk_score, "level": st.fundamentals.level},
-                "macro": {"fear_greed": st.fundamentals.fear_greed,
-                          "fear_greed_label": st.fundamentals.fear_greed_label,
-                          "top_news": st.fundamentals.top_news},
-                "roundtrip_cost": st.notes.get("roundtrip_cost"),
-                "exposure_gross_pct": st.risk.gross_exposure_pct, "equity": st.risk.equity,
-                "emotion": {"label": st.emotion.label, "valence": st.emotion.valence,
-                            "would_fade": st.emotion.would_fade},
                 "engine": "aggressive" if (aggr_sent and not placed_sent) else "confluence",
                 "lot": fill.get("lot"), "price": fill.get("price"),
                 "sl": fill.get("sl"), "tp": fill.get("tp"), "ticket": fill.get("ticket") or fill.get("order"),
@@ -173,10 +194,14 @@ def journal_cycle(*, symbol: str, venue: str, ltf: str, feats: Dict[str, Any], d
             except Exception:
                 pass
         else:
-            # Trade FANTÔME : on garde la trace d'un signal directionnel REFUSÉ (dataset non censuré).
+            # Trade FANTÔME : signal directionnel REFUSÉ (dataset non censuré).
+            # ⚠️ FAILLE CORRIGÉE (28/07) : le fantôme ne gardait que 4 champs alors que la
+            # perception complète était déjà calculée. Or les refus pèsent ~27× le volume des
+            # entrées : sans contexte, Cloe ne peut pas juger si ses refus étaient JUSTES.
+            # Même perception que pour une entrée → les deux ne peuvent plus diverger.
             if st.scoring.side != 0:
                 j.record_ghost(st.correlation_id, symbol=symbol,
-                               payload={"side": st.scoring.side, "reason": reason,
+                               payload={**perception, "side": st.scoring.side, "reason": reason,
                                         "price": price, "n_pillars": st.scoring.n_pillars})
         return st
     except Exception:
