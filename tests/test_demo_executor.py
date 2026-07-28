@@ -439,3 +439,41 @@ def test_config_non_finite_refused():
                               guards=_guards(risk_pct=float("nan")), day_start_equity=1000.0)
     assert not r["sent"] and "CONFIG_INVALID" in r["reason"]
     assert mt5.sent_request is None
+
+
+# ══ Constat 29/07 : le stop ne doit JAMAIS être atteignable par le seul spread ══
+
+def test_stop_jamais_dans_le_spread():
+    """Régression majeure (enregistreur d'excursions, 20/20 trades) : le spread valait
+    57 % à 650 % du risque total. Un stop de short se déclenche sur l'ASK → le spread
+    allait chercher le stop SEUL, sans mouvement de prix (AUDNZD : MAE −0.00R, clôturé
+    à −1R). Le SL doit rester à bonne distance du spread."""
+    info = _Info(login=dx.EXPECTED_DEMO_LOGIN, trade_mode=0, equity=1000.0)
+    # spread ÉNORME (2.0) face à un ATR minuscule (0.1) → le SL naïf serait dans le spread
+    mt5 = _TradeMT5(info, sym=_SymInfo(point=0.01, tick_size=0.01, tick_value=1.0, digits=2),
+                    tick=_Tick(bid=99.0, ask=101.0))
+    # plafond de SANITÉ relevé : on teste un spread volontairement extrême
+    r = dx.place_market_order(mt5, "CHFSEK", "short", atr=0.1, sl_atr_mult=1.5,
+                              tp_atr_mult=2.25,
+                              guards=_guards(risk_pct=5.0, max_spread_pct=5.0),
+                              day_start_equity=1000.0)
+    assert r["sent"], r.get("reason")
+    spread = 101.0 - 99.0
+    risque = abs(r["price"] - r["sl"])
+    assert risque >= 3.5 * spread, (
+        f"stop à {risque:.2f} pour un spread de {spread:.2f} — le spread le déclencherait seul")
+
+
+def test_elargir_le_stop_preserve_le_ratio_RR():
+    """Élargir le SL sans toucher au TP écraserait le R:R et rendrait la cible
+    inatteignable en proportion du risque. La géométrie doit être conservée."""
+    info = _Info(login=dx.EXPECTED_DEMO_LOGIN, trade_mode=0, equity=1000.0)
+    mt5 = _TradeMT5(info, sym=_SymInfo(point=0.01, tick_size=0.01, tick_value=1.0, digits=2),
+                    tick=_Tick(bid=99.0, ask=101.0))
+    r = dx.place_market_order(mt5, "CHFSEK", "long", atr=0.1, sl_atr_mult=1.5,
+                              tp_atr_mult=3.0,
+                              guards=_guards(risk_pct=5.0, max_spread_pct=5.0),
+                              day_start_equity=1000.0)
+    assert r["sent"]
+    rr = abs(r["tp"] - r["price"]) / abs(r["price"] - r["sl"])
+    assert 1.8 <= rr <= 2.2, f"R:R visé 2.0 (3.0/1.5), obtenu {rr:.2f}"

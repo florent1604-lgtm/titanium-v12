@@ -349,15 +349,30 @@ def place_market_order(mt5: Any, symbol: str, side: str, atr: float,
     # Distance MINIMALE de stop du broker (sinon retcode 10016 « Invalid stops »,
     # fréquent le week-end quand l'ATR est petit face à un spread large). On élargit
     # SL/TP au besoin ; compute_lot resize ensuite le lot -> le RISQUE reste borné.
+    # ⚠️ CONSTAT 29/07 (enregistreur d'excursions, 20 trades sur 20) : le spread valait
+    # entre 57 % et 650 % de TOUT le risque. Un stop de short se déclenche sur l'ASK :
+    # quand le spread pèse autant, il va chercher le stop TOUT SEUL, sans que le prix
+    # bouge (AUDNZD : MAE −0.00R… clôturé à −1R). Le trade était condamné à l'ouverture.
+    # Le plancher historique `× 1.5` PRODUISAIT ce mal : SL = 1.5 × spread ⇒ spread = 67 %
+    # du risque — exactement le plancher mesuré dans les données (62-71 %).
+    # On exige désormais SL ≥ mult × spread (défaut 4 ⇒ spread ≤ 25 % du risque). Le risque
+    # en euros ne change PAS : `compute_lot` réduit le lot d'autant (règle de Florent —
+    # on ACCEPTE le spread, on adapte le lot).
     try:
         _pt = float(getattr(si, "point", 0) or 0)
         _stops = float(getattr(si, "trade_stops_level", 0) or 0)
-        _min_dist = max(_stops * _pt, float(tick.ask - tick.bid)) * 1.5
-        if _min_dist > 0:
-            if abs(price - sl) < _min_dist:
-                sl = price - sign * _min_dist
-            if abs(price - tp) < _min_dist:
-                tp = price + sign * _min_dist
+        _mult = _cfg_float("DEMO_MIN_SL_SPREAD_MULT", 4.0)
+        _min_dist = max(_stops * _pt, spread_abs) * _mult
+        if _min_dist > 0 and abs(price - sl) < _min_dist:
+            # R:R VOULU, capturé AVANT d'élargir : sans ça, élargir le seul SL écraserait
+            # le ratio et rendrait la cible inatteignable en proportion du risque.
+            _dist_sl = abs(price - sl)
+            _rr = (abs(tp - price) / _dist_sl) if _dist_sl > 0 else (
+                (tp_atr_mult / sl_atr_mult) if sl_atr_mult else 1.5)
+            sl = price - sign * _min_dist
+            tp = price + sign * _min_dist * _rr      # la géométrie est préservée
+        elif _min_dist > 0 and abs(price - tp) < _min_dist:
+            tp = price + sign * _min_dist
     except Exception:  # noqa: BLE001 — l'ajustement ne doit jamais bloquer un ordre
         pass
     # Garde de spread ADAPTATIF (équilibré à la position, Florent) : ne bloque QUE si le
