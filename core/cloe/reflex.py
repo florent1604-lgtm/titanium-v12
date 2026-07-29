@@ -19,11 +19,13 @@ fondamentaux, coût, exposition) — la même que celle du journal.
 from __future__ import annotations
 
 import json
+import math
 import os
 import re
 from typing import Any, Dict, Optional
 
 _URL = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434").rstrip("/")
+_HARD_TIMEOUT_CAP_S = 2.0
 
 
 def _cfg(name: str, default: str) -> str:
@@ -44,7 +46,9 @@ SYSTEM = (
     "Réponds UNIQUEMENT par du JSON compact, rien d'autre :\n"
     '{"verdict":"OK|DOUTE|STOP","raison":"<10 mots max>"}\n'
     "OK = laisse passer. DOUTE = laisse passer mais taille réduite. "
-    "STOP = refuse (réserve-le aux vraies incohérences)."
+    "STOP = refuse (réserve-le aux vraies incohérences). "
+    "N'invente jamais une donnée absente : None ou inconnu n'est PAS une incohérence "
+    "et ne justifie jamais STOP."
 )
 
 
@@ -80,6 +84,56 @@ def _parse(txt: str) -> Optional[Dict[str, str]]:
     return {"verdict": v, "raison": str(d.get("raison", ""))[:80]}
 
 
+def _finite(value: Any) -> bool:
+    try:
+        return math.isfinite(float(value))
+    except (TypeError, ValueError):
+        return False
+
+
+def _missing_context(ctx: Dict[str, Any]) -> list[str]:
+    """Liste les perceptions indispensables à un veto fondé."""
+    missing: list[str] = []
+    if not isinstance(ctx.get("symbol"), str) or not ctx["symbol"].strip():
+        missing.append("symbol")
+    if ctx.get("side") not in (-1, 1):
+        missing.append("side")
+    if not isinstance(ctx.get("pillars"), list) or not ctx["pillars"]:
+        missing.append("pillars")
+    if not _finite(ctx.get("n_pillars")):
+        missing.append("n_pillars")
+    if ctx.get("trend_h4") not in (-1, 0, 1):
+        missing.append("trend_h4")
+    if not ctx.get("regime_geo"):
+        missing.append("regime_geo")
+    for field in ("lyapunov", "fisher", "roundtrip_cost",
+                  "exposure_gross_pct", "confidence"):
+        if not _finite(ctx.get(field)):
+            missing.append(field)
+    if not isinstance(ctx.get("topo_alert"), bool):
+        missing.append("topo_alert")
+
+    emotion = ctx.get("emotion")
+    if not isinstance(emotion, dict) or emotion.get("available") is not True:
+        missing.append("emotion")
+    else:
+        if not emotion.get("label"):
+            missing.append("emotion.label")
+        for field in ("valence", "arousal"):
+            if not _finite(emotion.get(field)):
+                missing.append(f"emotion.{field}")
+
+    fundamentals = ctx.get("fundamentals")
+    if not isinstance(fundamentals, dict):
+        missing.append("fundamentals")
+    else:
+        if not _finite(fundamentals.get("score")):
+            missing.append("fundamentals.score")
+        if not fundamentals.get("level"):
+            missing.append("fundamentals.level")
+    return missing
+
+
 def judge(ctx: Dict[str, Any]) -> Dict[str, Any]:
     """Verdict de Cloe sur un setup. FAIL-OPEN absolu.
 
@@ -90,6 +144,10 @@ def judge(ctx: Dict[str, Any]) -> Dict[str, Any]:
            "available": False, "latency_ms": 0}
     if _cfg("CLOE_REFLEX_ENABLED", "0") != "1":
         out["raison"] = "reflexe desarme"
+        return out
+    missing = _missing_context(ctx)
+    if missing:
+        out["raison"] = f"contexte incomplet:{','.join(missing)}"[:80]
         return out
     try:
         import time
@@ -104,7 +162,10 @@ def judge(ctx: Dict[str, Any]) -> Dict[str, Any]:
                   "stream": False, "keep_alive": -1,
                   "options": {"num_predict": 48, "temperature": 0.1,
                               "num_thread": int(_cfg_float("CLOE_REFLEX_THREADS", 5))}},
-            timeout=_cfg_float("CLOE_REFLEX_TIMEOUT_S", 8.0))
+            timeout=min(
+                _HARD_TIMEOUT_CAP_S,
+                max(0.1, _cfg_float("CLOE_REFLEX_TIMEOUT_S", _HARD_TIMEOUT_CAP_S)),
+            ))
         out["latency_ms"] = int((time.time() - t0) * 1000)
         if r.status_code != 200:
             out["raison"] = f"http {r.status_code}"

@@ -138,6 +138,20 @@ def _sigmoid_normalize(raw: float, k: Optional[float] = None,
     return 100.0 / (1.0 + math.exp(-k * (raw - midpoint)))
 
 
+def _article_severity_floor(articles: List[Dict[str, Any]]) -> float:
+    """Préserve un événement extrême isolé malgré le calibrage du flux global."""
+    peak = 0.0
+    for article in articles:
+        text = " ".join(
+            str(article.get(field) or "") for field in ("title", "description")
+        )
+        peak = max(peak, _keyword_score(text))
+    if peak <= 0:
+        return 0.0
+    local = _sigmoid_normalize(peak, k=0.10, midpoint=30.0)
+    return min(85.0, local)
+
+
 def compute_score(
     articles: List[Dict[str, Any]],
     text_corpus: Optional[str] = None,
@@ -172,7 +186,8 @@ def compute_score(
     raw      = raw_kw * velocity
 
     # Normalisation → 0-100
-    normalized = _sigmoid_normalize(raw)
+    severity_floor = _article_severity_floor(articles)
+    normalized = max(_sigmoid_normalize(raw), severity_floor)
 
     # EMA pour lisser les mises à jour
     _ema_score = _SCORE_EMA_ALPHA * normalized + (1 - _SCORE_EMA_ALPHA) * _ema_score
@@ -189,6 +204,7 @@ def compute_score(
         "raw":         round(raw, 2),
         "raw_keywords": round(raw_kw, 2),
         "velocity":    round(velocity, 3),
+        "severity_floor": round(severity_floor, 2),
         "level":       _score_level(_ema_score),
         "articles":    len(articles),
         "ts":          datetime.now(timezone.utc).isoformat(),

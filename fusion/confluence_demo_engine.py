@@ -160,6 +160,32 @@ def _counter_trend_block(feats: dict, side_int: int, df_htf, atr,
         return False
 
 
+def _cloe_context(*, symbol: str, side: int, decision, state,
+                  confidence: Optional[float]) -> dict:
+    """Construit le contexte Cloe depuis la perception canonique du journal."""
+    from core.state_builder import _perception
+
+    pillars = [
+        g.name for g in (getattr(decision, "gates", None) or [])
+        if getattr(g, "passed", False) and getattr(g, "name", "") != "data_valid"
+    ]
+    return {
+        "symbol": symbol,
+        "side": int(side),
+        "n_pillars": len(pillars),
+        "pillars": pillars,
+        **_perception(state),
+        "confidence": confidence,
+    }
+
+
+async def _judge_cloe(ctx: dict, *, judge_fn=None) -> dict:
+    """Exécute le réflexe hors de l'event loop ; son timeout interne reste borné."""
+    if judge_fn is None:
+        from core.cloe.reflex import judge as judge_fn
+    return await asyncio.to_thread(judge_fn, ctx)
+
+
 def decide(symbol: str, df_ltf: Optional[pd.DataFrame], df_htf: Optional[pd.DataFrame], *,
            ltf_tf: str, htf_tf: str, venue: str, now: Optional[datetime] = None,
            run_emotion: bool = True,
@@ -349,6 +375,7 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
             # casse jamais le trading : les gardes existants restent la sécurité). Master exempté.
             riskgate_deny = None
             riskgate_conf = None                      # INDICE DE CONFIANCE Cloe = modulateur de lot
+            _rg_state = None
             if riskgate_enabled and gate.allow and gate.source != "MASTER" and atr is not None and _eff_side != 0:
                 try:
                     from core.state_builder import build_system_state
@@ -374,24 +401,25 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
             if (gate.allow and gate.source != "MASTER" and atr is not None
                     and _eff_side != 0 and not riskgate_deny and not counter_trend):
                 try:
-                    from core.cloe.reflex import judge as _cloe_judge
-                    _cv = _cloe_judge({
-                        "symbol": symbol, "side": _eff_side,
-                        "n_pillars": (aggr_n := (feats.get("n_pillars") if isinstance(feats, dict) else None)),
-                        "pillars": [g.name for g in (decision.gates or []) if g.passed and g.name != "data_valid"],
-                        "trend_h4": (feats.get("trend") if isinstance(feats, dict) else None),
-                        "regime_geo": ((feats.get("geometric") or {}).get("branch")
-                                       if isinstance(feats, dict) else None),
-                        "lyapunov": ((feats.get("geometric") or {}).get("lyapunov")
-                                     if isinstance(feats, dict) else None),
-                        "fisher": ((feats.get("geometric") or {}).get("fisher")
-                                   if isinstance(feats, dict) else None),
-                        "topo_alert": ((feats.get("geometric") or {}).get("topology_alert")
-                                       if isinstance(feats, dict) else None),
-                        "emotion": (feats.get("emotion") if isinstance(feats, dict) else None),
-                        "fundamentals": None, "roundtrip_cost": None,
-                        "exposure_gross_pct": None, "confidence": riskgate_conf,
-                    })
+                    if _rg_state is None:
+                        from core.state_builder import build_system_state
+                        _rg_state = await asyncio.to_thread(
+                            build_system_state,
+                            symbol=symbol,
+                            venue=venue,
+                            ltf=ltf_tf,
+                            feats=feats,
+                            decision=decision,
+                            atr=atr,
+                            price=entry,
+                        )
+                    _cv = await _judge_cloe(_cloe_context(
+                        symbol=symbol,
+                        side=_eff_side,
+                        decision=decision,
+                        state=_rg_state,
+                        confidence=riskgate_conf,
+                    ))
                     if _cv.get("available"):
                         cloe_verdict = _cv
                         if _cv["verdict"] == "STOP":

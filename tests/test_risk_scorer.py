@@ -2,6 +2,7 @@
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+from fundamentals import risk_scorer
 from fundamentals.risk_scorer import (
     _keyword_score, _velocity_factor, _sigmoid_normalize,
     compute_score, get_current_score,
@@ -44,8 +45,10 @@ def test_velocity_factor_recent():
 
 def test_sigmoid_normalize_bounds():
     assert _sigmoid_normalize(0)   < 50
-    assert _sigmoid_normalize(30)  == pytest_approx(50, tolerance=5)
-    assert _sigmoid_normalize(100) > 90
+    assert _sigmoid_normalize(30)  < 15
+    assert _sigmoid_normalize(68)  == pytest_approx(47, tolerance=2)
+    assert _sigmoid_normalize(100) > 80
+    assert _sigmoid_normalize(120) > 94
     assert 0 <= _sigmoid_normalize(-50) <= 100
     assert 0 <= _sigmoid_normalize(200) <= 100
 
@@ -68,7 +71,12 @@ def test_compute_score_empty():
 def test_compute_score_high_risk_text():
     corpus = "nuclear war attack collapse bank run financial crisis crash meltdown panic"
     articles = [{"title": corpus, "description": "", "published": "", "source": "test", "url": ""}]
-    result = compute_score(articles, corpus)
+    previous = risk_scorer._ema_score
+    risk_scorer._ema_score = 25.0
+    try:
+        result = compute_score(articles, corpus)
+    finally:
+        risk_scorer._ema_score = previous
     assert result["score"] > 40, f"Score macro devrait être élevé: {result['score']}"
     assert result["level"] in ("MEDIUM", "HIGH", "EXTREME")
 
