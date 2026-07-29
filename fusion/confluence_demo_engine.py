@@ -363,6 +363,44 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
                 except Exception:  # noqa: BLE001 — fail-open : gardes existants inchangés
                     riskgate_deny = None
 
+            # ── LE RÉFLEXE DE CLOE (Florent 29/07 : « donne le contrôle à Cloe ») ──────
+            # Dernier maillon avant l'exécution. Elle juge un setup DÉJÀ validé par les
+            # moteurs déterministes et repère ce qu'ils ne voient pas (incohérence entre
+            # organes, régime dangereux). Son pouvoir est un VETO : elle ne peut jamais
+            # OUVRIR un trade que le moteur a refusé.
+            # FAIL-OPEN absolu : lente/éteinte/illisible → la décision déterministe passe.
+            cloe_verdict = None
+            cloe_size = None
+            if (gate.allow and gate.source != "MASTER" and atr is not None
+                    and _eff_side != 0 and not riskgate_deny and not counter_trend):
+                try:
+                    from core.cloe.reflex import judge as _cloe_judge
+                    _cv = _cloe_judge({
+                        "symbol": symbol, "side": _eff_side,
+                        "n_pillars": (aggr_n := (feats.get("n_pillars") if isinstance(feats, dict) else None)),
+                        "pillars": [g.name for g in (decision.gates or []) if g.passed and g.name != "data_valid"],
+                        "trend_h4": (feats.get("trend") if isinstance(feats, dict) else None),
+                        "regime_geo": ((feats.get("geometric") or {}).get("branch")
+                                       if isinstance(feats, dict) else None),
+                        "lyapunov": ((feats.get("geometric") or {}).get("lyapunov")
+                                     if isinstance(feats, dict) else None),
+                        "fisher": ((feats.get("geometric") or {}).get("fisher")
+                                   if isinstance(feats, dict) else None),
+                        "topo_alert": ((feats.get("geometric") or {}).get("topology_alert")
+                                       if isinstance(feats, dict) else None),
+                        "emotion": (feats.get("emotion") if isinstance(feats, dict) else None),
+                        "fundamentals": None, "roundtrip_cost": None,
+                        "exposure_gross_pct": None, "confidence": riskgate_conf,
+                    })
+                    if _cv.get("available"):
+                        cloe_verdict = _cv
+                        if _cv["verdict"] == "STOP":
+                            riskgate_deny = f"CLOE_STOP:{_cv.get('raison')}"
+                        elif _cv["verdict"] == "DOUTE":
+                            cloe_size = float(_cv.get("size_factor") or 0.5)
+                except Exception:  # noqa: BLE001 — Cloe ne casse jamais le trading
+                    cloe_verdict = None
+
             # Éligibilité AGRESSIVE calculée TÔT (pure, légère) : sert à savoir si un placement
             # est imminent, donc s'il vaut la peine de charger les TF inférieurs pour affiner.
             aggressive = _aggressive_eligible(decision, feats, aggressive_min)
@@ -407,8 +445,9 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
                     res = await place_fn(symbol, side, atr,
                                          sl_atr_mult=_sl_mult, tp_atr_mult=tp_atr_mult,
                                          engine="confluence",
-                                         size_factor=(riskgate_conf if riskgate_conf is not None
-                                                      else _structure_size_factor(_npil, gate.conviction)),
+                                         size_factor=((riskgate_conf if riskgate_conf is not None
+                                                       else _structure_size_factor(_npil, gate.conviction))
+                                                      * (cloe_size if cloe_size is not None else 1.0)),
                                          quality=_npil)
                     placed = res if isinstance(res, dict) else {"sent": False, "reason": "DEMO_DISARMED"}
                     if placed.get("sent"):
@@ -436,9 +475,10 @@ async def run_once(symbols_cfg, *, now: Optional[datetime] = None,
                     aside = "long" if gate.side > 0 else "short"
                     ares = await place_fn(symbol, aside, atr, sl_atr_mult=_sl_mult,
                                           tp_atr_mult=tp_atr_mult, engine="confluence-aggr",
-                                          size_factor=(riskgate_conf if riskgate_conf is not None
-                                                       else _structure_size_factor(
-                                                           aggressive.get("n_pillars", 0), gate.conviction)),
+                                          size_factor=((riskgate_conf if riskgate_conf is not None
+                                                        else _structure_size_factor(
+                                                            aggressive.get("n_pillars", 0), gate.conviction))
+                                                       * (cloe_size if cloe_size is not None else 1.0)),
                                           quality=int(aggressive.get("n_pillars", 0)))
                     aggressive["placed"] = ares if isinstance(ares, dict) else {"sent": False, "reason": "DEMO_DISARMED"}
                     if refine_info:

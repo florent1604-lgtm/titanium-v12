@@ -10,6 +10,7 @@ Le score final est un rolling mean exponentiel pour éviter les sauts brusques.
 from __future__ import annotations
 import json
 import math
+import os
 import re
 from datetime import datetime, timezone
 from pathlib import Path
@@ -105,12 +106,35 @@ def _velocity_factor(articles: List[Dict[str, Any]]) -> float:
     return max(0.8, min(1.5, 0.8 + recent_pct * 1.4))
 
 
-def _sigmoid_normalize(raw: float, k: float = 0.15, midpoint: float = 30.0) -> float:
+def _cfg_float(name: str, default: float) -> float:
+    try:
+        return float(os.getenv(name, str(default)))
+    except (TypeError, ValueError):
+        return default
+
+
+def _sigmoid_normalize(raw: float, k: Optional[float] = None,
+                       midpoint: Optional[float] = None) -> float:
     """Transforme un score brut en 0–100 via une sigmoid adaptative.
 
     k       : pente (plus grand = transition plus abrupte)
     midpoint: score brut correspondant à 50 sur la sortie
+
+    ⚠️ RECALIBRÉ 29/07. L'ancien réglage (midpoint=30, k=0.15) était calé sous le
+    régime réel des news : le score BRUT observé tourne autour de 68 → la sigmoid
+    saturait à 99,5 en PERMANENCE. Le capteur n'avait plus aucune dynamique : il
+    n'informait plus, il bloquait (183 refus `FONDAMENTAUX_BLOCK` en 3 h, seuil 90).
+    Un capteur toujours au maximum équivaut à un capteur en panne.
+
+    Nouveau calage (midpoint≈régime observé) → l'échelle redevient discriminante :
+      raw  40 →  ~14 (calme)   ·  raw  68 → ~47 (normal)
+      raw 100 →  ~86 (élevé)   ·  raw 120 → ~95 (extrême réel)
+    Réglable sans redéploiement : FUNDAMENTALS_SIGMOID_MID / _K.
     """
+    if midpoint is None:
+        midpoint = _cfg_float("FUNDAMENTALS_SIGMOID_MID", 70.0)
+    if k is None:
+        k = _cfg_float("FUNDAMENTALS_SIGMOID_K", 0.06)
     return 100.0 / (1.0 + math.exp(-k * (raw - midpoint)))
 
 
