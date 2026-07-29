@@ -27,38 +27,125 @@ from mcp.types import (
 
 # ── Config ────────────────────────────────────────────────────────────────────
 TITANIUM_BASE = "http://localhost:8090"
-_HTTP_TIMEOUT = 4.0
+_HTTP_TIMEOUT = 10.0
+_HTTP_MAX_ATTEMPTS = 2
+_HTTP_RETRY_BACKOFF = 1.0
+_http_client: httpx.AsyncClient | None = None
 
 app = Server("titanium-v12")
 
 # ── HTTP helper ───────────────────────────────────────────────────────────────
 
+
+def _get_client() -> httpx.AsyncClient:
+    """Retourne le client HTTP MCP persistant avec keep-alive."""
+    global _http_client
+    if _http_client is None or _http_client.is_closed:
+        _http_client = httpx.AsyncClient(
+            timeout=httpx.Timeout(_HTTP_TIMEOUT, connect=3.0),
+            limits=httpx.Limits(
+                max_connections=20,
+                max_keepalive_connections=10,
+            ),
+        )
+    return _http_client
+
+
+async def _close_client() -> None:
+    """Ferme le client HTTP partagé au shutdown du serveur MCP."""
+    global _http_client
+    if _http_client is not None and not _http_client.is_closed:
+        await _http_client.aclose()
+    _http_client = None
+
+
+def _unavailable(data: dict[str, Any]) -> bool:
+    return data.get("status") in {"offline", "timeout", "error"}
+
+
 async def _get(path: str) -> dict[str, Any]:
-    """Fetch a Titanium REST endpoint, return dict (or offline sentinel)."""
-    try:
-        async with httpx.AsyncClient(timeout=_HTTP_TIMEOUT) as client:
-            r = await client.get(f"{TITANIUM_BASE}{path}")
+    """GET idempotent avec keep-alive, classification et retry borné."""
+    client = _get_client()
+    url = f"{TITANIUM_BASE}{path}"
+    for attempt in range(1, _HTTP_MAX_ATTEMPTS + 1):
+        try:
+            r = await client.get(url)
             if r.status_code == 200:
                 return r.json()
-            return {"status": "error", "code": r.status_code}
-    except Exception as e:
-        return {"status": "offline", "reason": str(e)}
+            if r.status_code >= 500 and attempt < _HTTP_MAX_ATTEMPTS:
+                await asyncio.sleep(_HTTP_RETRY_BACKOFF * attempt)
+                continue
+            return {
+                "status": "error",
+                "code": r.status_code,
+                "detail": r.text[:200],
+            }
+        except httpx.TimeoutException:
+            if attempt < _HTTP_MAX_ATTEMPTS:
+                await asyncio.sleep(_HTTP_RETRY_BACKOFF * attempt)
+                continue
+            return {
+                "status": "timeout",
+                "reason": "Titanium a dépassé 10s",
+                "url": url,
+            }
+        except httpx.ConnectError as exc:
+            if attempt < _HTTP_MAX_ATTEMPTS:
+                await asyncio.sleep(_HTTP_RETRY_BACKOFF * attempt)
+                continue
+            return {"status": "offline", "reason": str(exc), "url": url}
+        except Exception as exc:
+            return {
+                "status": "error",
+                "reason": f"{type(exc).__name__}: {exc}",
+                "url": url,
+            }
+    return {"status": "error", "reason": "retry épuisé", "url": url}
 
 
 async def _post(path: str, data: dict | None = None, headers: dict | None = None) -> dict[str, Any]:
-    """POST to a Titanium REST endpoint."""
+    """POST sans retry automatique : un timeout peut cacher une mutation réussie."""
+    client = _get_client()
+    url = f"{TITANIUM_BASE}{path}"
     try:
-        async with httpx.AsyncClient(timeout=_HTTP_TIMEOUT) as client:
-            r = await client.post(f"{TITANIUM_BASE}{path}", json=data or {}, headers=headers or {})
-            if r.status_code == 200:
-                return r.json()
-            return {"status": "error", "code": r.status_code, "detail": r.text[:200]}
-    except Exception as e:
-        return {"status": "offline", "reason": str(e)}
+        r = await client.post(url, json=data or {}, headers=headers or {})
+        if r.status_code == 200:
+            return r.json()
+        return {"status": "error", "code": r.status_code, "detail": r.text[:200]}
+    except httpx.TimeoutException:
+        return {
+            "status": "timeout",
+            "reason": "résultat ambigu, POST non rejoué",
+            "url": url,
+        }
+    except httpx.ConnectError as exc:
+        return {"status": "offline", "reason": str(exc), "url": url}
+    except Exception as exc:
+        return {
+            "status": "error",
+            "reason": f"{type(exc).__name__}: {exc}",
+            "url": url,
+        }
 
 
 def _fmt(data: Any) -> str:
     return json.dumps(data, ensure_ascii=False, indent=2, default=str)
+
+
+async def _health_check() -> dict[str, Any]:
+    """Vérifie le backend sans empêcher le démarrage du transport MCP."""
+    result = await _get("/api/state")
+    if _unavailable(result):
+        return {
+            "healthy": False,
+            "status": result.get("status", "error"),
+            "detail": result,
+        }
+    return {
+        "healthy": True,
+        "status": "online",
+        "version": result.get("version", "unknown"),
+    }
 
 
 # ── Resources ─────────────────────────────────────────────────────────────────
@@ -97,7 +184,7 @@ async def list_resources() -> list[Resource]:
 async def read_resource(uri: str) -> list[ResourceContents]:
     if uri == "titanium://signals/latest":
         data = await _get("/api/state")
-        if data.get("status") == "offline":
+        if _unavailable(data):
             content = data
         else:
             raw = data.get("signals", {})
@@ -111,7 +198,7 @@ async def read_resource(uri: str) -> list[ResourceContents]:
 
     elif uri == "titanium://positions/open":
         data = await _get("/paper/positions")
-        if data.get("status") == "offline":
+        if _unavailable(data):
             content = data
         else:
             content = {
@@ -122,7 +209,7 @@ async def read_resource(uri: str) -> list[ResourceContents]:
 
     elif uri == "titanium://market/context":
         state = await _get("/api/state")
-        if state.get("status") == "offline":
+        if _unavailable(state):
             content = state
         else:
             futures = state.get("futures", {})
@@ -145,7 +232,7 @@ async def read_resource(uri: str) -> list[ResourceContents]:
     elif uri == "titanium://dashboard/status":
         state = await _get("/api/state")
         paper = await _get("/paper/stats")
-        if state.get("status") == "offline":
+        if _unavailable(state):
             content = state
         else:
             signals     = state.get("signals", {})
@@ -290,7 +377,7 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
         pair = arguments.get("pair", "BTC/USDT")
         n    = min(int(arguments.get("n", 10)), 50)
         state = await _get("/api/state")
-        if state.get("status") == "offline":
+        if _unavailable(state):
             result = state
         else:
             signals = state.get("signals", {})
@@ -304,7 +391,7 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
 
     elif name == "get_pnl_summary":
         stats = await _get("/paper/stats")
-        if stats.get("status") == "offline":
+        if _unavailable(stats):
             result = stats
         else:
             result = {
@@ -326,7 +413,7 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
 
     elif name == "get_active_alerts":
         state = await _get("/api/state")
-        if state.get("status") == "offline":
+        if _unavailable(state):
             result = state
         else:
             signals = state.get("signals", {})
@@ -396,7 +483,7 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
     elif name == "get_backtest_results":
         pair = arguments.get("pair", "")
         data = await _get("/api/optim/results")
-        if data.get("status") == "offline":
+        if _unavailable(data):
             result = data
         elif pair and pair in data:
             result = {pair: data[pair]}
@@ -496,12 +583,27 @@ async def _run_test() -> None:
         print(f"[Tool] {tool_name}")
         print(result[0].text[:300])
         print()
+    await _close_client()
 
 
 async def _serve() -> None:
     # stdio_server() est un context manager de flux — il ne prend pas l'app.
-    async with stdio_server() as (read, write):
-        await app.run(read, write, app.create_initialization_options())
+    health = await _health_check()
+    if health["healthy"]:
+        print(
+            f"[MCP] Connecté à Titanium {health['version']}",
+            file=sys.stderr,
+        )
+    else:
+        print(
+            f"[MCP] Backend Titanium indisponible: {health['status']}",
+            file=sys.stderr,
+        )
+    try:
+        async with stdio_server() as (read, write):
+            await app.run(read, write, app.create_initialization_options())
+    finally:
+        await _close_client()
 
 
 if __name__ == "__main__":

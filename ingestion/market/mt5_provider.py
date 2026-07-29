@@ -35,6 +35,10 @@ except ImportError:
 mt5_lock = threading.RLock()
 
 _initialized = False
+_init_failures = 0
+_init_next_retry_at = 0.0
+_INIT_BACKOFF_BASE_SECONDS = 1.0
+_INIT_BACKOFF_MAX_SECONDS = 30.0
 _account_snapshot_cache: Dict[str, Any] = {}
 _account_snapshot_cache_at = 0.0
 ACCOUNT_SNAPSHOT_CACHE_SECONDS = 15.0
@@ -54,23 +58,54 @@ def _server_epoch_to_utc(values, *, server_timezone: Optional[str] = None) -> pd
     return localized.tz_convert("UTC")
 
 
+class MT5SymbolError(RuntimeError):
+    """Le broker a refusé la sélection d'un symbole."""
+
+
 def ensure_init() -> bool:
-    """Initialise la connexion au terminal MT5 (idempotent)."""
-    global _initialized
+    """Initialise MT5 et retente avec backoff si le terminal est indisponible."""
+    global _initialized, _init_failures, _init_next_retry_at
     if not MT5_AVAILABLE:
         return False
-    if _initialized:
-        return True
     with mt5_lock:
         if _initialized:
-            return True
+            terminal_probe = getattr(mt5, "terminal_info", None)
+            if not callable(terminal_probe):
+                return True
+            try:
+                if terminal_probe() is not None:
+                    return True
+            except Exception as exc:
+                logger.warning("[MT5] Vérification terminal échouée: %s", exc)
+            _initialized = False
+            _selected.clear()
+            logger.warning("[MT5] Connexion perdue — reconnexion différée")
+
+        now = time.monotonic()
+        if now < _init_next_retry_at:
+            return False
+
         if mt5.initialize():
             _initialized = True
+            _init_failures = 0
+            _init_next_retry_at = 0.0
+            _selected.clear()
             acc = mt5.account_info()
             logger.info("[MT5] Connecté — compte %s @ %s",
                         acc.login if acc else "?", acc.server if acc else "?")
             return True
-        logger.warning("[MT5] initialize() échoué: %s — terminal fermé ?", mt5.last_error())
+
+        _init_failures += 1
+        delay = min(
+            _INIT_BACKOFF_BASE_SECONDS * (2 ** (_init_failures - 1)),
+            _INIT_BACKOFF_MAX_SECONDS,
+        )
+        _init_next_retry_at = now + delay
+        logger.warning(
+            "[MT5] initialize() échoué: %s — nouvelle tentative dans %.1fs",
+            mt5.last_error(),
+            delay,
+        )
         return False
 
 
@@ -84,6 +119,11 @@ def shutdown() -> None:
 def get_rates_h1(symbol: str, n: int = 300) -> Optional[pd.DataFrame]:
     """n dernières barres H1 (index UTC, colonnes open/high/low/close)."""
     if not ensure_init():
+        return None
+    try:
+        _ensure_symbol(symbol)
+    except MT5SymbolError as exc:
+        logger.warning("[MT5] %s", exc)
         return None
     with mt5_lock:
         rates = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_H1, 0, n)
@@ -105,10 +145,12 @@ def get_rates(symbol: str, tf: str = "H1", n: int = 300) -> Optional[pd.DataFram
         _TF.update({"M5": mt5.TIMEFRAME_M5, "M15": mt5.TIMEFRAME_M15,
                     "H1": mt5.TIMEFRAME_H1, "H4": mt5.TIMEFRAME_H4,
                     "D1": mt5.TIMEFRAME_D1})
+    try:
+        _ensure_symbol(symbol)
+    except MT5SymbolError as exc:
+        logger.warning("[MT5] %s", exc)
+        return None
     with mt5_lock:
-        if symbol not in _selected:
-            mt5.symbol_select(symbol, True)
-            _selected.add(symbol)
         rates = mt5.copy_rates_from_pos(symbol, _TF.get(tf, mt5.TIMEFRAME_H1), 0, n)
     if rates is None or len(rates) == 0:
         return None
@@ -127,10 +169,12 @@ def get_ohlcv(symbol: str, tf: str = "M15", n: int = 120) -> Optional[pd.DataFra
         _TF.update({"M5": mt5.TIMEFRAME_M5, "M15": mt5.TIMEFRAME_M15,
                     "H1": mt5.TIMEFRAME_H1, "H4": mt5.TIMEFRAME_H4,
                     "D1": mt5.TIMEFRAME_D1})
+    try:
+        _ensure_symbol(symbol)
+    except MT5SymbolError as exc:
+        logger.warning("[MT5] %s", exc)
+        return None
     with mt5_lock:
-        if symbol not in _selected:
-            mt5.symbol_select(symbol, True)
-            _selected.add(symbol)
         rates = mt5.copy_rates_from_pos(symbol, _TF.get(tf, mt5.TIMEFRAME_M15), 0, n)
     if rates is None or len(rates) == 0:
         return None
@@ -144,6 +188,11 @@ def get_ohlcv(symbol: str, tf: str = "M15", n: int = 120) -> Optional[pd.DataFra
 def get_tick(symbol: str) -> Optional[Dict[str, Any]]:
     """Dernier tick {bid, ask, mid, ts, stale}. stale=True si > 10 min (marché fermé)."""
     if not ensure_init():
+        return None
+    try:
+        _ensure_symbol(symbol)
+    except MT5SymbolError as exc:
+        logger.warning("[MT5] %s", exc)
         return None
     with mt5_lock:
         t = mt5.symbol_info_tick(symbol)
@@ -160,6 +209,18 @@ def get_tick(symbol: str) -> Optional[Dict[str, Any]]:
 _selected: set = set()
 
 
+def _ensure_symbol(symbol: str) -> None:
+    """Sélectionne un symbole une seule fois sous le verrou MT5 partagé."""
+    with mt5_lock:
+        if symbol in _selected:
+            return
+        if not mt5.symbol_select(symbol, True):
+            raise MT5SymbolError(
+                f"symbol_select({symbol}) échoué: {mt5.last_error()}"
+            )
+        _selected.add(symbol)
+
+
 def get_ticks_fast(symbols) -> Dict[str, Dict[str, Any]]:
     """Ticks temps réel multi-symboles pour le streaming dashboard.
     Retourne {sym: {bid, ask, mid, ts_msc, spread_bps}} avec le timestamp
@@ -170,9 +231,11 @@ def get_ticks_fast(symbols) -> Dict[str, Dict[str, Any]]:
     with mt5_lock:
         ticks = {}
         for s in symbols:
-            if s not in _selected:
-                mt5.symbol_select(s, True)
-                _selected.add(s)
+            try:
+                _ensure_symbol(s)
+            except MT5SymbolError as exc:
+                logger.warning("[MT5] %s", exc)
+                continue
             ticks[s] = mt5.symbol_info_tick(s)
     for s, t in ticks.items():
         if not t or t.bid <= 0:
