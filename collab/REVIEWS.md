@@ -779,3 +779,23 @@ sous double signature obligatoire Florent + superviseur ; l'indisponibilite de
 l'un differe l'operation et ne permet pas de basculer sur une seule signature.
 Hermes est reconnu cerveau principal de confiance **C1 shadow uniquement** :
 perception, analyse, proposition et coordination, sans autorite d'action.
+
+## 2026-07-29 - Revue Codex - exposition GitHub pour Kimi 3
+
+**GO publication, avec exclusions de sécurité obligatoires.** Les branches
+`master`, `reorg/phase1` et `feature/command-deck` ont été poussées sans force.
+L'état fonctionnel des agents, sous-chantiers, validations et dettes connues est
+publié dans `KIMI3_START_HERE.md` et `collab/`.
+
+Les répertoires bruts `.claude/` et les caches d'agents ne sont pas des sources
+projet publiables : ils contiennent credentials, historiques et sauvegardes de
+session. Leur état utile a été consolidé sans ces données. Même exclusion pour
+`.env`, tokens, données runtime/PnL, environnements, modèles, index GitNexus et
+binaires générés.
+
+Contrôles : aucun secret réel dans 1 319 fichiers du snapshot ni dans 648 objets
+historiques locaux à publier ; HTTP 200 sur la branche, le Markdown brut, le
+JSON brut et le Command Deck. Command Deck 20/20 tests ; outils Open WebUI
+compilables. GitNexus a été invoqué mais son résultat « No changes detected »
+est **non probant** ici : FTS indisponible et nouveaux fichiers absents de
+l'index. Aucun changement de trading ; PAPER/DEMO ONLY.
