@@ -1,0 +1,95 @@
+{
+  "schema": "titanium.agent-state.snapshot.v1",
+  "generated_at": "2026-07-29T13:20:20+02:00",
+  "repository": {
+    "name": "florent1604-lgtm/titanium-v12",
+    "public_url": "https://github.com/florent1604-lgtm/titanium-v12",
+    "reference_branch": "reorg/phase1",
+    "other_branches": [
+      "master",
+      "feature/command-deck"
+    ],
+    "head_before_snapshot_commit": "d64e252b7fb8739988292fb188d662a8e52f132a"
+  },
+  "guardrails": {
+    "real_account": "paper_only",
+    "mt5_order_send": "authorized_demo_account_only_fail_closed",
+    "strategy_change": "requires_m2",
+    "secrets": "never_commit_or_log"
+  },
+  "agents": [
+    {
+      "name": "Florent",
+      "role": "owner_final_arbiter",
+      "state": "active"
+    },
+    {
+      "name": "Claude Code",
+      "role": "architect_implementer",
+      "state": "quota_unavailable_reported_by_owner"
+    },
+    {
+      "name": "Codex",
+      "role": "independent_red_team_and_controlled_implementation",
+      "state": "active",
+      "latest_commits": [
+        "3decd8a",
+        "d64e252"
+      ]
+    },
+    {
+      "name": "Hermes",
+      "role": "local_orchestrator",
+      "state": "configured_via_mcp_and_collaboration_bus"
+    },
+    {
+      "name": "Cloe",
+      "role": "local_ollama_analyst_additive_veto",
+      "state": "integrated_demo_path"
+    },
+    {
+      "name": "Copilot",
+      "role": "historical_contributor",
+      "state": "no_active_task_attested_in_snapshot"
+    }
+  ],
+  "subagents": {
+    "active_codex_children": 0,
+    "isolated_worktrees": [
+      {
+        "branch": "feature/command-deck",
+        "purpose": "Windows CollabHub client",
+        "state": "source_ready_for_external_review_not_merged"
+      }
+    ]
+  },
+  "validation": {
+    "targeted_mt5_mcp": {
+      "passed": 57,
+      "failed": 0
+    },
+    "global_baseline": {
+      "passed": 844,
+      "skipped": 1,
+      "failed": 26,
+      "status": "development_snapshot_not_green_release"
+    }
+  },
+  "gitnexus": {
+    "repository": "titanium-v12",
+    "symbols": 26633,
+    "relationships": 69089,
+    "execution_flows": 300,
+    "generated_index_committed": false,
+    "reindex_after_clone": true
+  },
+  "excluded_local_only": [
+    "api_keys_and_tokens",
+    "claude_credentials_and_session_history",
+    "agent_tool_installation_caches",
+    "gitnexus_generated_index",
+    "virtual_environments_and_models",
+    "active_positions_pnl_and_market_caches",
+    "build_artifacts"
+  ]
+}
