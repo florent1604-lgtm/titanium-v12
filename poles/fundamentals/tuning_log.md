@@ -202,3 +202,135 @@ Chaque reconfiguration automatique ou manuelle est enregistrée ici.
 - `2026-07-27T06:36:09.448314+00:00` — RE-ENABLE: module réactivé manuellement
 - `2026-07-27T06:36:09.449315+00:00` — RE-ENABLE: module réactivé manuellement
 - `2026-07-27T06:36:09.451834+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:48:00.141358+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:48:00.143722+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:48:00.145753+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:48:00.147737+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:48:00.149926+00:00` — AUTO-DISABLE: test
+- `2026-07-27T06:48:00.150935+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:48:00.151936+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:48:00.153935+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:48:00.156935+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:48:00.157935+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:48:00.160391+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:48:36.729638+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:48:36.731642+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:48:36.732638+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:48:36.734638+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:48:36.736891+00:00` — AUTO-DISABLE: test
+- `2026-07-27T06:48:36.737891+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:48:36.738891+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:48:36.741901+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:48:36.742903+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:48:36.744068+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:48:36.746077+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:52:27.463284+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:52:27.465284+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:52:27.467283+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:52:27.469289+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:52:27.472541+00:00` — AUTO-DISABLE: test
+- `2026-07-27T06:52:27.473543+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:52:27.475541+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:52:27.477552+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:52:27.480615+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:52:27.482615+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T06:52:27.484615+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-27T08:05:39.160502+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-27T08:48:05.011049+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 43% > seuil 30%
+- `2026-07-27T11:21:45.873717+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 32% > seuil 30%
+- `2026-07-27T11:41:23.159363+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 38% > seuil 30%
+- `2026-07-27T13:36:19.835577+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 37% > seuil 30%
+- `2026-07-27T16:17:48.502774+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 32% > seuil 30%
+- `2026-07-27T21:45:40.533629+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-28T05:33:15.779356+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-28T20:22:28.700463+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-28T20:22:28.702718+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-28T20:22:28.703222+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-28T20:22:28.704228+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-28T20:22:28.705230+00:00` — AUTO-DISABLE: test
+- `2026-07-28T20:22:28.706726+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-28T20:22:28.707232+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-28T20:22:28.708252+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-28T20:22:28.709252+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-28T20:22:28.710681+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-28T20:22:28.712202+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-28T20:23:16.605978+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-28T20:23:16.606978+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-28T20:23:16.607961+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-28T20:23:16.609467+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-28T20:23:16.611482+00:00` — AUTO-DISABLE: test
+- `2026-07-28T20:23:16.611482+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-28T20:23:16.612726+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-28T20:23:16.613725+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-28T20:23:16.614731+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-28T20:23:16.615732+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-28T20:23:16.617732+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-28T21:34:45.787681+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 31% > seuil 30%
+- `2026-07-28T22:15:39.354162+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-28T22:40:30.318703+00:00` — AUTO-DISABLE: Rollback auto: réduction moyenne 30% > seuil 30%
+- `2026-07-29T05:35:09.294812+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:35:09.297639+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:35:09.299650+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:35:09.302197+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:35:09.305706+00:00` — AUTO-DISABLE: test
+- `2026-07-29T05:35:09.306959+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:35:09.309505+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:35:09.312000+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:35:09.315682+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:35:09.318229+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:35:09.321245+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:38:29.043576+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:38:29.047018+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:38:29.049459+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:38:29.052603+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:38:29.056624+00:00` — AUTO-DISABLE: test
+- `2026-07-29T05:38:29.057632+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:38:29.059141+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:38:29.061153+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:38:29.064660+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:38:29.068191+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:38:29.072198+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:38:45.348914+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:38:45.351717+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:38:45.354224+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:38:45.356235+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:38:45.358757+00:00` — AUTO-DISABLE: test
+- `2026-07-29T05:38:45.359764+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:38:45.363265+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:38:45.365464+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:38:45.367464+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:38:45.370478+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:38:45.371478+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:39:53.436232+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:39:53.438239+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:39:53.440708+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:39:53.443593+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:39:53.447042+00:00` — AUTO-DISABLE: test
+- `2026-07-29T05:39:53.447042+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:39:53.449524+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:39:53.450890+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:39:53.453129+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:39:53.455347+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T05:39:53.457598+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T08:11:08.107276+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T08:11:08.108794+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T08:11:08.110956+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T08:11:08.112975+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T08:11:08.113975+00:00` — AUTO-DISABLE: test
+- `2026-07-29T08:11:08.113975+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T08:11:08.116032+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T08:11:08.117036+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T08:11:08.118036+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T08:11:08.118036+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T08:11:08.119547+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T08:11:54.307302+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T08:11:54.308312+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T08:11:54.309314+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T08:11:54.310392+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T08:11:54.312808+00:00` — AUTO-DISABLE: test
+- `2026-07-29T08:11:54.312808+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T08:11:54.314806+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T08:11:54.315808+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T08:11:54.316807+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T08:11:54.317807+00:00` — RE-ENABLE: module réactivé manuellement
+- `2026-07-29T08:11:54.318807+00:00` — RE-ENABLE: module réactivé manuellement

@@ -1,4 +1,4 @@
-# Mémoire de Cloe — 2026-07-29T11:15:06.725015+00:00
+# Mémoire de Cloe — 2026-07-29T11:45:07.281737+00:00
 
 # MÉMOIRE DE CLOE (brief)
 
@@ -23,6 +23,6 @@
 - modele_cout_tendance_valide: Florent avait raison : cout=propre au broker, on l accepte et on adapte le lot (jamais rejeter). Tendance=orientation + prediction de retournement (geometrix), pas un bloc. Implemente + valide par backtest cout-conscient.
 
 ## Dernières analyses
-- (2026-07-29T11:15) DEBRIEF SHORT sur GBPCAD : 3 piliers [trend_sr, fair_value, liquidity] -> 1 PnL=-0.44 | (contexte d'entrée non journalisé)
-- (2026-07-29T11:15) DEBRIEF LONG sur USDCAD : 2 piliers [trend_sr, fair_value] -> SL PnL=-0.99 | SL touché
-- (2026-07-29T11:15) DEBRIEF LONG sur USDCAD : 2 piliers [trend_sr, fair_value] -> SL PnL=0.19 | continuation avec la tendance -> gain
+- (2026-07-29T11:45) DEBRIEF LONG sur NZDCAD : 3 piliers [trend_sr, fair_value, liquidity] -> SL PnL=-1.11 | SL touché
+- (2026-07-29T11:45) DEBRIEF LONG sur USDCAD : 2 piliers [trend_sr, liquidity] -> SL PnL=-1.35 | SL touché
+- (2026-07-29T11:45) DEBRIEF LONG sur EURGBP : 2 piliers [trend_sr, liquidity] -> 1 PnL=0.08 | continuation avec la tendance -> gain

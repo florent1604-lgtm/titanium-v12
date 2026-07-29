@@ -1,0 +1,6 @@
+﻿Fichier,Description
+**[AUDIT\_TITANIUM\_V12.md](sandbox:///mnt/agents/output/AUDIT_TITANIUM_V12.md)**,"Rapport d'audit complet (18 Ko) — 10 sections, 18 recommandations priorisées"
+**[mt5\_provider\_fixed.py](sandbox:///mnt/agents/output/mt5_provider_fixed.py)**,Référence patchée — race condition lockée + exceptions + retry
+**[mcp\_server\_fixed.py](sandbox:///mnt/agents/output/mcp_server_fixed.py)**,Référence patchée — client HTTP persistent + timeout 10s + retry + health check
+**[PROMPT\_CODEX.md](sandbox:///mnt/agents/output/PROMPT_CODEX.md)**,Prompt maître pour Codex (7 corrections + contraintes)
+**[SPECS\_CORRECTIONS.md](sandbox:///mnt/agents/output/SPECS_CORRECTIONS.md)**,"Tableau technique ligne par ligne (ID, fichier, type de modif)"

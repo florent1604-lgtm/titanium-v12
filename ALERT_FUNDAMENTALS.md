@@ -1,6 +1,6 @@
 # ALERT — Module Fundamentals désactivé
 
-**Date** : 2026-07-26T18:33:39.773838+00:00
-**Raison** : Rollback auto: réduction moyenne 30% > seuil 30%
+**Date** : 2026-07-29T08:11:54.312808+00:00
+**Raison** : test
 
 Pour réactiver : `FUNDAMENTALS_ENABLED=1` dans `.env` et redémarrer.

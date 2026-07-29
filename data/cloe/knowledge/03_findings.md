@@ -1,4 +1,4 @@
-# Findings mesurés — 2026-07-29T11:15:06.725015+00:00
+# Findings mesurés — 2026-07-29T11:45:07.281737+00:00
 
 GLOBAL: trades=177 winrate=19.2% esperance=-0.674R PF=0.31 PnL=-433.01
 

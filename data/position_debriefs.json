@@ -1,0 +1,2394 @@
+{
+ "generated_at": "2026-07-29T11:45:07.208176+00:00",
+ "window_h": 12,
+ "n_debriefs": 48,
+ "n_avec_rationale": 48,
+ "debriefs": [
+  {
+   "ticket": 81073971,
+   "symbol": "LTCUSD",
+   "reason": "SL",
+   "pnl": -4.07,
+   "entry": 46.49,
+   "exit": 45.925,
+   "rationale_entree": {
+    "why": "LONG sur LTCUSD : 2 piliers [trend_sr, candle_confirmed]",
+    "pillars": [
+     "trend_sr",
+     "candle_confirmed"
+    ],
+    "n_pillars": 2,
+    "side": 1,
+    "trend_h4": 1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 7,
+    "topo_alert": false,
+    "fundamentals": {
+     "score": 41.4,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.35999999999999943",
+    "exposure_gross_pct": 0.95,
+    "equity": 245.49,
+    "emotion": {
+     "label": null,
+     "valence": null,
+     "would_fade": false
+    },
+    "engine": "aggressive",
+    "lot": 7.2,
+    "price": 46.49,
+    "sl": 46.22,
+    "tp": 46.802024866234134,
+    "ticket": 81073971
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81074641,
+   "symbol": "ETHUSD",
+   "reason": "SL",
+   "pnl": -1.51,
+   "entry": 1920.14,
+   "exit": 1912.585,
+   "rationale_entree": {
+    "why": "LONG sur ETHUSD : 2 piliers [trend_sr, liquidity]",
+    "pillars": [
+     "trend_sr",
+     "liquidity"
+    ],
+    "n_pillars": 2,
+    "side": 1,
+    "trend_h4": 1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fundamentals": {
+     "score": 41.4,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "2.5",
+    "exposure_gross_pct": 0.95,
+    "equity": 244.38,
+    "emotion": {
+     "label": null,
+     "valence": null,
+     "would_fade": false
+    },
+    "engine": "aggressive",
+    "lot": 0.2,
+    "price": 1920.165,
+    "sl": 1912.589052423613,
+    "tp": 1939.1048689409672,
+    "ticket": 81074641
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81074654,
+   "symbol": "CHFJPY",
+   "reason": "SL",
+   "pnl": -3.0,
+   "entry": 200.023,
+   "exit": 200.146,
+   "rationale_entree": {
+    "why": "SHORT sur CHFJPY : 2 piliers [trend_sr, fair_value]",
+    "pillars": [
+     "trend_sr",
+     "fair_value"
+    ],
+    "n_pillars": 2,
+    "side": -1,
+    "trend_h4": -1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fundamentals": {
+     "score": 41.4,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.038000000000010914",
+    "exposure_gross_pct": 0.95,
+    "equity": 244.38,
+    "emotion": {
+     "label": null,
+     "valence": null,
+     "would_fade": false
+    },
+    "engine": "aggressive",
+    "lot": 0.04,
+    "price": 200.023,
+    "sl": 200.09061972354297,
+    "tp": 199.85395069114253,
+    "ticket": 81074654
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81074656,
+   "symbol": "CHFSEK",
+   "reason": "SL",
+   "pnl": -14.1,
+   "entry": 11.82977,
+   "exit": 11.87534,
+   "rationale_entree": {
+    "why": "SHORT sur CHFSEK : 3 piliers [trend_sr, fair_value, liquidity]",
+    "pillars": [
+     "trend_sr",
+     "fair_value",
+     "liquidity"
+    ],
+    "n_pillars": 3,
+    "side": -1,
+    "trend_h4": -1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fundamentals": {
+     "score": 41.4,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.006579999999999586",
+    "exposure_gross_pct": 0.95,
+    "equity": 244.38,
+    "emotion": {
+     "label": null,
+     "valence": null,
+     "would_fade": false
+    },
+    "engine": "aggressive",
+    "lot": 0.03,
+    "price": 11.82977,
+    "sl": 11.834899031396096,
+    "tp": 11.81694742150976,
+    "ticket": 81074656
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81074659,
+   "symbol": "EURAUD",
+   "reason": "SL",
+   "pnl": -2.65,
+   "entry": 1.63261,
+   "exit": 1.63337,
+   "rationale_entree": {
+    "why": "SHORT sur EURAUD : 2 piliers [trend_sr, fair_value]",
+    "pillars": [
+     "trend_sr",
+     "fair_value"
+    ],
+    "n_pillars": 2,
+    "side": -1,
+    "trend_h4": -1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fundamentals": {
+     "score": 41.4,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.00025999999999992696",
+    "exposure_gross_pct": 0.95,
+    "equity": 244.38,
+    "emotion": {
+     "label": null,
+     "valence": null,
+     "would_fade": false
+    },
+    "engine": "aggressive",
+    "lot": 0.05,
+    "price": 1.6326100000000001,
+    "sl": 1.6331457701787313,
+    "tp": 1.631270574553172,
+    "ticket": 81074659
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81074665,
+   "symbol": "EURCAD",
+   "reason": "SL",
+   "pnl": -1.81,
+   "entry": 1.60665,
+   "exit": 1.60716,
+   "rationale_entree": {
+    "why": "SHORT sur EURCAD : 2 piliers [trend_sr, fair_value]",
+    "pillars": [
+     "trend_sr",
+     "fair_value"
+    ],
+    "n_pillars": 2,
+    "side": -1,
+    "trend_h4": -1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fundamentals": {
+     "score": 41.4,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.00019999999999953388",
+    "exposure_gross_pct": 0.95,
+    "equity": 244.38,
+    "emotion": {
+     "label": null,
+     "valence": null,
+     "would_fade": false
+    },
+    "engine": "aggressive",
+    "lot": 0.05,
+    "price": 1.6066500000000001,
+    "sl": 1.6071579143055716,
+    "tp": 1.6053802142360711,
+    "ticket": 81074665
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81074667,
+   "symbol": "EURGBP",
+   "reason": "SL",
+   "pnl": -1.86,
+   "entry": 0.85699,
+   "exit": 0.85679,
+   "rationale_entree": {
+    "why": "LONG sur EURGBP : 3 piliers [trend_sr, liquidity, candle_confirmed]",
+    "pillars": [
+     "trend_sr",
+     "liquidity",
+     "candle_confirmed"
+    ],
+    "n_pillars": 3,
+    "side": 1,
+    "trend_h4": 1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fundamentals": {
+     "score": 41.4,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.000180000000000069",
+    "exposure_gross_pct": 0.95,
+    "equity": 244.38,
+    "emotion": {
+     "label": null,
+     "valence": null,
+     "would_fade": false
+    },
+    "engine": "aggressive",
+    "lot": 0.07,
+    "price": 0.85699,
+    "sl": 0.8567850459998215,
+    "tp": 0.8575023850004463,
+    "ticket": 81074667
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81074675,
+   "symbol": "GBPCAD",
+   "reason": "SL",
+   "pnl": -3.01,
+   "entry": 1.87485,
+   "exit": 1.87591,
+   "rationale_entree": {
+    "why": "SHORT sur GBPCAD : 2 piliers [trend_sr, fair_value]",
+    "pillars": [
+     "trend_sr",
+     "fair_value"
+    ],
+    "n_pillars": 2,
+    "side": -1,
+    "trend_h4": -1,
+    "regime_geo": "CLASSIC",
+    "lyapunov": 46,
+    "topo_alert": false,
+    "fundamentals": {
+     "score": 41.4,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.00024000000000024002",
+    "exposure_gross_pct": 0.95,
+    "equity": 244.38,
+    "emotion": {
+     "label": null,
+     "valence": null,
+     "would_fade": false
+    },
+    "engine": "aggressive",
+    "lot": 0.04,
+    "price": 1.87485,
+    "sl": 1.8755364662974403,
+    "tp": 1.873133834256399,
+    "ticket": 81074675
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81076997,
+   "symbol": "BTCUSD",
+   "reason": "SL",
+   "pnl": -16.56,
+   "entry": 63858.54,
+   "exit": 63692.95,
+   "rationale_entree": {
+    "why": "LONG sur BTCUSD : 2 piliers [trend_sr, fair_value]",
+    "pillars": [
+     "trend_sr",
+     "fair_value"
+    ],
+    "n_pillars": 2,
+    "side": 1,
+    "trend_h4": 1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 3,
+    "topo_alert": false,
+    "fundamentals": {
+     "score": 41.4,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "24.0",
+    "exposure_gross_pct": 0.95,
+    "equity": 241.47,
+    "emotion": {
+     "label": null,
+     "valence": null,
+     "would_fade": false
+    },
+    "engine": "aggressive",
+    "lot": 0.1,
+    "price": 63858.69,
+    "sl": 63695.54982269097,
+    "tp": 64266.540443272585,
+    "ticket": 81076997
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81085783,
+   "symbol": "BTCUSD",
+   "reason": "SL",
+   "pnl": -20.16,
+   "entry": 63942.58,
+   "exit": 63741.02,
+   "rationale_entree": {
+    "why": "LONG sur BTCUSD : 3 piliers [trend_sr, fair_value, candle_confirmed]",
+    "pillars": [
+     "trend_sr",
+     "fair_value",
+     "candle_confirmed"
+    ],
+    "n_pillars": 3,
+    "side": 1,
+    "trend_h4": 1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 4,
+    "topo_alert": false,
+    "fundamentals": {
+     "score": 40.7,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "24.0",
+    "exposure_gross_pct": 0.95,
+    "equity": 249.69,
+    "emotion": {
+     "label": null,
+     "valence": null,
+     "would_fade": false
+    },
+    "engine": "aggressive",
+    "lot": 0.1,
+    "price": 63942.58,
+    "sl": 63741.15936892217,
+    "tp": 64342.57684018104,
+    "ticket": 81085783
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81085838,
+   "symbol": "BCHUSD",
+   "reason": "SL",
+   "pnl": -2.28,
+   "entry": 213.38,
+   "exit": 214.802,
+   "rationale_entree": {
+    "why": "SHORT sur BCHUSD : 2 piliers [trend_sr, fair_value]",
+    "pillars": [
+     "trend_sr",
+     "fair_value"
+    ],
+    "n_pillars": 2,
+    "side": -1,
+    "trend_h4": -1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 3,
+    "topo_alert": false,
+    "fundamentals": {
+     "score": 40.7,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "1.6000000000000227",
+    "exposure_gross_pct": 0.95,
+    "equity": 249.69,
+    "emotion": {
+     "label": null,
+     "valence": null,
+     "would_fade": false
+    },
+    "engine": "aggressive",
+    "lot": 1.6,
+    "price": 213.38,
+    "sl": 214.58,
+    "tp": 211.52710116162686,
+    "ticket": 81085838
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81085861,
+   "symbol": "AUDNZD",
+   "reason": "SL",
+   "pnl": -2.04,
+   "entry": 1.20489,
+   "exit": 1.20521,
+   "rationale_entree": {
+    "why": "SHORT sur AUDNZD : 2 piliers [trend_sr, liquidity]",
+    "pillars": [
+     "trend_sr",
+     "liquidity"
+    ],
+    "n_pillars": 2,
+    "side": -1,
+    "trend_h4": -1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fundamentals": {
+     "score": 40.7,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.00025999999999992696",
+    "exposure_gross_pct": 0.95,
+    "equity": 249.69,
+    "emotion": {
+     "label": null,
+     "valence": null,
+     "would_fade": false
+    },
+    "engine": "aggressive",
+    "lot": 0.11,
+    "price": 1.20489,
+    "sl": 1.2052053450286966,
+    "tp": 1.2041016374282587,
+    "ticket": 81085861
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81093670,
+   "symbol": "ADAUSD",
+   "reason": "SL",
+   "pnl": -1.71,
+   "entry": 0.1587,
+   "exit": 0.1605,
+   "rationale_entree": {
+    "trend_h4": -1,
+    "regime_geo": "CLASSIC",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fisher": 0.016,
+    "curvature": 0.0,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 22.9,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.0023999999999999577",
+    "exposure_gross_pct": 0.0,
+    "equity": 229.61,
+    "emotion": {
+     "label": "COMPLAISANCE",
+     "valence": 0.483,
+     "arousal": 0.283,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "SHORT sur ADAUSD : 2 piliers [trend_sr, ote_ob]",
+    "pillars": [
+     "trend_sr",
+     "ote_ob"
+    ],
+    "n_pillars": 2,
+    "side": -1,
+    "engine": "aggressive",
+    "lot": 9.5,
+    "price": 0.1587,
+    "sl": 0.16049999999999998,
+    "tp": 0.15690000000000004,
+    "ticket": 81093670
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81093676,
+   "symbol": "GBPSEK",
+   "reason": "SL",
+   "pnl": -2.18,
+   "entry": 12.88257,
+   "exit": 12.87552,
+   "rationale_entree": {
+    "trend_h4": 1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fisher": 0.0,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 22.9,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.008160000000000167",
+    "exposure_gross_pct": 0.0,
+    "equity": 229.61,
+    "emotion": {
+     "label": "NEUTRE",
+     "valence": 0.149,
+     "arousal": 0.312,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "LONG sur GBPSEK : 2 piliers [trend_sr, fair_value]",
+    "pillars": [
+     "trend_sr",
+     "fair_value"
+    ],
+    "n_pillars": 2,
+    "side": 1,
+    "engine": "aggressive",
+    "lot": 0.03,
+    "price": 12.88257,
+    "sl": 12.876449999999998,
+    "tp": 12.895498565886399,
+    "ticket": 81093676
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81104494,
+   "symbol": "BTC-JPY",
+   "reason": "SL",
+   "pnl": -1.43,
+   "entry": 10463120.0,
+   "exit": 10439730.0,
+   "rationale_entree": {
+    "trend_h4": 1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 17,
+    "topo_alert": false,
+    "fisher": 0.0,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 28.5,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "8840.0",
+    "exposure_gross_pct": 0.0,
+    "equity": 226.73,
+    "emotion": {
+     "label": "COMPLAISANCE",
+     "valence": 0.291,
+     "arousal": 0.242,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "LONG sur BTC-JPY : 2 piliers [trend_sr, fair_value]",
+    "pillars": [
+     "trend_sr",
+     "fair_value"
+    ],
+    "n_pillars": 2,
+    "side": 1,
+    "engine": "aggressive",
+    "lot": 0.01,
+    "price": 10463120.0,
+    "sl": 10439739.54608845,
+    "tp": 10521571.134778878,
+    "ticket": 81104494
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81104500,
+   "symbol": "LNKUSD",
+   "reason": "SL",
+   "pnl": -2.76,
+   "entry": 8.393,
+   "exit": 8.34,
+   "rationale_entree": {
+    "trend_h4": 1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fisher": 0.0,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 28.5,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.05000000000000071",
+    "exposure_gross_pct": 0.0,
+    "equity": 226.73,
+    "emotion": {
+     "label": "COMPLAISANCE",
+     "valence": 0.243,
+     "arousal": 0.238,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "LONG sur LNKUSD : 2 piliers [trend_sr, fair_value]",
+    "pillars": [
+     "trend_sr",
+     "fair_value"
+    ],
+    "n_pillars": 2,
+    "side": 1,
+    "engine": "aggressive",
+    "lot": 5.2,
+    "price": 8.393,
+    "sl": 8.3555,
+    "tp": 8.461562093325801,
+    "ticket": 81104500
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81106147,
+   "symbol": "NZDCAD",
+   "reason": "SL",
+   "pnl": -1.11,
+   "entry": 0.8164,
+   "exit": 0.81484,
+   "rationale_entree": {
+    "trend_h4": 1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fisher": 0.0125,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 39.2,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.002080000000000082",
+    "exposure_gross_pct": 0.0,
+    "equity": 181.36,
+    "emotion": {
+     "label": "NEUTRE",
+     "valence": -0.051,
+     "arousal": 0.23,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "LONG sur NZDCAD : 3 piliers [trend_sr, fair_value, liquidity]",
+    "pillars": [
+     "trend_sr",
+     "fair_value",
+     "liquidity"
+    ],
+    "n_pillars": 3,
+    "side": 1,
+    "engine": "aggressive",
+    "lot": 0.01,
+    "price": 0.8164,
+    "sl": 0.81484,
+    "tp": 0.81796,
+    "ticket": 81106147
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81106148,
+   "symbol": "USDCAD",
+   "reason": "SL",
+   "pnl": -1.35,
+   "entry": 1.41122,
+   "exit": 1.40932,
+   "rationale_entree": {
+    "trend_h4": 1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fisher": 0.0,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 39.2,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.0025399999999997647",
+    "exposure_gross_pct": 0.0,
+    "equity": 181.36,
+    "emotion": {
+     "label": "NEUTRE",
+     "valence": -0.044,
+     "arousal": 0.341,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "LONG sur USDCAD : 2 piliers [trend_sr, liquidity]",
+    "pillars": [
+     "trend_sr",
+     "liquidity"
+    ],
+    "n_pillars": 2,
+    "side": 1,
+    "engine": "aggressive",
+    "lot": 0.01,
+    "price": 1.41122,
+    "sl": 1.409315,
+    "tp": 1.4131249999999997,
+    "ticket": 81106148
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81106149,
+   "symbol": "USDCNH",
+   "reason": "SL",
+   "pnl": -1.33,
+   "entry": 6.76625,
+   "exit": 6.7745,
+   "rationale_entree": {
+    "trend_h4": -1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fisher": 0.0159,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 39.2,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.010939999999999728",
+    "exposure_gross_pct": 0.0,
+    "equity": 181.36,
+    "emotion": {
+     "label": "NEUTRE",
+     "valence": 0.083,
+     "arousal": 0.323,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "SHORT sur USDCNH : 2 piliers [trend_sr, fair_value]",
+    "pillars": [
+     "trend_sr",
+     "fair_value"
+    ],
+    "n_pillars": 2,
+    "side": -1,
+    "engine": "aggressive",
+    "lot": 0.01,
+    "price": 6.76625,
+    "sl": 6.774455,
+    "tp": 6.758045000000001,
+    "ticket": 81106149
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81106150,
+   "symbol": "USDHUF",
+   "reason": 1,
+   "pnl": -0.82,
+   "entry": 316.772,
+   "exit": 316.514,
+   "rationale_entree": {
+    "trend_h4": 1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fisher": 0.0061,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 39.2,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "2.23599999999999",
+    "exposure_gross_pct": 0.0,
+    "equity": 181.36,
+    "emotion": {
+     "label": "NEUTRE",
+     "valence": 0.189,
+     "arousal": 0.257,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "LONG sur USDHUF : 2 piliers [trend_sr, fair_value]",
+    "pillars": [
+     "trend_sr",
+     "fair_value"
+    ],
+    "n_pillars": 2,
+    "side": 1,
+    "engine": "aggressive",
+    "lot": 0.01,
+    "price": 316.772,
+    "sl": 315.095,
+    "tp": 318.44899999999996,
+    "ticket": 81106150
+   },
+   "debrief": "(contexte d'entrée non journalisé)"
+  },
+  {
+   "ticket": 81106151,
+   "symbol": "USDMXN",
+   "reason": 1,
+   "pnl": -1.72,
+   "entry": 17.4135,
+   "exit": 17.44342,
+   "rationale_entree": {
+    "trend_h4": -1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fisher": 0.0335,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 39.2,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.0742000000000047",
+    "exposure_gross_pct": 0.0,
+    "equity": 181.36,
+    "emotion": {
+     "label": "NEUTRE",
+     "valence": -0.134,
+     "arousal": 0.186,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "SHORT sur USDMXN : 2 piliers [trend_sr, fair_value]",
+    "pillars": [
+     "trend_sr",
+     "fair_value"
+    ],
+    "n_pillars": 2,
+    "side": -1,
+    "engine": "aggressive",
+    "lot": 0.01,
+    "price": 17.4135,
+    "sl": 17.469150000000003,
+    "tp": 17.357849999999996,
+    "ticket": 81106151
+   },
+   "debrief": "(contexte d'entrée non journalisé)"
+  },
+  {
+   "ticket": 81106152,
+   "symbol": "USDPLN",
+   "reason": 1,
+   "pnl": -1.77,
+   "entry": 3.8005,
+   "exit": 3.7938,
+   "rationale_entree": {
+    "trend_h4": 1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fisher": 0.0048,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 39.2,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.013399999999999856",
+    "exposure_gross_pct": 0.0,
+    "equity": 181.36,
+    "emotion": {
+     "label": "NEUTRE",
+     "valence": 0.117,
+     "arousal": 0.007,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "LONG sur USDPLN : 2 piliers [trend_sr, fair_value]",
+    "pillars": [
+     "trend_sr",
+     "fair_value"
+    ],
+    "n_pillars": 2,
+    "side": 1,
+    "engine": "aggressive",
+    "lot": 0.01,
+    "price": 3.8005,
+    "sl": 3.79045,
+    "tp": 3.81055,
+    "ticket": 81106152
+   },
+   "debrief": "(contexte d'entrée non journalisé)"
+  },
+  {
+   "ticket": 81106153,
+   "symbol": "USDSGD",
+   "reason": "SL",
+   "pnl": -1.12,
+   "entry": 1.29184,
+   "exit": 1.29112,
+   "rationale_entree": {
+    "trend_h4": 1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fisher": 0.0302,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 39.2,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.0009600000000000719",
+    "exposure_gross_pct": 0.0,
+    "equity": 181.36,
+    "emotion": {
+     "label": "NEUTRE",
+     "valence": -0.074,
+     "arousal": 0.402,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "LONG sur USDSGD : 2 piliers [trend_sr, fair_value]",
+    "pillars": [
+     "trend_sr",
+     "fair_value"
+    ],
+    "n_pillars": 2,
+    "side": 1,
+    "engine": "aggressive",
+    "lot": 0.02,
+    "price": 1.29184,
+    "sl": 1.29112,
+    "tp": 1.2925600000000002,
+    "ticket": 81106153
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81106434,
+   "symbol": "DOGUSD",
+   "reason": "SL",
+   "pnl": -1.33,
+   "entry": 0.07056,
+   "exit": 0.07109,
+   "rationale_entree": {
+    "trend_h4": -1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fisher": 0.0404,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 48.5,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.0007000000000000062",
+    "exposure_gross_pct": 0.0,
+    "equity": 162.35,
+    "emotion": {
+     "label": "NEUTRE",
+     "valence": 0.114,
+     "arousal": 0.191,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "SHORT sur DOGUSD : 2 piliers [trend_sr, liquidity]",
+    "pillars": [
+     "trend_sr",
+     "liquidity"
+    ],
+    "n_pillars": 2,
+    "side": -1,
+    "engine": "aggressive",
+    "lot": 2.5,
+    "price": 0.07056,
+    "sl": 0.07108500000000001,
+    "tp": 0.06994950655416449,
+    "ticket": 81106434
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81106435,
+   "symbol": "MANA-USD",
+   "reason": "SL",
+   "pnl": -1.2,
+   "entry": 0.0669,
+   "exit": 0.0684,
+   "rationale_entree": {
+    "trend_h4": -1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fisher": 0.0505,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 48.5,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.0020000000000000018",
+    "exposure_gross_pct": 0.0,
+    "equity": 162.35,
+    "emotion": {
+     "label": "COMPLAISANCE",
+     "valence": 0.362,
+     "arousal": 0.133,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "SHORT sur MANA-USD : 2 piliers [trend_sr, fair_value]",
+    "pillars": [
+     "trend_sr",
+     "fair_value"
+    ],
+    "n_pillars": 2,
+    "side": -1,
+    "engine": "aggressive",
+    "lot": 8.0,
+    "price": 0.0669,
+    "sl": 0.0684,
+    "tp": 0.0654,
+    "ticket": 81106435
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81106436,
+   "symbol": "AUDNZD",
+   "reason": "SL",
+   "pnl": -1.09,
+   "entry": 1.20466,
+   "exit": 1.20654,
+   "rationale_entree": {
+    "trend_h4": -1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fisher": 0.0109,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 48.5,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.0024999999999999467",
+    "exposure_gross_pct": 0.0,
+    "equity": 162.35,
+    "emotion": {
+     "label": "NEUTRE",
+     "valence": 0.03,
+     "arousal": 0.393,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "SHORT sur AUDNZD : 2 piliers [trend_sr, liquidity]",
+    "pillars": [
+     "trend_sr",
+     "liquidity"
+    ],
+    "n_pillars": 2,
+    "side": -1,
+    "engine": "aggressive",
+    "lot": 0.01,
+    "price": 1.20466,
+    "sl": 1.2065350000000001,
+    "tp": 1.202785,
+    "ticket": 81106436
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81106437,
+   "symbol": "CHFJPY",
+   "reason": 1,
+   "pnl": 0.22,
+   "entry": 199.952,
+   "exit": 199.916,
+   "rationale_entree": {
+    "trend_h4": -1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fisher": 0.0139,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 48.5,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.45400000000000773",
+    "exposure_gross_pct": 0.0,
+    "equity": 162.35,
+    "emotion": {
+     "label": "NEUTRE",
+     "valence": 0.083,
+     "arousal": 0.328,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "SHORT sur CHFJPY : 3 piliers [trend_sr, fair_value, liquidity]",
+    "pillars": [
+     "trend_sr",
+     "fair_value",
+     "liquidity"
+    ],
+    "n_pillars": 3,
+    "side": -1,
+    "engine": "aggressive",
+    "lot": 0.01,
+    "price": 199.952,
+    "sl": 200.29250000000002,
+    "tp": 199.61149999999998,
+    "ticket": 81106437
+   },
+   "debrief": "continuation avec la tendance -> gain"
+  },
+  {
+   "ticket": 81106438,
+   "symbol": "EURCAD",
+   "reason": "SL",
+   "pnl": -0.91,
+   "entry": 1.60621,
+   "exit": 1.6075,
+   "rationale_entree": {
+    "trend_h4": -1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fisher": 0.0169,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 48.5,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.0017200000000001658",
+    "exposure_gross_pct": 0.0,
+    "equity": 162.35,
+    "emotion": {
+     "label": "NEUTRE",
+     "valence": -0.093,
+     "arousal": 0.098,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "SHORT sur EURCAD : 2 piliers [trend_sr, fair_value]",
+    "pillars": [
+     "trend_sr",
+     "fair_value"
+    ],
+    "n_pillars": 2,
+    "side": -1,
+    "engine": "aggressive",
+    "lot": 0.01,
+    "price": 1.60621,
+    "sl": 1.6075,
+    "tp": 1.60492,
+    "ticket": 81106438
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81106535,
+   "symbol": "EURCZK",
+   "reason": 1,
+   "pnl": -1.78,
+   "entry": 24.1525,
+   "exit": 24.1902,
+   "rationale_entree": {
+    "trend_h4": -1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fisher": 0.0085,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 48.5,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.09600000000000364",
+    "exposure_gross_pct": 0.0,
+    "equity": 153.65,
+    "emotion": {
+     "label": "NEUTRE",
+     "valence": 0.041,
+     "arousal": 0.053,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "SHORT sur EURCZK : 3 piliers [trend_sr, fair_value, liquidity]",
+    "pillars": [
+     "trend_sr",
+     "fair_value",
+     "liquidity"
+    ],
+    "n_pillars": 3,
+    "side": -1,
+    "engine": "aggressive",
+    "lot": 0.01,
+    "price": 24.1525,
+    "sl": 24.224500000000003,
+    "tp": 24.080499999999997,
+    "ticket": 81106535
+   },
+   "debrief": "(contexte d'entrée non journalisé)"
+  },
+  {
+   "ticket": 81106557,
+   "symbol": "XRPUSD",
+   "reason": "SL",
+   "pnl": -0.96,
+   "entry": 1.06293,
+   "exit": 1.06775,
+   "rationale_entree": {
+    "trend_h4": -1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 26,
+    "topo_alert": false,
+    "fisher": 0.0109,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 48.5,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.006400000000000183",
+    "exposure_gross_pct": 0.0,
+    "equity": 153.87,
+    "emotion": {
+     "label": "COMPLAISANCE",
+     "valence": 0.2,
+     "arousal": 0.292,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "SHORT sur XRPUSD : 2 piliers [trend_sr, liquidity]",
+    "pillars": [
+     "trend_sr",
+     "liquidity"
+    ],
+    "n_pillars": 2,
+    "side": -1,
+    "engine": "aggressive",
+    "lot": 0.2,
+    "price": 1.06293,
+    "sl": 1.06773,
+    "tp": 1.0558118536487535,
+    "ticket": 81106557
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81106590,
+   "symbol": "BCHUSD",
+   "reason": "SL",
+   "pnl": -1.42,
+   "entry": 213.75,
+   "exit": 215.04,
+   "rationale_entree": {
+    "trend_h4": -1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 4,
+    "topo_alert": false,
+    "fisher": 0.0,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 53.0,
+     "level": "medium"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "1.6000000000000227",
+    "exposure_gross_pct": 0.0,
+    "equity": 165.8,
+    "emotion": {
+     "label": "NEUTRE",
+     "valence": 0.092,
+     "arousal": 0.147,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "SHORT sur BCHUSD : 2 piliers [trend_sr, fair_value]",
+    "pillars": [
+     "trend_sr",
+     "fair_value"
+    ],
+    "n_pillars": 2,
+    "side": -1,
+    "engine": "aggressive",
+    "lot": 1.1,
+    "price": 213.75,
+    "sl": 214.95000000000002,
+    "tp": 212.0534907616447,
+    "ticket": 81106590
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81106608,
+   "symbol": "BCHUSD",
+   "reason": "SL",
+   "pnl": 0.54,
+   "entry": 214.24,
+   "exit": 213.75,
+   "rationale_entree": {
+    "trend_h4": -1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 11,
+    "topo_alert": false,
+    "fisher": 0.0132,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 53.0,
+     "level": "medium"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "1.599999999999966",
+    "exposure_gross_pct": 0.0,
+    "equity": 177.31,
+    "emotion": {
+     "label": "COMPLAISANCE",
+     "valence": 0.231,
+     "arousal": 0.24,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "SHORT sur BCHUSD : 3 piliers [trend_sr, fair_value, liquidity]",
+    "pillars": [
+     "trend_sr",
+     "fair_value",
+     "liquidity"
+    ],
+    "n_pillars": 3,
+    "side": -1,
+    "engine": "aggressive",
+    "lot": 1.1,
+    "price": 214.24,
+    "sl": 215.44,
+    "tp": 212.55458070722898,
+    "ticket": 81106608
+   },
+   "debrief": "continuation avec la tendance -> gain"
+  },
+  {
+   "ticket": 81106609,
+   "symbol": "SOL-USD",
+   "reason": "TP",
+   "pnl": 1.21,
+   "entry": 74.073,
+   "exit": 73.47,
+   "rationale_entree": {
+    "trend_h4": -1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fisher": 0.011,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 53.0,
+     "level": "medium"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.8000000000000114",
+    "exposure_gross_pct": 0.0,
+    "equity": 177.31,
+    "emotion": {
+     "label": "NEUTRE",
+     "valence": 0.18,
+     "arousal": 0.235,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "SHORT sur SOL-USD : 3 piliers [trend_sr, fair_value, liquidity]",
+    "pillars": [
+     "trend_sr",
+     "fair_value",
+     "liquidity"
+    ],
+    "n_pillars": 3,
+    "side": -1,
+    "engine": "aggressive",
+    "lot": 2.0,
+    "price": 74.073,
+    "sl": 74.673,
+    "tp": 73.47299999999998,
+    "ticket": 81106609
+   },
+   "debrief": "continuation avec la tendance -> gain"
+  },
+  {
+   "ticket": 81106610,
+   "symbol": "AUDNZD",
+   "reason": "SL",
+   "pnl": -1.31,
+   "entry": 1.2044,
+   "exit": 1.20667,
+   "rationale_entree": {
+    "trend_h4": -1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 22,
+    "topo_alert": false,
+    "fisher": 0.0042,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 53.0,
+     "level": "medium"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.0027600000000003178",
+    "exposure_gross_pct": 0.0,
+    "equity": 177.31,
+    "emotion": {
+     "label": "NEUTRE",
+     "valence": -0.058,
+     "arousal": 0.131,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "SHORT sur AUDNZD : 2 piliers [trend_sr, liquidity]",
+    "pillars": [
+     "trend_sr",
+     "liquidity"
+    ],
+    "n_pillars": 2,
+    "side": -1,
+    "engine": "aggressive",
+    "lot": 0.01,
+    "price": 1.2044,
+    "sl": 1.2064700000000002,
+    "tp": 1.2023299999999997,
+    "ticket": 81106610
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81106611,
+   "symbol": "EURCAD",
+   "reason": 1,
+   "pnl": 0.05,
+   "entry": 1.60661,
+   "exit": 1.60654,
+   "rationale_entree": {
+    "trend_h4": -1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fisher": 0.01,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 53.0,
+     "level": "medium"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.0017400000000002969",
+    "exposure_gross_pct": 0.0,
+    "equity": 177.31,
+    "emotion": {
+     "label": "NEUTRE",
+     "valence": 0.062,
+     "arousal": 0.318,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "SHORT sur EURCAD : 2 piliers [trend_sr, fair_value]",
+    "pillars": [
+     "trend_sr",
+     "fair_value"
+    ],
+    "n_pillars": 2,
+    "side": -1,
+    "engine": "aggressive",
+    "lot": 0.01,
+    "price": 1.6066099999999999,
+    "sl": 1.6079150000000002,
+    "tp": 1.6053049999999995,
+    "ticket": 81106611
+   },
+   "debrief": "continuation avec la tendance -> gain"
+  },
+  {
+   "ticket": 81106612,
+   "symbol": "EURGBP",
+   "reason": "SL",
+   "pnl": -0.8,
+   "entry": 0.85738,
+   "exit": 0.85678,
+   "rationale_entree": {
+    "trend_h4": 1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fisher": 0.0175,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 53.0,
+     "level": "medium"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.0008000000000001339",
+    "exposure_gross_pct": 0.0,
+    "equity": 177.31,
+    "emotion": {
+     "label": "NEUTRE",
+     "valence": 0.129,
+     "arousal": 0.264,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "LONG sur EURGBP : 2 piliers [trend_sr, liquidity]",
+    "pillars": [
+     "trend_sr",
+     "liquidity"
+    ],
+    "n_pillars": 2,
+    "side": 1,
+    "engine": "aggressive",
+    "lot": 0.01,
+    "price": 0.85738,
+    "sl": 0.8567799999999999,
+    "tp": 0.8580437860718747,
+    "ticket": 81106612
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81106613,
+   "symbol": "EURNOK",
+   "reason": 1,
+   "pnl": -2.54,
+   "entry": 11.0129,
+   "exit": 11.0375,
+   "rationale_entree": {
+    "trend_h4": -1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 3,
+    "topo_alert": false,
+    "fisher": 0.0185,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 53.0,
+     "level": "medium"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.09639999999999915",
+    "exposure_gross_pct": 0.0,
+    "equity": 177.31,
+    "emotion": {
+     "label": "NEUTRE",
+     "valence": -0.175,
+     "arousal": 0.108,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "SHORT sur EURNOK : 2 piliers [trend_sr, fair_value]",
+    "pillars": [
+     "trend_sr",
+     "fair_value"
+    ],
+    "n_pillars": 2,
+    "side": -1,
+    "engine": "aggressive",
+    "lot": 0.01,
+    "price": 11.0129,
+    "sl": 11.0852,
+    "tp": 10.9406,
+    "ticket": 81106613
+   },
+   "debrief": "(contexte d'entrée non journalisé)"
+  },
+  {
+   "ticket": 81106649,
+   "symbol": "XRPUSD",
+   "reason": "SL",
+   "pnl": -1.28,
+   "entry": 1.06423,
+   "exit": 1.07705,
+   "rationale_entree": {
+    "trend_h4": -1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fisher": 0.0,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 39.8,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.006400000000000183",
+    "exposure_gross_pct": 0.0,
+    "equity": 168.76,
+    "emotion": {
+     "label": "COMPLAISANCE",
+     "valence": 0.319,
+     "arousal": 0.221,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "SHORT sur XRPUSD : 2 piliers [trend_sr, liquidity]",
+    "pillars": [
+     "trend_sr",
+     "liquidity"
+    ],
+    "n_pillars": 2,
+    "side": -1,
+    "engine": "aggressive",
+    "lot": 0.1,
+    "price": 1.06423,
+    "sl": 1.0770300000000004,
+    "tp": 1.0322300000000006,
+    "ticket": 81106649
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81106650,
+   "symbol": "EURGBP",
+   "reason": 1,
+   "pnl": 0.08,
+   "entry": 0.85722,
+   "exit": 0.85728,
+   "rationale_entree": {
+    "trend_h4": 1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fisher": 0.0,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 39.8,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Wildfires in south-west France flare up as region braces for new 40C heatwave"
+    },
+    "roundtrip_cost": "0.0005800000000000249",
+    "exposure_gross_pct": 0.0,
+    "equity": 168.76,
+    "emotion": {
+     "label": "NEUTRE",
+     "valence": 0.179,
+     "arousal": 0.04,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "LONG sur EURGBP : 2 piliers [trend_sr, liquidity]",
+    "pillars": [
+     "trend_sr",
+     "liquidity"
+    ],
+    "n_pillars": 2,
+    "side": 1,
+    "engine": "aggressive",
+    "lot": 0.01,
+    "price": 0.85722,
+    "sl": 0.8560599999999999,
+    "tp": 0.8601199999999999,
+    "ticket": 81106650
+   },
+   "debrief": "continuation avec la tendance -> gain"
+  },
+  {
+   "ticket": 81298157,
+   "symbol": "CHFJPY",
+   "reason": 1,
+   "pnl": -0.7,
+   "entry": 199.894,
+   "exit": 199.951,
+   "rationale_entree": {
+    "trend_h4": -1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 3,
+    "topo_alert": false,
+    "fisher": 0.0,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 27.2,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Watch: The moment quake hit Japan"
+    },
+    "roundtrip_cost": "0.03000000000002956",
+    "exposure_gross_pct": 0.0,
+    "equity": 127.34,
+    "emotion": {
+     "label": "NEUTRE",
+     "valence": 0.136,
+     "arousal": 0.144,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "SHORT sur CHFJPY : 3 piliers [trend_sr, fair_value, liquidity]",
+    "pillars": [
+     "trend_sr",
+     "fair_value",
+     "liquidity"
+    ],
+    "n_pillars": 3,
+    "side": -1,
+    "engine": "aggressive",
+    "lot": 0.02,
+    "price": 199.894,
+    "sl": 199.97514313178166,
+    "tp": 199.69114217054587,
+    "ticket": 81298157
+   },
+   "debrief": "(contexte d'entrée non journalisé)"
+  },
+  {
+   "ticket": 81298235,
+   "symbol": "EURCAD",
+   "reason": 1,
+   "pnl": -0.57,
+   "entry": 1.60608,
+   "exit": 1.60635,
+   "rationale_entree": {
+    "trend_h4": -1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fisher": 0.0,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 27.2,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Watch: The moment quake hit Japan"
+    },
+    "roundtrip_cost": "0.00020000000000042206",
+    "exposure_gross_pct": 0.0,
+    "equity": 126.98,
+    "emotion": {
+     "label": "NEUTRE",
+     "valence": 0.135,
+     "arousal": 0.006,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "SHORT sur EURCAD : 2 piliers [trend_sr, fair_value]",
+    "pillars": [
+     "trend_sr",
+     "fair_value"
+    ],
+    "n_pillars": 2,
+    "side": -1,
+    "engine": "aggressive",
+    "lot": 0.03,
+    "price": 1.60608,
+    "sl": 1.6064800000000008,
+    "tp": 1.6050799999999976,
+    "ticket": 81298235
+   },
+   "debrief": "(contexte d'entrée non journalisé)"
+  },
+  {
+   "ticket": 81298377,
+   "symbol": "GBPCAD",
+   "reason": 1,
+   "pnl": -0.44,
+   "entry": 1.87377,
+   "exit": 1.87408,
+   "rationale_entree": {
+    "trend_h4": -1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fisher": 0.0,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 27.2,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Watch: The moment quake hit Japan"
+    },
+    "roundtrip_cost": "0.00023999999999979593",
+    "exposure_gross_pct": 0.0,
+    "equity": 126.69,
+    "emotion": {
+     "label": "NEUTRE",
+     "valence": 0.135,
+     "arousal": 0.162,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "SHORT sur GBPCAD : 3 piliers [trend_sr, fair_value, liquidity]",
+    "pillars": [
+     "trend_sr",
+     "fair_value",
+     "liquidity"
+    ],
+    "n_pillars": 3,
+    "side": -1,
+    "engine": "aggressive",
+    "lot": 0.02,
+    "price": 1.87377,
+    "sl": 1.8742499999999995,
+    "tp": 1.8725700000000007,
+    "ticket": 81298377
+   },
+   "debrief": "(contexte d'entrée non journalisé)"
+  },
+  {
+   "ticket": 81302428,
+   "symbol": "NZDCAD",
+   "reason": "SL",
+   "pnl": -1.08,
+   "entry": 0.81619,
+   "exit": 0.81543,
+   "rationale_entree": {
+    "trend_h4": 1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fisher": 0.0,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 27.2,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Watch: The moment quake hit Japan"
+    },
+    "roundtrip_cost": "0.00038000000000004697",
+    "exposure_gross_pct": 0.0,
+    "equity": 125.35,
+    "emotion": {
+     "label": "COMPLAISANCE",
+     "valence": 0.3,
+     "arousal": 0.179,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "LONG sur NZDCAD : 2 piliers [trend_sr, fair_value]",
+    "pillars": [
+     "trend_sr",
+     "fair_value"
+    ],
+    "n_pillars": 2,
+    "side": 1,
+    "engine": "aggressive",
+    "lot": 0.02,
+    "price": 0.81619,
+    "sl": 0.8154299999999999,
+    "tp": 0.81809,
+    "ticket": 81302428
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81302457,
+   "symbol": "USDCAD",
+   "reason": "SL",
+   "pnl": -0.99,
+   "entry": 1.40908,
+   "exit": 1.40873,
+   "rationale_entree": {
+    "trend_h4": 1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fisher": 0.0,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 27.2,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Watch: The moment quake hit Japan"
+    },
+    "roundtrip_cost": "0.00015999999999971593",
+    "exposure_gross_pct": 0.0,
+    "equity": 125.35,
+    "emotion": {
+     "label": "COMPLAISANCE",
+     "valence": 0.215,
+     "arousal": 0.21,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "LONG sur USDCAD : 2 piliers [trend_sr, fair_value]",
+    "pillars": [
+     "trend_sr",
+     "fair_value"
+    ],
+    "n_pillars": 2,
+    "side": 1,
+    "engine": "aggressive",
+    "lot": 0.04,
+    "price": 1.4090799999999999,
+    "sl": 1.4087316108383892,
+    "tp": 1.409950972904027,
+    "ticket": 81302457
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81302493,
+   "symbol": "USDCNH",
+   "reason": "SL",
+   "pnl": 0.74,
+   "entry": 6.77051,
+   "exit": 6.76781,
+   "rationale_entree": {
+    "trend_h4": -1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 4,
+    "topo_alert": false,
+    "fisher": 0.0,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 27.2,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Watch: The moment quake hit Japan"
+    },
+    "roundtrip_cost": "0.0013799999999992707",
+    "exposure_gross_pct": 0.0,
+    "equity": 125.35,
+    "emotion": {
+     "label": "NEUTRE",
+     "valence": 0.16,
+     "arousal": 0.194,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "SHORT sur USDCNH : 2 piliers [trend_sr, fair_value]",
+    "pillars": [
+     "trend_sr",
+     "fair_value"
+    ],
+    "n_pillars": 2,
+    "side": -1,
+    "engine": "aggressive",
+    "lot": 0.02,
+    "price": 6.77051,
+    "sl": 6.773149999999999,
+    "tp": 6.763910000000004,
+    "ticket": 81302493
+   },
+   "debrief": "continuation avec la tendance -> gain"
+  },
+  {
+   "ticket": 81302526,
+   "symbol": "USDINR",
+   "reason": "SL",
+   "pnl": -0.92,
+   "entry": 95.971,
+   "exit": 95.883,
+   "rationale_entree": {
+    "trend_h4": 1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 9,
+    "topo_alert": false,
+    "fisher": 0.0,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 27.2,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Watch: The moment quake hit Japan"
+    },
+    "roundtrip_cost": "0.04400000000001114",
+    "exposure_gross_pct": 0.0,
+    "equity": 124.94,
+    "emotion": {
+     "label": "COMPLAISANCE",
+     "valence": 0.245,
+     "arousal": 0.113,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "LONG sur USDINR : 2 piliers [trend_sr, fair_value]",
+    "pillars": [
+     "trend_sr",
+     "fair_value"
+    ],
+    "n_pillars": 2,
+    "side": 1,
+    "engine": "aggressive",
+    "lot": 0.01,
+    "price": 95.971,
+    "sl": 95.88299999999998,
+    "tp": 96.19100000000007,
+    "ticket": 81302526
+   },
+   "debrief": "SL touché"
+  },
+  {
+   "ticket": 81367122,
+   "symbol": "USDCAD",
+   "reason": "SL",
+   "pnl": 0.19,
+   "entry": 1.40958,
+   "exit": 1.40967,
+   "rationale_entree": {
+    "trend_h4": 1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 36,
+    "topo_alert": false,
+    "fisher": 0.0,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 25.2,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Japan in a ‘race against time’ to rescue people trapped beneath rubble after quake"
+    },
+    "roundtrip_cost": "0.00016000000000016001",
+    "exposure_gross_pct": 0.0,
+    "equity": 123.41,
+    "emotion": {
+     "label": "COMPLAISANCE",
+     "valence": 0.258,
+     "arousal": 0.265,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "LONG sur USDCAD : 2 piliers [trend_sr, fair_value]",
+    "pillars": [
+     "trend_sr",
+     "fair_value"
+    ],
+    "n_pillars": 2,
+    "side": 1,
+    "engine": "aggressive",
+    "lot": 0.03,
+    "price": 1.40958,
+    "sl": 1.4091806097196535,
+    "tp": 1.4105784757008664,
+    "ticket": 81367122
+   },
+   "debrief": "continuation avec la tendance -> gain"
+  },
+  {
+   "ticket": 81384809,
+   "symbol": "GBPAUD",
+   "reason": "SL",
+   "pnl": -1.1,
+   "entry": 1.91586,
+   "exit": 1.91427,
+   "rationale_entree": {
+    "trend_h4": 1,
+    "regime_geo": "GRASSMANN",
+    "lyapunov": 60,
+    "topo_alert": false,
+    "fisher": 0.0263,
+    "curvature": 0.5,
+    "geo_available": true,
+    "fundamentals": {
+     "score": 26.0,
+     "level": "low"
+    },
+    "macro": {
+     "fear_greed": 29,
+     "fear_greed_label": "Fear",
+     "top_news": "Japan in a ‘race against time’ to rescue people trapped beneath rubble after quake"
+    },
+    "roundtrip_cost": "0.0003599999999996939",
+    "exposure_gross_pct": 0.0,
+    "equity": 123.71,
+    "emotion": {
+     "label": "COMPLAISANCE",
+     "valence": 0.343,
+     "arousal": 0.076,
+     "available": true,
+     "would_fade": false,
+     "would_block": false
+    },
+    "why": "LONG sur GBPAUD : 2 piliers [trend_sr, liquidity]",
+    "pillars": [
+     "trend_sr",
+     "liquidity"
+    ],
+    "n_pillars": 2,
+    "side": 1,
+    "engine": "aggressive",
+    "lot": 0.01,
+    "price": 1.91586,
+    "sl": 1.9142724676468257,
+    "tp": 1.9182412985297612,
+    "ticket": 81384809
+   },
+   "debrief": "SL touché"
+  }
+ ]
+}

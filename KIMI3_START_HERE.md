@@ -3,9 +3,9 @@
 Instantané de référence : **2026-07-29 13:20 CEST**.
 
 Ce dépôt public contient le code source, les tests, les contrats, les plans,
-les audits et l'historique de collaboration utiles à l'analyse de Titanium v12.
-Les secrets, clés API, caches, environnements virtuels, index GitNexus générés
-et données de compte/runtime volatiles sont volontairement exclus.
+les audits, l'historique de collaboration et un instantané des données runtime
+utiles à l'analyse de Titanium v12. Les secrets, clés API, caches,
+environnements virtuels et index GitNexus générés sont volontairement exclus.
 
 ## Ordre de lecture recommandé
 
@@ -92,7 +92,10 @@ Les exclusions ne sont pas du code manquant :
 - `.claude/` brut (credentials, historique et caches de session) ;
 - `.agents/` installé localement (copie d'outillage, pas état projet) ;
 - index `.gitnexus/`, modèles locaux, `venv`, `.pyembed`, `bin/obj` ;
-- journaux actifs, positions, PnL instantané et caches de marché.
+- caches de calibration, bases SQLite/WAL actives, sauvegardes ACL Windows et
+  logs de démarrage volumineux ; certains dépassent la limite GitHub de 100 Mo.
 
-L'état utile des agents et sous-chantiers est consolidé dans `collab/` sans
-publier leurs secrets ni leurs sessions privées.
+Les états et journaux texte/JSON publiables sont présents dans `data/`. Ils
+constituent un instantané de diagnostic, jamais une source de vérité pour la
+logique de trading. L'état utile des agents et sous-chantiers est consolidé
+dans `collab/` sans publier leurs secrets ni leurs sessions privées.

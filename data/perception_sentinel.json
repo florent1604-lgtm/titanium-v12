@@ -1,0 +1,43 @@
+{
+ "ts_utc": "2026-07-29T11:45:07.284284+00:00",
+ "fenetre_min": 30,
+ "alertes": [
+  "Cloe NON RÉSIDENTE : aucun modèle chargé → chaque appel repart à froid"
+ ],
+ "ok": true,
+ "fill": {
+  "n": 2,
+  "organes": {
+   "emotion.label": 1.0,
+   "emotion.valence": 1.0,
+   "emotion.arousal": 1.0,
+   "regime_geo": 1.0,
+   "lyapunov": 1.0,
+   "fisher": 1.0,
+   "curvature": 1.0,
+   "trend_h4": 1.0,
+   "fondamentaux": 1.0,
+   "macro.fear_greed": 1.0,
+   "cout_AR": 1.0,
+   "equity": 1.0
+  }
+ },
+ "ghost": {
+  "n": 123,
+  "organes": {
+   "emotion.label": 1.0,
+   "emotion.valence": 1.0,
+   "emotion.arousal": 1.0,
+   "regime_geo": 1.0,
+   "lyapunov": 1.0,
+   "fisher": 1.0,
+   "curvature": 1.0,
+   "trend_h4": 1.0,
+   "fondamentaux": 1.0,
+   "macro.fear_greed": 1.0,
+   "cout_AR": 1.0,
+   "equity": 1.0
+  }
+ },
+ "cloe_resident": []
+}

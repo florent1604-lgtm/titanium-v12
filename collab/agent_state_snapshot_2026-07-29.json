@@ -89,7 +89,10 @@
     "agent_tool_installation_caches",
     "gitnexus_generated_index",
     "virtual_environments_and_models",
-    "active_positions_pnl_and_market_caches",
+    "calibration_caches_and_generated_datasets",
+    "active_sqlite_wal_databases",
+    "windows_acl_backups",
+    "oversized_boot_logs",
     "build_artifacts"
   ]
 }
